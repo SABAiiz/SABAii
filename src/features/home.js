@@ -9,7 +9,7 @@ import { addTask, addNote, editTask, noteEl } from './add.js';
 
 let sheet, paneHome, paneNote, stage;
 const LOW = 300;
-const snapPx = () => [LOW, Math.round(innerHeight * .58), innerHeight - 40];
+const snapPx = () => [LOW, Math.round(innerHeight * .58), innerHeight]; // บนสุด = ชิดขอบจอบน
 let snapIdx = 2, vis = 0;
 let pages = [], cur = 0, targeted = false; // targeted = เปิดโน้ตของงานที่เลือกไว้ (ไม่ต้องกลับไปงานอันดับ 1)
 const hs = { q: '', when: 'all', limit: 8 };
@@ -47,37 +47,69 @@ export function setSnap(i, fromBack = false) {
   if (snapIdx < 2) paneHome.scrollTop = 0;
   if (snapIdx > 0 && !fromBack) dropBack('note');
 }
+/** ปล่อยนิ้ว → ไปจุดที่ใกล้ที่สุด โดยนับแรงปัดด้วย (ปัดเร็วข้ามจุดได้) */
+function settle(hist) {
+  sheet.classList.remove('dragging');
+  const [t0, y0] = hist[0], [t1, y1] = hist[hist.length - 1];
+  const v = (y1 - y0) / Math.max(1, t1 - t0); // พิกเซล/มิลลิวินาที (+ = ลง)
+  const target = vis - v * 180, s = snapPx();
+  let best = 0; s.forEach((x, i) => { if (Math.abs(x - target) < Math.abs(s[best] - target)) best = i; });
+  setSnap(best);
+}
+const clampVis = v => Math.max(LOW * .7, Math.min(innerHeight, v));
 function initSheetDrag() {
+  // ลากได้ทั้งแผ่น (รวมบนปุ่ม) — แผ่นตามนิ้วทันที ไม่ต้องกด · แตะเฉย ๆ ไม่ขยับ
   let drag = null, suppress = false;
   sheet.addEventListener('pointerdown', e => {
     if (e.button) return;
-    drag = { y: e.clientY, vis, inBody: !!e.target.closest('.pane-home'), moved: false, hist: [[e.timeStamp, e.clientY]], id: e.pointerId };
+    const inBody = !!e.target.closest('.pane-home');
+    if (e.pointerType === 'touch' && inBody && sheet.classList.contains('full')) return; // ตอนเต็มจอ นิ้วในรายการ = เลื่อนรายการ (ดูตัวรับ touch ด้านล่าง)
+    drag = { y: e.clientY, vis, inBody, moved: false, hist: [[e.timeStamp, e.clientY]], id: e.pointerId };
   });
   addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
     const dy = e.clientY - drag.y;
     if (!drag.moved) {
-      if (Math.abs(dy) < 8) return;
+      if (Math.abs(dy) < 6) return;
       if (sheet.classList.contains('full') && drag.inBody && (dy < 0 || paneHome.scrollTop > 0)) { drag = null; return; } // ให้เลื่อนรายการแทน
-      drag.moved = true; sheet.classList.add('dragging');
+      drag.moved = true; sheet.classList.add('dragging'); // นับจากจุดที่นิ้วแตะ แผ่นจะติดนิ้วพอดี
     }
-    setVis(Math.max(LOW * .7, Math.min(innerHeight - 40, drag.vis - dy)));
+    setVis(clampVis(drag.vis - (e.clientY - drag.y)));
     drag.hist.push([e.timeStamp, e.clientY]); if (drag.hist.length > 5) drag.hist.shift();
   });
-  const end = e => {
+  const end = () => {
     if (!drag) return;
     const d = drag; drag = null;
     if (!d.moved) return;
-    sheet.classList.remove('dragging'); suppress = true; setTimeout(() => { suppress = false; }, 0);
-    const [t0, y0] = d.hist[0], v = (e.clientY - y0) / Math.max(1, e.timeStamp - t0); // พิกเซล/มิลลิวินาที (+ = ลง)
-    const target = vis - v * 180, s = snapPx();
-    let best = 0; s.forEach((x, i) => { if (Math.abs(x - target) < Math.abs(s[best] - target)) best = i; });
-    setSnap(best);
+    suppress = true; setTimeout(() => { suppress = false; }, 0);
+    settle(d.hist);
   };
   addEventListener('pointerup', end); addEventListener('pointercancel', end);
   sheet.addEventListener('click', e => { if (suppress) { e.stopPropagation(); e.preventDefault(); } }, true);
-  $('.grab').addEventListener('click', () => setSnap(snapIdx === 2 ? 0 : 2));
-  $('.grab').addEventListener('keydown', e => { if (e.key === 'ArrowDown') setSnap(snapIdx - 1); if (e.key === 'ArrowUp') setSnap(snapIdx + 1); });
+  $('.grab').addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSnap(snapIdx - 1); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setSnap(snapIdx + 1); }
+  });
+
+  // แผ่นเต็มจอ + รายการเลื่อนอยู่บนสุด + นิ้วดึงลง → แผ่นลงตามนิ้ว (เหมือน Bolt) · นอกนั้นเลื่อนรายการตามปกติ
+  let tp = null;
+  paneHome.addEventListener('touchstart', e => {
+    tp = sheet.classList.contains('full') && e.touches.length === 1 ? { y0: e.touches[0].clientY, active: false, hist: [] } : null;
+  }, { passive: true });
+  paneHome.addEventListener('touchmove', e => {
+    if (!tp) return;
+    const y = e.touches[0].clientY, dy = y - tp.y0;
+    if (!tp.active) {
+      if (paneHome.scrollTop > 0 || dy < -4) { tp = null; return; }
+      if (dy < 6) return;
+      tp.active = true; tp.vis = vis; sheet.classList.add('dragging');
+    }
+    e.preventDefault();
+    setVis(clampVis(tp.vis - (y - tp.y0)));
+    tp.hist.push([e.timeStamp, y]); if (tp.hist.length > 5) tp.hist.shift();
+  }, { passive: false });
+  const tend = () => { const d = tp; tp = null; if (d?.active && d.hist.length) settle(d.hist); else sheet.classList.remove('dragging'); };
+  paneHome.addEventListener('touchend', tend); paneHome.addEventListener('touchcancel', tend);
 }
 
 /* ---------------- ชั้นหลัง: โน้ตหน้างาน ---------------- */

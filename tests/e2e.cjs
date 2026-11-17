@@ -208,6 +208,42 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.goto(BASE + '#/home'); await page.waitForSelector('.tiles'); await wait(300);
   await shot('09-home-375');
 
+  // นิ้ว (จอสัมผัสจริงผ่าน CDP): แผ่นตามนิ้ว · แตะเฉย ๆ ไม่ขยับ · ดันขึ้นสุดชิดขอบจอบน · เต็มจอแล้วดึงลงจากรายการได้
+  {
+    const tctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block' });
+    if (!REAL) await tctx.route('http://sabaii.test/**', r => { let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html'; if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); });
+    const tp = await tctx.newPage();
+    tp.on('pageerror', e => errors.push('touch: ' + e.message));
+    await tp.goto(BASE + '#/home'); await tp.waitForSelector('.tiles');
+    await tp.evaluate(() => window.__sabaii.addSamples()); await wait(500);
+    const cdp = await tctx.newCDPSession(tp);
+    const touch = (type, x, y) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+    const sheetTop = () => tp.evaluate(() => Math.round(document.getElementById('sheet').getBoundingClientRect().top));
+    const tst = () => tp.evaluate(() => window.__ui.homeState());
+    const swipe = async (x, y0, y1, { steps = 14, mid } = {}) => {
+      await touch('touchStart', x, y0);
+      for (let i = 1; i <= steps; i++) { await touch('touchMove', x, y0 + (y1 - y0) * i / steps); await wait(16); if (mid && i === Math.floor(steps / 2)) await mid(y0 + (y1 - y0) * i / steps); }
+      await touch('touchEnd'); await wait(500);
+    };
+    const g0 = await tp.locator('.grab').boundingBox();
+    await touch('touchStart', 195, g0.y + 8); await touch('touchEnd'); await wait(400);
+    check('นิ้ว: แตะที่จับเฉย ๆ แผ่นไม่ขยับ (ต้องลาก)', (await tst()).snapIdx === 2);
+    let follow = null;
+    await swipe(195, g0.y + 8, 820, { mid: async y => { follow = [Math.round(y), await sheetTop()]; } });
+    check('นิ้ว: ลากที่จับลง แผ่นตามนิ้วระหว่างลาก', follow && Math.abs(follow[1] - (follow[0] - 8)) <= 12, follow?.join(' → '));
+    check('นิ้ว: ลากลงสุด → โหมดโน้ต', (await tst()).noteMode);
+    await tp.screenshot({ path: SHOTS ? `${SHOTS}/10-touch-notes.png` : '/dev/null' }).catch(() => {});
+    const cta = await tp.locator('.pane-note .cta').boundingBox();
+    await swipe(195, cta.y + 20, 4, { steps: 18 });
+    const top = await sheetTop();
+    check('นิ้ว: ดันการ์ดขึ้น (เริ่มบนปุ่ม "ทำเลย") → ชิดขอบจอบน', (await tst()).snapIdx === 2 && top === 0, `top=${top}`);
+    check('นิ้ว: ลากผ่านปุ่มแล้ว ปุ่มไม่ถูกกด', (await tp.evaluate(() => window.__sabaii.state.tasks.filter(t => t.status === 'doing').length)) === 0);
+    await tp.screenshot({ path: SHOTS ? `${SHOTS}/11-touch-top.png` : '/dev/null' }).catch(() => {});
+    await swipe(195, 330, 700);
+    check('นิ้ว: เต็มจอแล้วดึงลงจากรายการ (อยู่บนสุด) → แผ่นลงตามนิ้ว', (await tst()).snapIdx < 2, `snap=${(await tst()).snapIdx}`);
+    await tctx.close();
+  }
+
   check('ไม่มี error ใน console', errors.length === 0, errors.slice(0, 3).join(' | '));
   await browser.close();
   const fail = results.filter(r => !r.ok).length;
