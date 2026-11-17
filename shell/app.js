@@ -165,7 +165,9 @@ let pages = [], cur = 0; // pages = id งานตามลำดับแน�
 function noteEl(n, i) {
   const tilt = i % 2 ? 'tilt-r' : 'tilt-l';
   const when = h('span.ntag', { html: ic(n.kind === 'sticky' ? 'text' : 'camera') }, (n.kind === 'sticky' ? 'จดเมื่อ ' : 'ถ่ายเมื่อ ') + shortWhen(n.at));
-  if (n.kind === 'photo') return h('div.nitem.photo.' + tilt, h('img', { src: n.src, alt: 'รูปที่แนบไว้' }), when);
+  // รูปจริง: โชว์ทั้งรูป (ไม่ตัดขอบ — ตัวหนังสือบนกระดานอยู่ชิดขอบบ่อย) พื้นหลังเป็นรูปเดียวกันแบบเบลอ · แตะ = ดูเต็มจอ
+  if (n.kind === 'photo') return h('div.nitem.photo.' + tilt, { style: { '--src': `url("${n.src}")` } },
+    h('button.zoom', { 'aria-label': 'ดูรูปเต็มจอ', onclick: () => viewPhoto(n.src) }, h('img', { src: n.src, alt: 'รูปที่แนบไว้' })), when);
   if (n.kind === 'sticky') return h('div.nitem.sticky.' + tilt, n.text, when);
   if (n.kind === 'sheet') return h('div.nitem.sheet.' + tilt, n.head ? h('h4', n.head) : null, rich(n.text), when);
   return h('div.nitem.board.' + tilt, rich(n.text), when);
@@ -270,6 +272,14 @@ function finish(id) {
   const t = task(id), prev = { status: t.status, started_at: t.started_at };
   t.status = 'done'; t.done_at = new Date().toISOString(); save(); refresh();
   toast('เสร็จแล้ว เก่งมาก!', { label: 'เลิกทำ', fn: () => { Object.assign(t, prev); delete t.done_at; save(); refresh(); } });
+}
+/** ดูรูปเต็มจอ (แตะที่ใดก็ได้เพื่อปิด) */
+function viewPhoto(src) {
+  const box = h('div.viewer', { role: 'dialog', 'aria-label': 'รูปเต็มจอ', onclick: () => box.remove() },
+    h('img', { src, alt: 'รูปที่แนบไว้' }), h('button.fab', { 'aria-label': 'ปิด', html: ic('close') }));
+  const onKey = e => { if (e.key === 'Escape') { box.remove(); removeEventListener('keydown', onKey); } };
+  addEventListener('keydown', onKey);
+  document.body.append(box);
 }
 /** เปิดโน้ตของงาน: ดึงแผ่นลง แล้วเลื่อนชั้นหลังไปหน้าของงานนั้น */
 function openNotes(id) {
@@ -395,7 +405,7 @@ function review(text, photo) {
       const items = rows.map(r => r.get()).filter(x => x.title);
       if (!items.length) return toast('ใส่ชื่องานก่อนนะ');
       saveBtn.disabled = true; // กันกดสองที
-      const added = items.map((x, i) => ({ id: uid('t'), ...x, est: 30, status: 'todo', notes: photo && i === 0 ? [{ id: uid('n'), kind: 'photo', src: photo, at: new Date().toISOString() }] : [] }));
+      const added = items.map((x, i) => ({ id: uid('t'), ...x, est: null, status: 'todo', notes: photo && i === 0 ? [{ id: uid('n'), kind: 'photo', src: photo, at: new Date().toISOString() }] : [] }));
       db.tasks.push(...added); save(); closeModal(); refresh();
       toast(`บันทึก ${added.length} งานแล้ว`, { label: 'ดูโน้ต', fn: () => openNotes(added[0].id) });
     },
@@ -432,7 +442,7 @@ function editTask(id) {
   const sub = h('select.field', { id: 'e-subj' }, subjOptions(t.subject_id));
   const date = h('input.field', { type: 'date', id: 'e-date', value: t.due_date || '' });
   const time = h('input.field', { type: 'time', id: 'e-time', value: t.due_time || '' });
-  const est = h('input.field', { type: 'number', id: 'e-est', min: 5, step: 5, value: String(t.est || 30) });
+  const est = h('input.field', { type: 'number', id: 'e-est', min: 5, step: 5, value: t.est ? String(t.est) : '', placeholder: 'ไม่ระบุ' });
   const exam = h('input', { type: 'checkbox', id: 'e-exam', checked: t.type === 'exam' });
   openModal('แก้ไขงาน', h('div',
     h('label.flabel', { for: 'e-title' }, 'ชื่องาน'), title, h('label.flabel', { for: 'e-subj' }, 'วิชา'), sub,

@@ -64,7 +64,14 @@ button, a { cursor: pointer; border: 0; background: none; text-decoration: none;
 .nitem.sheet .txt { font-size: 13px; line-height: 2; white-space: pre-line; background-image: repeating-linear-gradient(transparent 0 25px, #d6e4f5 25px 26px); }
 .nitem.sheet mark { background: #FFF2A8; }
 .nitem.sticky { background: #FFE98A; color: #20304f; font-family: var(--hand); font-size: 20px; line-height: 1.55; padding: 26px 22px; white-space: pre-line; width: min(64vw, 320px); }
-.nitem.photo img { width: 100%; height: 100%; object-fit: cover; display: block; background: #222; }
+.nitem.photo { background: #1b1f2a; }
+.nitem.photo::before { content: ""; position: absolute; inset: -20px; background: var(--src) center / cover; filter: blur(18px) brightness(.75); }
+.nitem.photo .zoom { position: absolute; inset: 0; display: block; cursor: zoom-in; }
+.nitem.photo img { width: 100%; height: 100%; object-fit: contain; display: block; position: relative; }
+.mini-in .nitem.photo img { object-fit: cover; }
+.viewer { position: fixed; inset: 0; z-index: 70; background: rgba(5,10,30,.94); display: grid; place-items: center; cursor: zoom-out; }
+.viewer img { max-width: 100vw; max-height: 100dvh; object-fit: contain; }
+.viewer .fab { position: fixed; right: 16px; top: calc(12px + env(safe-area-inset-top, 0px)); }
 .nitem.empty { background: transparent; box-shadow: none; border: 2px dashed rgba(0,0,0,.18); display: grid; place-items: center; text-align: center; color: var(--text-2); padding: 20px; }
 :root[data-theme="dark"] .nitem.empty { border-color: rgba(255,255,255,.2); }
 .nitem.empty button { margin-top: 12px; }
