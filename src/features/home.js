@@ -228,7 +228,6 @@ function renderHome() {
   paneHome.replaceChildren(
     h('div.brandrow', h('div.brand', 'SABA', h('span', 'ii'), h('b', '.')), h('a.avatar', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
     h('h1.big', name ? `เพิ่มงานกันเลย ${name}` : 'เพิ่มงานกันเลย'),
-    h('p.sub', 'หลายอย่าง หลายครั้ง หลายเวลา — โยนมาได้หมด'),
     h('div.tiles',
       tile('speak', 'พูด', 'สั่งด้วยเสียง', () => addTask('voice')),
       tile('attach', 'แนบรูป', 'จากอัลบั้ม/แชท', () => addTask('photo')),
@@ -236,7 +235,7 @@ function renderHome() {
       tile('shoot', 'ถ่ายรูป', 'กระดาน · ใบงาน', () => addTask('camera'))),
     h('label.search', h('span', { html: ic('search') }), input,
       h('button.chip', { type: 'button', 'aria-label': `กรองตามวัน: ${WHEN[hs.when]}`, onclick: () => { const ks = Object.keys(WHEN); hs.when = ks[(ks.indexOf(hs.when) + 1) % ks.length]; renderHome(); }, html: ic('cal') + `<span>${WHEN[hs.when]}</span>` })),
-    h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : shown.length > 1 ? `ทำ ${shown.length} งานนี้ก่อน` : 'ทำงานนี้ก่อน'), h('span', list.length ? (focus ? 'เรียงตามกำหนดส่งให้แล้ว' : `${list.length} งาน`) : '')),
+    h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : shown.length > 1 ? `ทำ ${shown.length} งานนี้ก่อน` : 'ทำงานนี้ก่อน'), h('span', !focus && list.length ? `${list.length} งาน` : '')),
     list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow',
       h('button.main', { onclick: () => openNotes(t.id) }, badge(subj(t.subject_id)),
         h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),

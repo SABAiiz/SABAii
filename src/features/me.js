@@ -28,7 +28,7 @@ export function meView(root) {
   put(root,
     h('div.phead', h('h1', 'ฉัน')),
     h('div.meline', h('span.avatar.big', (name || 'ฉ').slice(0, 1)),
-      h('div', h('b', name || 'ยังไม่ได้ตั้งชื่อ'), h('small.muted.block', 'ยังไม่มีบัญชี · ข้อมูลอยู่ในเครื่องนี้')),
+      h('div', h('b', name || 'ยังไม่ได้ตั้งชื่อ')),
       h('button.btn.ghost.auto', { onclick: editName }, name ? 'แก้ชื่อ' : 'ตั้งชื่อ')),
     h('div.stats',
       h('div.stat', h('b', String(sum.open)), h('small', 'งานค้าง')),
@@ -41,7 +41,7 @@ export function meView(root) {
         return h('div.wcol' + (d === td ? '.today' : ''), h('div.wbar', h('i', { style: { height: `${n ? Math.max(10, n / max * 100) : 0}%` } }), n ? h('em', String(n)) : ''),
           h('span', DOW_SHORT[fromYMD(d).getDay()]));
       })),
-      week === 0 ? h('p.muted.center', 'ยังไม่มีงานที่ทำเสร็จใน 7 วันนี้') : ''),
+    ),
     h('div.mlist',
       row('book', 'วิชาของฉัน', `${s.subjects.filter(x => !x.hidden).length} วิชา`, subjectsModal),
       row('moon', 'ธีมสี', THEME[theme], themeModal),
