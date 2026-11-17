@@ -12,7 +12,9 @@ const LOW = 300;
 const snapPx = () => [LOW, Math.round(innerHeight * .58), innerHeight]; // บนสุด = ชิดขอบจอบน
 let snapIdx = 2, vis = 0;
 let pages = [], cur = 0, targeted = false; // targeted = เปิดโน้ตของงานที่เลือกไว้ (ไม่ต้องกลับไปงานอันดับ 1)
-const hs = { q: '', when: 'all', limit: 8 };
+const hs = { q: '', when: 'all' };
+export const TOP = 3; // งานแนะนำไม่เกิน 3 งาน — ยาวกว่านี้นักเรียนก็ไม่รู้จะเริ่มอะไรอยู่ดี ที่เหลืออยู่หน้างาน
+let extra = null;  // งานนอก 3 อันดับที่ผู้ใช้เปิดโน้ตเอง (จากหน้างาน/หน้าวิชา) — ใส่ไว้ในชั้นโน้ตชั่วคราว
 const WHEN = { all: 'ทั้งหมด', today: 'วันนี้', tomorrow: 'พรุ่งนี้', week: '7 วันนี้' };
 export const homeState = () => ({ snapIdx, cur, pages: [...pages], noteMode: document.body.classList.contains('note-mode') });
 
@@ -38,6 +40,7 @@ function setVis(v) {
     document.body.classList.toggle('note-mode', nm);
     app.updateNav?.();
     if (nm) { if (!targeted) goPage(0, false); else syncNote(); if (!history.state?.note) pushBack({ note: 1 }); }
+    else if (extra) { extra = null; renderStage(); } // ออกจากโหมดโน้ต = เอางานที่เปิดชั่วคราวออก
     targeted = false;
   }
 }
@@ -115,7 +118,8 @@ function initSheetDrag() {
 /* ---------------- ชั้นหลัง: โน้ตหน้างาน ---------------- */
 function renderStage() {
   const keep = pages[cur];
-  pages = ranked().map(t => t.id);
+  pages = ranked().slice(0, TOP).map(t => t.id);
+  if (extra && task(extra) && !pages.includes(extra)) pages.push(extra); else if (!task(extra)) extra = null;
   stage.replaceChildren(...pages.map(id => {
     const t = task(id), s = subj(t.subject_id), notes = notesOf(id);
     const row = h('div.nrow', notes.length ? notes.map(noteEl) : h('div.nitem.empty',
@@ -204,6 +208,7 @@ export async function finish(id) {
 /** เปิดโน้ตของงาน: ดึงแผ่นลง แล้วเลื่อนชั้นหลังไปหน้าของงานนั้น */
 export function openNotes(id) {
   if (!$('#page').hidden) location.hash = '#/home';
+  if (!pages.includes(id)) { extra = id; renderStage(); }
   const i = pages.indexOf(id);
   targeted = true; setSnap(0); targeted = false; goPage(i < 0 ? 0 : i, true);
 }
@@ -215,6 +220,8 @@ function renderHome() {
   let list = ranked();
   if (hs.when !== 'all') list = list.filter(t => { const n = t.due_date ? daysBetween(td, t.due_date) : 99; return hs.when === 'today' ? n <= 0 : hs.when === 'tomorrow' ? n === 1 : n <= 7; });
   if (q) list = list.filter(t => `${t.title} ${t.description || ''} ${subj(t.subject_id).name}`.toLowerCase().includes(q));
+  const focus = !q && hs.when === 'all'; // ไม่ได้ค้นหา/กรอง = โชว์แค่ 3 งานแรก
+  const shown = focus ? list.slice(0, TOP) : list;
   const name = S().prefs.display_name;
   const hasSamples = S().tasks.some(t => t.source === 'sample' && !t.deleted_at);
   const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน...', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
@@ -230,8 +237,8 @@ function renderHome() {
       tile('shoot', 'ถ่ายรูป', 'กระดาน · ใบงาน', () => addTask('camera'))),
     h('label.search', h('span', { html: ic('search') }), input,
       h('button.chip', { type: 'button', 'aria-label': `กรองตามวัน: ${WHEN[hs.when]}`, onclick: () => { const ks = Object.keys(WHEN); hs.when = ks[(ks.indexOf(hs.when) + 1) % ks.length]; renderHome(); }, html: ic('cal') + `<span>${WHEN[hs.when]}</span>` })),
-    h('div.sec', h('h2', 'งานแนะนำวันนี้'), h('span', list.length ? `เรียงให้แล้ว · ${list.length} งาน` : '')),
-    list.length ? h('ul.tlist', list.slice(0, hs.limit).map((t, i) => h('li.trow',
+    h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : shown.length > 1 ? `ทำ ${shown.length} งานนี้ก่อน` : 'ทำงานนี้ก่อน'), h('span', list.length ? (focus ? 'เรียงตามกำหนดส่งให้แล้ว' : `${list.length} งาน`) : '')),
+    list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow',
       h('button.main', { onclick: () => openNotes(t.id) }, badge(subj(t.subject_id)),
         h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),
           h('small', dueLine(t), t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : ''))),
@@ -240,7 +247,7 @@ function renderHome() {
           h('div.row2', h('button.btn.primary', { onclick: () => addTask('text') }, '+ เพิ่มงานใหม่'),
             h('button.btn.ghost', { onclick: async () => { await app.store.addSamples(); toast('ใส่งานตัวอย่าง 6 งานแล้ว · ลบได้ในหน้าฉัน'); } }, 'ลองงานตัวอย่าง')))
       : h('div.empty-note', 'ไม่พบงานที่ตรงกับที่ค้นหา'),
-    list.length > hs.limit ? h('button.more', { onclick: () => { hs.limit += 10; renderHome(); } }, `ดูอีก ${list.length - hs.limit} งาน`) : '',
+    focus && list.length > TOP ? h('a.more', { href: '#/tasks' }, `งานอื่นอีก ${list.length - TOP} งาน · ดูในหน้างาน`, h('span', { html: ic('right') })) : '',
     hasSamples && list.length ? h('p.muted.center', 'มีงานตัวอย่างอยู่ · ลบทั้งหมดได้ในหน้า "ฉัน"') : '',
   );
   if (keepFocus) { const el = $('#home-q'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
