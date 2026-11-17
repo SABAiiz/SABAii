@@ -98,6 +98,17 @@ test('สรุปหน้าฉันนับจากงานจริง �
 });
 
 // ---------- แกะข้อความ ----------
+test('คำย่อที่นักเรียนพิมพ์: "พน." = พรุ่งนี้ · "ส่งศ." = ศุกร์ · ไม่แย่งคำอื่น', () => {
+  assert.equal(draftFromText('คณิต ส่งพน.', { now: NOW, subjects: SUBJ }).due_date, '2026-11-17');
+  assert.equal(draftFromText('คณิตส่งพน. 8.00', { now: NOW, subjects: SUBJ }).due_time, '08:00');
+  assert.equal(draftFromText('คณิต ส่งศ.', { now: NOW, subjects: SUBJ }).due_date, '2026-11-20');
+  assert.equal(draftFromText('ไปหาพนักงาน', { now: NOW, subjects: SUBJ }).due_date, null);
+  assert.equal(draftFromText('อ.สมชาย สั่งงาน', { now: NOW, subjects: SUBJ }).due_date, null);
+});
+test('พิมพ์แค่วิชา + วัน → ชื่องานตามประเภท ไม่เอาข้อความทั้งก้อน', () => {
+  assert.equal(draftFromText('คณิต ส่งพรุ่งนี้', { now: NOW, subjects: SUBJ }).title, 'การบ้าน');
+  assert.equal(draftFromText('คณิต สอบ ศ.', { now: NOW, subjects: SUBJ }).title, 'สอบ');
+});
 test('ตัวอย่างในสเปก: "คณิตทำแบบฝึกหัดหน้า 20 ส่งวันศุกร์" → วิชา/วันศุกร์/ไม่ระบุเวลา', () => {
   const d = draftFromText('คณิตทำแบบฝึกหัดหน้า 20 ส่งวันศุกร์', { now: NOW, subjects: SUBJ });
   assert.equal(d.subject_id, 's_math');
