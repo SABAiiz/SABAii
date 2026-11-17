@@ -3,45 +3,43 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>โครงแอปแบบเรียกรถ</title>
-  <meta name="description" content="โครงต้นแบบ: แผนที่เต็มจอ + แผ่นล่าง 3 ระดับ + ขั้นตอนเรียกรถ — ใช้เป็นโครงก่อนแปลงเป็นของ SABAii">
+  <title>SABAii โครงใหม่</title>
+  <meta name="description" content="โครง SABAii บนกลไกแบบแอปเรียกรถ: ด้านหลังเป็นโน้ตหน้างานของแต่ละวิชา · แผ่นล่างเป็นหน้าแรก · หน้างานแบบโปรเจกต์ + ปฏิทินเปิดปิดได้">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="shell.css">
-  <script type="module" src="shell.js"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Mali:wght@500;600&display=swap">
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="app.js"></script>
 </head>
 <body>
-  <div id="map" aria-label="แผนที่ (จำลอง)" role="application"></div>
+  <!-- ชั้นหลัง (ที่แอปเรียกรถเป็นแผนที่) = โน้ตหน้างาน ปัดขึ้นลงทีละงาน ปัดซ้ายขวาทีละโน้ต -->
+  <div id="stage" aria-label="โน้ตหน้างาน"></div>
 
-  <div class="floating top">
-    <button class="fab" id="menu-btn" aria-label="เมนู"></button>
-    <button class="fab hidden" id="back-btn" aria-label="ย้อนกลับ"></button>
-  </div>
-  <div class="floating side" id="side-ctrls">
-    <button class="fab" id="locate-btn" aria-label="กลับไปตำแหน่งของฉัน"></button>
+  <div id="note-ui">
+    <button class="fab" id="note-back" aria-label="กลับหน้าแรก"></button>
+    <div class="subjchip" id="note-chip"></div>
+    <div class="pager" id="note-pager" aria-hidden="true"></div>
+    <button class="fab" id="note-add" aria-label="เพิ่มโน้ต"></button>
+    <button class="peek" id="note-peek"></button>
   </div>
 
-  <section id="sheet" aria-label="แผ่นล่าง">
-    <div class="grab" data-drag><i></i></div>
-    <div class="sbody" id="sbody"></div>
-    <div class="sfoot" id="sfoot" hidden></div>
+  <section id="sheet" aria-label="แผ่นงาน">
+    <div class="grab" data-drag><i></i><small class="hint">ดึงลงเพื่อดูโน้ตหน้างาน</small></div>
+    <div class="pane pane-home" id="pane-home"></div>
+    <div class="pane pane-note" id="pane-note"></div>
   </section>
 
-  <div class="scrim" id="scrim"></div>
-  <nav id="drawer" aria-label="เมนูหลัก" aria-hidden="true"></nav>
+  <main id="page" hidden></main>
 
-  <dialog id="when-dlg">
-    <form method="dialog">
-      <h2>นัดเวลารับ</h2>
-      <p class="muted">เลือกวันและเวลาที่อยากให้มารับ</p>
-      <input type="datetime-local" id="when-input">
-      <div class="row2">
-        <button value="now" class="btn ghost">ตอนนี้</button>
-        <button value="set" class="btn primary">ตั้งเวลา</button>
-      </div>
-    </form>
-  </dialog>
+  <nav id="nav" aria-label="เมนูหลัก">
+    <a href="#/home" data-r="home"></a>
+    <a href="#/tasks" data-r="tasks"></a>
+    <a href="#/me" data-r="me"></a>
+  </nav>
+
+  <div id="modal-scrim"></div>
+  <section id="modal" role="dialog" aria-modal="true" hidden></section>
+  <input type="file" id="file" accept="image/*" hidden>
   <div id="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

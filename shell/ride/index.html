@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>โครงแอปแบบเรียกรถ</title>
+  <meta name="description" content="โครงต้นแบบ: แผนที่เต็มจอ + แผ่นล่าง 3 ระดับ + ขั้นตอนเรียกรถ — ใช้เป็นโครงก่อนแปลงเป็นของ SABAii">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="shell.css">
+  <script type="module" src="shell.js"></script>
+</head>
+<body>
+  <div id="map" aria-label="แผนที่ (จำลอง)" role="application"></div>
+
+  <div class="floating top">
+    <button class="fab" id="menu-btn" aria-label="เมนู"></button>
+    <button class="fab hidden" id="back-btn" aria-label="ย้อนกลับ"></button>
+  </div>
+  <div class="floating side" id="side-ctrls">
+    <button class="fab" id="locate-btn" aria-label="กลับไปตำแหน่งของฉัน"></button>
+  </div>
+
+  <section id="sheet" aria-label="แผ่นล่าง">
+    <div class="grab" data-drag><i></i></div>
+    <div class="sbody" id="sbody"></div>
+    <div class="sfoot" id="sfoot" hidden></div>
+  </section>
+
+  <div class="scrim" id="scrim"></div>
+  <nav id="drawer" aria-label="เมนูหลัก" aria-hidden="true"></nav>
+
+  <dialog id="when-dlg">
+    <form method="dialog">
+      <h2>นัดเวลารับ</h2>
+      <p class="muted">เลือกวันและเวลาที่อยากให้มารับ</p>
+      <input type="datetime-local" id="when-input">
+      <div class="row2">
+        <button value="now" class="btn ghost">ตอนนี้</button>
+        <button value="set" class="btn primary">ตั้งเวลา</button>
+      </div>
+    </form>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
