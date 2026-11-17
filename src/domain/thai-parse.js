@@ -59,7 +59,8 @@ export function findDate(t, now = new Date()) {
   const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const plus = n => { const d = new Date(base); d.setDate(d.getDate() + n); return d; };
 
-  const rel = [[/มะรืน(?:นี้)?/, 2], [/พรุ่งนี้/, 1], [/วันนี้|คืนนี้|เย็นนี้|ตอนนี้/, 0]];
+  // "พน." = พรุ่งนี้ (คำย่อที่นักเรียนพิมพ์บ่อย) — ต้องอยู่เดี่ยว ๆ หรือตามหลัง ส่ง/สอบ กัน "พนักงาน"
+  const rel = [[/มะรืน(?:นี้)?/, 2], [/พรุ่งนี้|พรุ้งนี้|(?:(?<=^|\s|ส่ง|สอบ|ภายใน)พน\.?(?=\s|\d|$))/, 1], [/วันนี้|คืนนี้|เย็นนี้|ตอนนี้/, 0]];
   for (const [re, n] of rel) { const m = t.match(re); if (m) return { date: plus(n), text: m[0] }; }
 
   // วันที่ 20 / 20 พ.ย. / 20/11 / 20 พฤศจิกายน 2569
@@ -89,8 +90,8 @@ export function findDate(t, now = new Date()) {
     const re = new RegExp(`(?:วัน)?${esc(k)}(\\s?(?:หน้า|ถัดไป))?`);
     const mm = t.match(re);
     if (!mm) continue;
-    // คำย่อ "จ." "อ." ใช้ได้เฉพาะเมื่อตามด้วยช่องว่าง/ตัวเลข/ท้ายข้อความ — กัน "อ.สมชาย"
-    if (short && !new RegExp(`(?:^|\\s|วัน)${esc(k)}(?=\\s|\\d|$)`).test(t)) continue;
+    // คำย่อ "จ." "อ." ใช้ได้เฉพาะเมื่ออยู่เดี่ยว ๆ หรือตามหลัง วัน/ส่ง/สอบ และตามด้วยช่องว่าง/ตัวเลข/"หน้า"/ท้ายข้อความ — กัน "อ.สมชาย"
+    if (short && !new RegExp(`(?:^|\\s|วัน|ส่ง|สอบ|ภายใน)${esc(k)}(?=\\s|\\d|หน้า|$)`).test(t)) continue;
     let diff = (dow - base.getDay() + 7) % 7;
     if (diff === 0) diff = 7;
     if (mm[1] && diff < 7) diff += 7;
@@ -139,7 +140,8 @@ export function parseTask(text, { now = new Date(), subjects = [] } = {}) {
     .replace(/\s{2,}/g, ' ')
     .replace(/^[\s·,:;\-–—]+|[\s·,:;\-–—]+$/g, '')
     .trim();
-  if (title.length < 2) title = t;
+  // เหลือแค่วิชา/วัน เช่น "คณิต ส่งพรุ่งนี้" → ชื่องานตามประเภท ไม่เอาข้อความทั้งก้อนมาเป็นชื่อ
+  if (title.length < 2) title = (subj || date || time) ? { exam: 'สอบ', project: 'งานกลุ่ม', activity: 'กิจกรรม' }[type] || 'การบ้าน' : t;
 
   return {
     title: title.slice(0, 200),

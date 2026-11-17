@@ -6,9 +6,10 @@ import { draftsFromText } from '../domain/parse.js';
 import { TYPES, newId } from '../domain/tasks.js';
 import { pickImage, prepareImage } from './images.js';
 import { speechSupported, startListening } from './voice.js';
-import { app, S, task, fullTitle, notesOf, urlOf, visibleSubjects } from './shared.js';
+import { app, S, subj, task, today, dueInfo, fullTitle, notesOf, urlOf, visibleSubjects } from './shared.js';
+import { badge } from '../ui/kit.js';
+import { addDaysYMD, fromYMD, relDay, DOW_SHORT } from '../domain/dates.js';
 
-const subjOptions = sel => [h('option', { value: '' }, 'ไม่ระบุวิชา'), ...visibleSubjects().map(s => h('option', { value: s.id, selected: s.id === sel }, s.name))];
 const typeOptions = sel => Object.entries(TYPES).map(([k, v]) => h('option', { value: k, selected: k === sel }, v));
 const micBlock = msg => h('div', { style: { textAlign: 'center' } }, h('div.mic', { html: ic('mic') }), h('p.muted', msg));
 
@@ -18,68 +19,88 @@ async function getImage(camera) {
   try { return await prepareImage(f); } catch (e) { toast(e.message); return null; }
 }
 
-/** kind: text · voice · photo · camera */
+/* ---------- ชิปเลือกเร็ว (แทนช่องกรอก) ---------- */
+const nameShort = s => s.name.replace(/^ภาษา/, '');
+/** ชิปวิชา: แตะเลือก · แตะซ้ำ = ไม่ระบุ */
+function subjChips(sel, onPick) {
+  return h('div.qchips', { role: 'group', 'aria-label': 'วิชา' }, visibleSubjects().map(s =>
+    h('button.qchip', { type: 'button', 'aria-pressed': String(s.id === sel), style: { '--c': s.color }, onclick: () => onPick(s.id === sel ? null : s.id) }, nameShort(s))));
+}
+/** ชิปวัน: วันนี้ · พรุ่งนี้ · 5 วันถัดไป · เลือกวัน (ปฏิทิน) · ไม่มีวันส่ง */
+function dayChips(sel, onPick) {
+  const td = today(), days = Array.from({ length: 7 }, (_, i) => addDaysYMD(td, i));
+  const label = (d, i) => i === 0 ? 'วันนี้' : i === 1 ? 'พรุ่งนี้' : `${DOW_SHORT[fromYMD(d).getDay()]} ${fromYMD(d).getDate()}`;
+  const other = sel && !days.includes(sel);
+  const pick = h('input.qdate', { type: 'date', min: td, max: addDaysYMD(td, 365), value: other ? sel : '', 'aria-label': 'เลือกวันอื่น', onchange: e => { if (e.target.value) onPick(e.target.value); } });
+  return h('div.qchips', { role: 'group', 'aria-label': 'วันส่ง' },
+    days.map((d, i) => h('button.qchip', { type: 'button', 'aria-pressed': String(d === sel), onclick: () => onPick(d === sel ? null : d) }, label(d, i))),
+    h('label.qchip.qpick', { 'aria-pressed': String(!!other) }, h('span', { html: ic('cal') }), other ? relDay(sel, td) : 'วันอื่น', pick));
+}
+const dueText = d => {
+  const t = { due_date: d.due_date, due_time: d.due_time, type: d.type };
+  return d.due_date ? dueInfo(t).text : 'ไม่มีวันส่ง';
+};
+/** ปีแปลก ๆ (เช่นพิมพ์ปีผิดในช่องวันที่) ไม่รับ */
+const sane = ymd => !ymd || (ymd >= addDaysYMD(today(), -366) && ymd <= addDaysYMD(today(), 3 * 366)) ? ymd : null;
+
+/** เพิ่มงานแบบเร็ว: พิมพ์ → เห็นผลทันที → แตะชิปแก้ → บันทึก (ไม่มีหน้าตรวจสอบแยก) · kind: text · voice · photo · camera */
 export async function addTask(kind = 'text', preset = '') {
   if (kind === 'voice' && !speechSupported()) return voiceUnavailable('เครื่องนี้ใช้การพูดไม่ได้');
   let img = null;
   if (kind === 'photo' || kind === 'camera') { img = await getImage(kind === 'camera'); if (!img) return; }
-  const ta = h('textarea.field', { id: 'add-text', 'aria-label': 'งานที่ต้องทำ',
-    placeholder: img ? 'งานในรูปคืออะไร? เช่น "ฟิสิกส์ แบบฝึก 4.1 ส่งศุกร์"' : 'เช่น "คณิต ใบงาน 7 ส่งศุกร์"\nวางข้อความจากครูได้เลย — หลายงานก็ได้ บรรทัดละงาน' });
+  const ta = h('textarea.field.quick', { id: 'add-text', rows: 2, 'aria-label': 'งานที่ต้องทำ',
+    placeholder: img ? 'งานในรูปคืออะไร? เช่น "ฟิสิกส์ แบบฝึก 4.1 ส่งศ."' : 'เช่น "คณิต ใบงาน 7 ส่งพน."' });
   ta.value = preset;
-  let rec = null;
-  const body = h('div',
-    img ? h('img.preview', { src: img.url, alt: 'รูปที่เลือก' }) : '',
-    kind === 'voice' ? micBlock('กำลังฟัง… พูดชื่องาน วิชา และวันส่ง') : '',
-    h('label.flabel', { for: 'add-text' }, img ? 'ชื่องาน (ยังไม่มีระบบอ่านรูปอัตโนมัติ — พิมพ์เอง)' : 'งานที่ต้องทำ'), ta);
-  const m = openModal({
-    title: kind === 'voice' ? 'พูดงาน' : img ? 'งานจากรูป' : 'พิมพ์งาน', body,
-    foot: h('button.btn.primary', { onclick: () => { rec?.stop(); review(ta.value, img); } }, 'ตรวจสอบก่อนบันทึก'),
-    isDirty: () => !!ta.value.trim() || !!img,
+  const ov = { subject_id: undefined, due_date: undefined }; // ที่ผู้ใช้แตะชิปเลือกเอง (ใช้กับงานเดียว)
+  const preview = h('div.qpreview', { 'aria-live': 'polite' });
+  const key = newId('d');
+  let drafts = [], rec = null, saving = false;
+  const saveBtn = h('button.btn.primary', { id: 'add-save', onclick: () => save() }, 'บันทึก');
+
+  const current = () => drafts.map((d, i) => drafts.length === 1 ? { ...d,
+    subject_id: ov.subject_id !== undefined ? ov.subject_id : d.subject_id,
+    due_date: ov.due_date !== undefined ? ov.due_date : d.due_date } : d);
+  function paint() {
+    drafts = draftsFromText(ta.value, { now: new Date(), subjects: S().subjects });
+    if (!drafts.length && img) drafts = [{ title: 'งานจากรูป', subject_id: null, type: 'homework', due_date: null, due_time: null }];
+    const list = current();
+    preview.replaceChildren(...list.map(d => h('div.qrow', badge(subj(d.subject_id)),
+      h('div', h('b', d.title), h('small', dueText(d))))));
+    if (list.length === 1) preview.append(
+      subjChips(list[0].subject_id, id => { ov.subject_id = id; paint(); }),
+      dayChips(list[0].due_date, d => { ov.due_date = d; paint(); }));
+    saveBtn.disabled = !list.length;
+    saveBtn.textContent = list.length > 1 ? `บันทึก ${list.length} งาน` : 'บันทึก';
+  }
+  async function save() {
+    const items = current().filter(d => d.title).map((d, i) => ({ title: d.title, subject_id: d.subject_id || null, type: d.type || 'homework',
+      due_date: sane(d.due_date), due_time: d.due_time || null, source: img ? 'photo' : kind === 'voice' ? 'voice' : 'text', draft_key: `${key}-${i}` }));
+    if (!items.length || saving) return;
+    saving = true; saveBtn.disabled = true; rec?.stop();
+    try {
+      const saved = await app.store.addTasks(items);
+      if (img && saved[0]) await app.store.addAttachment(saved[0].id, { kind: 'image', blob: img.blob, size: img.blob.size, mime_type: img.blob.type });
+      closeModal();
+      toast(`บันทึก ${saved.length} งานแล้ว`, saved[0] ? { label: 'ดูโน้ต', run: () => app.openNotes(saved[0].id) } : null);
+    } catch (e) { saving = false; saveBtn.disabled = false; toast(e.message || 'บันทึกไม่สำเร็จ'); }
+  }
+  ta.addEventListener('input', paint);
+  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); save(); } });
+  openModal({
+    title: kind === 'voice' ? 'พูดงาน' : img ? 'งานจากรูป' : 'พิมพ์งาน',
+    body: h('div', img ? h('img.preview.small', { src: img.url, alt: 'รูปที่เลือก' }) : '', kind === 'voice' ? micBlock('กำลังฟัง… พูดชื่องาน วิชา และวันส่ง') : '', ta, preview),
+    foot: saveBtn,
+    isDirty: () => !saving && (!!ta.value.trim() || !!img),
     onClose: () => rec?.abort(),
   });
+  paint();
   if (kind === 'voice') {
-    rec = startListening({ onText: t => { ta.value = t; }, onEnd: (t, err) => { if (err && !t) { m.close(true); voiceUnavailable(err === 'not-allowed' ? 'ไม่ได้อนุญาตให้ใช้ไมโครโฟน' : 'ฟังไม่ได้ยิน ลองใหม่หรือพิมพ์แทน'); } } });
+    rec = startListening({ onText: t => { ta.value = t; paint(); }, onEnd: (t, err) => { if (err && !t) { closeModal(); voiceUnavailable(err === 'not-allowed' ? 'ไม่ได้อนุญาตให้ใช้ไมโครโฟน' : 'ฟังไม่ได้ยิน ลองใหม่หรือพิมพ์แทน'); } } });
   } else setTimeout(() => ta.focus(), 320);
 }
 function voiceUnavailable(why) {
-  openModal({ title: 'พูดงาน', body: h('div', h('p', why), h('p.muted', 'พิมพ์หรือวางข้อความแทนได้ — ระบบแยกวิชาและวันส่งให้เหมือนกัน')),
+  openModal({ title: 'พูดงาน', body: h('div', h('p', why), h('p.muted', 'พิมพ์แทนได้ — ระบบแยกวิชาและวันส่งให้เหมือนกัน')),
     foot: h('button.btn.primary', { onclick: () => addTask('text') }, 'พิมพ์แทน') });
-}
-
-function review(text, img) {
-  const drafts = draftsFromText(text, { now: new Date(), subjects: S().subjects });
-  if (!drafts.length) {
-    if (!img) { toast('ยังไม่ได้พิมพ์อะไรเลย'); return; }
-    drafts.push({ title: 'งานจากรูป', subject_id: null, type: 'homework', due_date: null, due_time: null, flags: { noSubject: true, noDate: true } });
-  }
-  const key = newId('d'); // กันกดบันทึกซ้ำ: ร่างชุดเดียวกันบันทึกได้ครั้งเดียว
-  const rows = drafts.map((d, i) => {
-    const title = h('input.field', { value: d.title, 'aria-label': `ชื่องานที่ ${i + 1}`, id: `d${i}-title` });
-    const sub = h('select.field', { 'aria-label': 'วิชา', id: `d${i}-subj` }, subjOptions(d.subject_id));
-    const type = h('select.field', { 'aria-label': 'ประเภท', id: `d${i}-type` }, typeOptions(d.type));
-    const date = h('input.field', { type: 'date', value: d.due_date || '', 'aria-label': 'วันส่ง', id: `d${i}-date` });
-    const time = h('input.field', { type: 'time', value: d.due_time || '', 'aria-label': 'เวลาส่ง', id: `d${i}-time` });
-    const warn = [d.flags?.noSubject && 'ไม่รู้วิชา', d.flags?.noDate && 'ไม่รู้วันส่ง', (d.flags?.noTime || (d.due_date && !d.due_time)) && 'ไม่ได้ระบุเวลา — ระบบจะไม่เดาเวลาให้'].filter(Boolean);
-    const el = h('div.draft', title, h('div.frow', sub, type), h('div.frow', date, time), warn.length ? h('p.warn', warn.join(' · ')) : '',
-      drafts.length > 1 ? h('button.link', { onclick: () => { el.remove(); rows.splice(rows.indexOf(row), 1); saveBtn.textContent = `บันทึก ${rows.length} งาน`; } }, 'ไม่เอางานนี้') : '');
-    const row = { el, i, get: () => ({ title: title.value.trim(), subject_id: sub.value || null, type: type.value, due_date: date.value || null, due_time: time.value || null, source: img ? 'photo' : 'text', draft_key: `${key}-${i}` }) };
-    return row;
-  });
-  const saveBtn = h('button.btn.primary', {
-    onclick: async () => {
-      const items = rows.map(r => r.get()).filter(x => x.title);
-      if (!items.length) return toast('ใส่ชื่องานก่อนนะ');
-      saveBtn.disabled = true;
-      try {
-        const saved = await app.store.addTasks(items);
-        if (img && saved[0]) await app.store.addAttachment(saved[0].id, { kind: 'image', blob: img.blob, size: img.blob.size, mime_type: img.blob.type });
-        closeModal();
-        toast(`บันทึก ${saved.length} งานแล้ว`, saved[0] ? { label: 'ดูโน้ต', run: () => app.openNotes(saved[0].id) } : null);
-      } catch (e) { saveBtn.disabled = false; toast(e.message || 'บันทึกไม่สำเร็จ'); }
-    },
-  }, rows.length === 1 ? 'บันทึกงาน' : `บันทึก ${rows.length} งาน`);
-  openModal({ title: 'ตรวจสอบก่อนบันทึก', body: h('div', img ? h('img.preview.small', { src: img.url, alt: 'รูปที่แนบ' }) : '', rows.map(r => r.el)),
-    foot: [h('button.btn.ghost', { onclick: () => addTask('text', text) }, 'แก้ข้อความ'), saveBtn], isDirty: () => !saveBtn.disabled });
 }
 
 /** เพิ่มโน้ตให้งาน: photo · camera · text · voice · pick (ให้เลือก) */
@@ -114,25 +135,33 @@ export async function addNote(id, kind) {
   if (kind === 'voice') rec = startListening({ onText: v => { ta.value = v; }, onEnd: () => {} }); else setTimeout(() => ta.focus(), 320);
 }
 
+/** แก้ไขงาน: ชื่อ · วิชา · วัน · เวลา ก่อน — ที่เหลือพับไว้ใน "เพิ่มเติม" */
 export function editTask(id) {
   const t = task(id); if (!t) return;
-  const f = (tag, props, label) => { const el = h(tag, props); return [h('label.flabel', { for: props.id }, label), el]; };
-  const [lt, title] = f('input.field', { id: 'e-title', value: t.title, maxlength: 200 }, 'ชื่องาน');
-  const sub = h('select.field', { id: 'e-subj' }, subjOptions(t.subject_id));
-  const type = h('select.field', { id: 'e-type' }, typeOptions(t.type));
-  const date = h('input.field', { type: 'date', id: 'e-date', value: t.due_date || '' });
+  const st = { subject_id: t.subject_id, due_date: t.due_date };
+  const title = h('input.field', { id: 'e-title', value: t.title, maxlength: 200, 'aria-label': 'ชื่องาน' });
+  const subjBox = h('div'), dayBox = h('div');
+  const paintChips = () => {
+    subjBox.replaceChildren(subjChips(st.subject_id, v => { st.subject_id = v; paintChips(); }));
+    dayBox.replaceChildren(dayChips(st.due_date, v => { st.due_date = v; paintChips(); }));
+  };
+  paintChips();
   const time = h('input.field', { type: 'time', id: 'e-time', value: t.due_time || '' });
+  const type = h('select.field', { id: 'e-type' }, typeOptions(t.type));
   const place = h('input.field', { id: 'e-place', value: t.place || '', placeholder: 'เช่น ห้อง 412' });
   const est = h('input.field', { type: 'number', id: 'e-est', min: 5, step: 5, value: t.est_min ? String(t.est_min) : '', placeholder: 'ไม่ระบุ' });
-  const desc = h('textarea.field.short', { id: 'e-desc', placeholder: 'รายละเอียดเพิ่มเติม' }); desc.value = t.description || '';
+  const desc = h('textarea.field.short', { id: 'e-desc', placeholder: 'รายละเอียด' }); desc.value = t.description || '';
   const lab = (id2, txt, el) => h('div', h('label.flabel', { for: id2 }, txt), el);
   const notes = notesOf(id);
   openModal({
-    title: 'แก้ไขงาน', isDirty: () => title.value.trim() !== t.title || desc.value !== (t.description || ''),
-    body: h('div', lt, title, h('div.frow', lab('e-subj', 'วิชา', sub), lab('e-type', 'ประเภท', type)),
-      h('div.frow', lab('e-date', 'วันส่ง / วันสอบ', date), lab('e-time', 'เวลา (ไม่ใส่ก็ได้)', time)),
-      h('div.frow', lab('e-place', 'สถานที่', place), lab('e-est', 'ใช้เวลาประมาณ (นาที)', est)),
-      lab('e-desc', 'รายละเอียด', desc),
+    title: 'แก้ไขงาน', isDirty: () => title.value.trim() !== t.title,
+    body: h('div', title,
+      h('div.flabel', 'วิชา'), subjBox,
+      h('div.flabel', 'วันส่ง'), dayBox,
+      lab('e-time', 'เวลา (ไม่ใส่ก็ได้)', time),
+      h('details.more-fields', h('summary', 'เพิ่มเติม'),
+        h('div.frow', lab('e-type', 'ประเภท', type), lab('e-place', 'สถานที่', place)),
+        lab('e-est', 'ใช้เวลาประมาณ (นาที)', est), lab('e-desc', 'รายละเอียด', desc)),
       h('button.list-btn', { onclick: async () => { await app.store.patchTask(id, { pinned_at: t.pinned_at ? null : new Date().toISOString() }); closeModal(); toast(t.pinned_at ? 'เลิกปักหมุดแล้ว' : 'ปักไว้บนสุดแล้ว'); }, html: ic('pin') + `<span>${t.pinned_at ? 'เลิกปักหมุด' : 'ปักไว้บนสุดของงานแนะนำ'}</span>` }),
       notes.length ? h('div', h('label.flabel', `โน้ต ${notes.length} รายการ`), h('div.strip', notes.map(a => h('div.notewrap', miniOf(a),
         h('button.del', { 'aria-label': 'ลบโน้ตนี้', html: ic('trash'), onclick: async () => {
@@ -146,7 +175,7 @@ export function editTask(id) {
       } }, 'ลบ'),
       h('button.btn.primary', { onclick: async () => {
         if (!title.value.trim()) return toast('ต้องมีชื่องาน');
-        await app.store.patchTask(id, { title: title.value.trim(), subject_id: sub.value || null, type: type.value, due_date: date.value || null, due_time: time.value || null, place: place.value.trim(), est_min: +est.value || null, description: desc.value.trim() });
+        await app.store.patchTask(id, { title: title.value.trim(), subject_id: st.subject_id || null, type: type.value, due_date: sane(st.due_date), due_time: time.value || null, place: place.value.trim(), est_min: +est.value || null, description: desc.value.trim() });
         closeModal(); toast('บันทึกแล้ว');
       } }, 'บันทึก')],
   });

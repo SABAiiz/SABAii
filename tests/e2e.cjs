@@ -34,7 +34,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const shot = async n => { if (!SHOTS) return; await page.evaluate(() => document.getElementById('toast')?.classList.remove('show')); await wait(300); await page.screenshot({ path: `${SHOTS}/${n}.png` }); };
   const tasks = () => page.evaluate(() => window.__sabaii.state.tasks.filter(t => !t.deleted_at));
   const ui = () => page.evaluate(() => window.__ui.homeState());
-  const typeAdd = async text => { await page.locator('.tile', { hasText: 'พิมพ์' }).click(); await page.fill('#add-text', text); await page.getByRole('button', { name: 'ตรวจสอบก่อนบันทึก' }).click(); };
+  const typeAdd = async text => { await page.locator('.tile', { hasText: 'พิมพ์' }).click(); await page.fill('#add-text', text); };
+  const pressed = () => page.locator('.qchip[aria-pressed="true"]').allTextContents();
 
   // หน้าแรกว่าง
   check('หน้าแรกว่าง: "วันนี้ยังไม่มีงานที่ต้องทำ" + ปุ่มเพิ่ม', await page.getByText('วันนี้ยังไม่มีงานที่ต้องทำ').isVisible() && await page.getByRole('button', { name: '+ เพิ่มงานใหม่' }).isVisible());
@@ -43,17 +44,18 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   // A: พิมพ์งานเดียว
   await typeAdd('คณิตทำแบบฝึกหัดหน้า 20 ส่งวันศุกร์');
-  const subjA = await page.locator('#d0-subj option:checked').textContent();
-  check('A แยกวิชา "คณิตศาสตร์" ได้', subjA === 'คณิตศาสตร์', subjA);
-  check('A ไม่ระบุเวลา → ช่องเวลาว่าง และบอกผู้ใช้', (await page.inputValue('#d0-time')) === '' && await page.getByText(/ไม่ได้ระบุเวลา — ระบบจะไม่เดาเวลาให้/).isVisible());
-  await shot('02-review');
-  await page.getByRole('button', { name: 'บันทึกงาน' }).click();
+  const pA = await pressed();
+  check('A ไม่มีหน้าตรวจสอบแยก: พิมพ์แล้วเห็นผลทันที · ชิปวิชา "คณิตศาสตร์" + วันศุกร์ถูกเลือกให้', pA.includes('คณิตศาสตร์') && pA.some(x => /ศ\. 20/.test(x)), pA.join(','));
+  const dueA = await page.locator('.qrow small').textContent();
+  check('A ไม่ระบุเวลา → ไม่เดาเวลาให้', dueA === 'ส่งศุกร์', dueA);
+  await shot('02-quick-add');
+  await page.locator('#add-save').click();
   await wait(400);
   check('A งานโผล่ในหน้าแรก', (await page.locator('.pane-home .trow').count()) === 1);
 
   // B: หลายงาน + กดบันทึกรัว ๆ ต้องไม่ได้งานซ้ำ
   await typeAdd('ไทย ทำใบงานบทที่ 2 ส่งพรุ่งนี้\nอังกฤษ ท่องศัพท์วันศุกร์\nวิทย์ ทำรายงานส่งสัปดาห์หน้า');
-  check('B แยกได้ 3 งาน', (await page.locator('.draft').count()) === 3);
+  check('B แยกได้ 3 งาน', (await page.locator('.qrow').count()) === 3);
   const save3 = page.getByRole('button', { name: 'บันทึก 3 งาน' });
   await save3.click(); await save3.click({ force: true }).catch(() => {});
   await wait(500);
@@ -61,6 +63,17 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const rows = await page.locator('.pane-home .trow b').allTextContents();
   check('งานแนะนำเรียงตามกำหนดส่ง (ไทยพรุ่งนี้มาก่อน)', /ใบงานบทที่ 2/.test(rows[0]), rows.join(' | '));
   await shot('03-home-list');
+
+  // แตะชิปแทนกรอก: "พน." = พรุ่งนี้ · แตะวิชาอื่น → เปลี่ยน
+  await typeAdd('คณิต ใบงาน 7 ส่งพน.');
+  check('"ส่งพน." → ชิปพรุ่งนี้ถูกเลือก · ชื่องาน "ใบงาน 7"', (await pressed()).includes('พรุ่งนี้') && (await page.locator('.qrow b').textContent()) === 'ใบงาน 7');
+  await page.locator('.qchip', { hasText: /^ไทย$/ }).click();
+  check('แตะชิปวิชาไทย → เปลี่ยนวิชา', (await pressed()).includes('ไทย'));
+  await shot('02b-quick-add');
+  await page.locator('#add-save').click(); await wait(400);
+  const q7 = (await tasks()).find(t => t.title === 'ใบงาน 7');
+  check('บันทึกด้วยปุ่มเดียว · วิชา/วันตามชิป', !!q7 && q7.due_date === '2026-11-17' && (await page.evaluate(id => window.__sabaii.state.subjects.find(s => s.id === id)?.name, q7.subject_id)) === 'ภาษาไทย');
+  await page.evaluate(id => window.__sabaii.purgeTask(id), q7.id); await wait(200);
 
   // H: พิมพ์ค้างแล้วกดย้อนกลับ ต้องถามก่อนทิ้ง
   await page.locator('.tile', { hasText: 'พิมพ์' }).click();
@@ -80,9 +93,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await fc.setFiles({ name: 'board.jpg', mimeType: 'image/jpeg', buffer: jpg });
   await page.waitForSelector('.modal .preview');
   await page.fill('#add-text', 'ฟิสิกส์ แบบฝึกหัด 4.1 ข้อ 1-15 ส่งศุกร์ 8.00');
-  await page.getByRole('button', { name: 'ตรวจสอบก่อนบันทึก' }).click();
-  check('ถ่ายรูป: แยกวิชา + เวลา 08:00 ที่พิมพ์มา', (await page.locator('#d0-subj option:checked').textContent()) === 'ฟิสิกส์' && (await page.inputValue('#d0-time')) === '08:00');
-  await page.getByRole('button', { name: 'บันทึกงาน' }).click(); await wait(500);
+  check('ถ่ายรูป: แยกวิชา + เวลา 08:00 ที่พิมพ์มา', (await pressed()).includes('ฟิสิกส์') && /08:00/.test(await page.locator('.qrow small').textContent()));
+  await page.locator('#add-save').click(); await wait(500);
   const phy = (await tasks()).find(t => /4\.1/.test(t.title));
   check('ถ่ายรูป: รูปเก็บเป็นโน้ตของงาน', (await page.evaluate(id => window.__sabaii.attachmentsOf(id).filter(a => a.kind === 'image' && a.blob).length, phy.id)) === 1);
 
@@ -185,7 +197,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator('#nav a[data-r="home"]').click(); await wait(300);
   await ctx.setOffline(true);
   await typeAdd('เคมี ทำแลป ส่งพุธ');
-  await page.getByRole('button', { name: 'บันทึกงาน' }).click(); await wait(300);
+  await page.locator('#add-save').click(); await wait(300);
   await ctx.setOffline(false);
   await page.reload(); await page.waitForSelector('.pane-home .trow');
   const n = (await tasks()).length;
