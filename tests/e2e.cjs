@@ -220,6 +220,14 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.goto(BASE + '#/home'); await page.waitForSelector('.tiles'); await wait(300);
   await shot('09-home-375');
 
+  // ธีมสว่างอย่างเดียว: เครื่องตั้งโหมดมืด หรือเคยเลือกธีมมืดไว้ ก็ยังสว่าง · ไม่มีเมนูธีมสี
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.evaluate(() => window.__sabaii.setPref('theme', 'dark'));
+  await page.goto(BASE + '#/me'); await page.waitForSelector('.stats'); await wait(200);
+  const bg = await page.evaluate(() => getComputedStyle(document.getElementById('page')).backgroundColor);
+  check('ธีมสว่างอย่างเดียว (เครื่องโหมดมืด + เคยเลือกมืด → ยังพื้นขาว) · ไม่มีเมนูธีมสี', bg === 'rgb(255, 255, 255)' && (await page.locator('.list-btn', { hasText: 'ธีมสี' }).count()) === 0, bg);
+  await page.emulateMedia({ colorScheme: 'light' });
+
   // นิ้ว (จอสัมผัสจริงผ่าน CDP): แผ่นตามนิ้ว · แตะเฉย ๆ ไม่ขยับ · ดันขึ้นสุดชิดขอบจอบน · เต็มจอแล้วดึงลงจากรายการได้
   {
     const tctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block' });

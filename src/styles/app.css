@@ -1,4 +1,4 @@
-/* SABAii.com 0.4 — สีตามโลโก้ Student OS: กรมท่า #0B1B4D (ตัวหนังสือ/ปุ่มเข้ม) + ฟ้าสด #0A6CF1 (ปุ่มลงมือ/จุดเด่น)
+/* SABAii.com 0.4 — ธีมสว่างอย่างเดียว (เจ้าของสั่ง 17 พ.ย. 69) · สีตามโลโก้ Student OS: กรมท่า #0B1B4D (ตัวหนังสือ/ปุ่มเข้ม) + ฟ้าสด #0A6CF1 (ปุ่มลงมือ/จุดเด่น)
    ชื่อตัวแปร --green ยังใช้เป็น "สีปุ่มลงมือ" เพื่อให้ย้ายกลับไปแอปหลักได้ง่าย */
 :root {
   --blue: #0A6CF1; --blue-deep: #0B1B4D; --blue-light: #E7F0FE;
@@ -12,16 +12,6 @@
   --sheet-vis: 600px; --low: 300px;
   --hand: "Mali", "Noto Sans Thai Looped", cursive;
   color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #081236; --surface: #13204A; --surface-2: #1C2B5C; --border: #233466; --text: #E8EEFB; --text-2: #9EACCB; --ink: #E8EEFB;
-    --blue: #3D8BFF; --green: #2F80FF; --green-press: #1F6DE8; --blue-light: #142A63; --sheet-bg: #0C1740; --stage: #050C26; --error-light: #3A1D25; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #081236; --surface: #13204A; --surface-2: #1C2B5C; --border: #233466; --text: #E8EEFB; --text-2: #9EACCB; --ink: #E8EEFB;
-  --blue: #3D8BFF; --green: #2F80FF; --green-press: #1F6DE8; --blue-light: #142A63; --sheet-bg: #0C1740; --stage: #050C26; --error-light: #3A1D25; color-scheme: dark;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -73,7 +63,6 @@ button, a { cursor: pointer; border: 0; background: none; text-decoration: none;
 .viewer img { max-width: 100vw; max-height: 100dvh; object-fit: contain; }
 .viewer .fab { position: fixed; right: 16px; top: calc(12px + env(safe-area-inset-top, 0px)); }
 .nitem.empty { background: transparent; box-shadow: none; border: 2px dashed rgba(0,0,0,.18); display: grid; place-items: center; text-align: center; color: var(--text-2); padding: 20px; }
-:root[data-theme="dark"] .nitem.empty { border-color: rgba(255,255,255,.2); }
 .nitem.empty button { margin-top: 12px; }
 
 #note-ui > * { position: fixed; z-index: 15; transition: opacity .2s, transform .25s; }
@@ -84,7 +73,6 @@ body:not(.note-mode) #note-ui > * { opacity: 0; pointer-events: none; }
 .subjchip .badge { width: 24px; height: 24px; border-radius: 8px; font-size: 9.5px; }
 .pager { right: 12px; top: calc(110px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 7px; align-items: center; }
 .pager i { width: 7px; height: 7px; border-radius: 4px; background: rgba(0,0,0,.2); transition: height .2s; }
-:root[data-theme="dark"] .pager i { background: rgba(255,255,255,.25); }
 .pager i.on { height: 22px; background: var(--ink); }
 .pager small { font-size: 10px; color: var(--text-2); writing-mode: vertical-rl; margin-top: 4px; }
 .peek { left: 50%; transform: translateX(-50%); bottom: calc(var(--sheet-vis) - 2px); height: 36px; padding: 0 18px; border-radius: 14px 14px 0 0; background: var(--sheet-bg); display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-2); font-weight: 600; white-space: nowrap; }

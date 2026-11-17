@@ -5,16 +5,12 @@ import { summary, isLive, nextExam } from '../domain/tasks.js';
 import { SUBJECT_COLORS } from '../data/store.js';
 import { app, S, subj, today } from './shared.js';
 
-const THEME = { system: 'ตามเครื่อง', light: 'สว่าง', dark: 'มืด' };
-export function applyTheme(t) {
-  if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-  else delete document.documentElement.dataset.theme;
-}
+/** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
+export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
 
 export function meView(root) {
   const s = S(), td = today(), sum = summary(s.tasks, td);
   const name = s.prefs.display_name || '';
-  const theme = s.prefs.theme || 'system';
   const hasSamples = s.tasks.some(t => t.source === 'sample');
   const exam = nextExam(s.tasks.filter(isLive), td);
 
@@ -44,7 +40,6 @@ export function meView(root) {
     ),
     h('div.mlist',
       row('book', 'วิชาของฉัน', `${s.subjects.filter(x => !x.hidden).length} วิชา`, subjectsModal),
-      row('moon', 'ธีมสี', THEME[theme], themeModal),
       row('spark', 'งานตัวอย่าง', hasSamples ? 'ลบออก' : 'ลองใส่', toggleSamples),
       row('save', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData, 'ไม่รวมรูป'),
       row('restore', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
@@ -61,12 +56,6 @@ function editName() {
   openModal({ title: 'ชื่อที่แสดง', body: h('div', inp, h('p.muted', 'ไม่ต้องใส่ชื่อจริง ไม่ต้องบอกโรงเรียน')),
     foot: h('button.btn.primary', { onclick: async () => { await app.store.setPref('display_name', inp.value.trim()); closeModal(); } }, 'บันทึก') });
   setTimeout(() => inp.focus(), 300);
-}
-function themeModal() {
-  const body = h('div.seg');
-  const paint = () => put(body, Object.entries(THEME).map(([k, l]) => h('button', { 'aria-pressed': String((S().prefs.theme || 'system') === k), onclick: async () => { await app.store.setPref('theme', k); applyTheme(k); paint(); } }, l)));
-  paint();
-  openModal({ title: 'ธีมสี', body: h('div', body, h('p.muted', 'สีตามโลโก้: กรมท่า + ฟ้า · ธีมมืดเป็นกรมท่าเข้ม')) });
 }
 async function toggleSamples() {
   if (S().tasks.some(t => t.source === 'sample')) {
