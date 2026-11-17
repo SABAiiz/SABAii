@@ -56,6 +56,7 @@ python3 -m http.server 8765
   tests/               core.test.mjs (node) · e2e.cjs (Playwright)
   docs/PHASE0-AUDIT.md · screens-0.3.png
   mockups/            ภาพเสนอการออกแบบ (HTML + PNG)
+  shell/              โครงแอปแบบเรียกรถ (แผนที่ + แผ่นล่าง 3 ระดับ + ขั้นตอนเรียกรถ) ไว้ต่อยอด — ดู shell/README.md
 ```
 
 ไม่มี npm ไม่มีขั้นตอน build — ไฟล์ไหนแก้แล้วรีเฟรชเห็นเลย ย้ายไปบัญชี/โฮสต์อื่นได้ด้วยการก๊อปโฟลเดอร์นี้ทั้งโฟลเดอร์
