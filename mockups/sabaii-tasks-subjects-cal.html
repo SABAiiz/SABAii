@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16181d;--sub:#6b7079;--tile:#eef0f1;--go:#2fb36b;--red:#c43d35}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9dcdf;font-family:"IBM Plex Sans Thai",Loma,sans-serif;color:var(--ink);padding:36px 40px 40px;width:1500px}
+.head h1{font-size:24px}.head p{color:#4a4f57;font-size:14px;margin-top:2px}
+.row{display:flex;align-items:flex-start;margin-top:22px}
+.col{width:395px}
+.cap{height:84px}
+.cap b{font-size:16px;display:block}
+.cap b i{font-style:normal;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;margin-right:6px}
+.cap span{font-size:12.5px;color:#4a4f57;line-height:1.5;display:block;margin-top:2px}
+.arrow{width:62px;height:812px;margin-top:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:600;color:#3a3f47;text-align:center}
+.phone{margin:0 10px;width:375px;height:812px;background:#fff;border-radius:44px;position:relative;overflow:hidden;box-shadow:0 24px 50px rgba(0,0,0,.16),0 0 0 9px #111}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-weight:600;font-size:15px}
+.status i{display:inline-block;width:24px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative}
+.status i:after{content:"";position:absolute;inset:1.5px;right:6px;background:var(--ink);border-radius:1px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:6px 20px 0;gap:8px}
+.top h2{font-size:28px;font-weight:700;line-height:1.2;flex:1}
+.fbtn{width:40px;height:40px;border-radius:50%;background:var(--tile);display:grid;place-items:center;flex:none}
+.calbtn{height:40px;border-radius:20px;background:var(--tile);display:flex;align-items:center;gap:7px;padding:0 12px 0 10px;font-size:12.5px;font-weight:600;flex:none}
+.calbtn em{font-style:normal;color:var(--red)}
+.calbtn.on{background:var(--ink);color:#fff}.calbtn.on em{color:#ff9d95}
+.pad{padding:0 20px}
+/* calendar */
+.calcard{margin-top:12px;background:#f6f7f8;border-radius:20px;padding:6px 10px 10px}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.wk .h{font-size:11px;color:#9a9ea5;padding:6px 0 2px}
+.wk .d{height:44px;border-radius:11px;font-size:14.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#fff}
+.wk .d i{display:flex;gap:2px;height:5px}.wk .d i u{width:5px;height:5px;border-radius:3px}
+.wk .d.ex{background:#fdecea;color:var(--red)}.wk .d.ex small{font-size:8.5px;font-weight:700;line-height:1}
+.wk .d.sel{background:var(--ink);color:#fff}
+.wk .d.past{background:transparent;color:#b9bcc1}
+.wk .d.out{background:transparent;color:#d0d2d6}
+.calfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:11.5px;color:var(--sub)}
+.legend{display:flex;gap:10px}.legend span{display:flex;align-items:center;gap:4px}.legend u{width:8px;height:8px;border-radius:4px}
+.grab{width:36px;height:4px;border-radius:2px;background:#cfd2d6;margin:8px auto 0}
+/* subject grid */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.sc{background:#f6f7f8;border-radius:18px;padding:10px;height:168px;position:relative}
+.sc .ths{display:flex;gap:4px;height:66px}
+.sc b{display:block;font-size:15px;margin-top:8px}
+.sc .nx{font-size:11.5px;color:var(--sub);line-height:1.4;margin-top:2px}
+.sc .cnt{position:absolute;right:10px;top:84px;font-size:11px;font-weight:700;border-radius:9px;padding:1px 7px}
+.sc.dim{opacity:.35}
+.sc.hl{box-shadow:0 0 0 2px var(--ink) inset;background:#fff}
+.th{border-radius:8px;position:relative;overflow:hidden;height:100%}
+.th.board{background:radial-gradient(circle at 40% 30%,#3d5a48,#24372c)}
+.th.board:after{content:"";position:absolute;left:18%;right:18%;top:30%;height:2px;background:#e9ece6;box-shadow:0 7px 0 #e9ece6,0 14px 0 #ffd36e;opacity:.85}
+.th.paper{background:repeating-linear-gradient(#fff 0 6px,#d6e4f5 6px 7px);border:1px solid #e1e3e6}
+.th.sticky{background:#ffe98a}
+.th.sticky:after{content:"";position:absolute;left:18%;right:22%;top:30%;height:2px;background:#8a7420;box-shadow:0 7px 0 #8a7420}
+.th.voice{background:#eef0f1;display:grid;place-items:center;font-size:14px}
+.th.empty{background:#eef0f1}
+/* day list */
+.dayh{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 4px}
+.dayh b{font-size:17px}.dayh span{font-size:12px;color:var(--sub)}
+.it{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid #eef0f1;align-items:center}
+.ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.tx{flex:1}.tx b{display:block;font-size:14.5px;font-weight:600}.tx span{font-size:12px;color:var(--sub)}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;vertical-align:2px;background:#fdecea;color:var(--red)}
+.b{background:var(--tile);border-radius:18px;padding:6px 13px;font-size:12.5px;font-weight:600}
+.b.g{background:var(--go);color:#fff}
+.nav{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:300px;height:58px;background:#fff;border-radius:30px;box-shadow:0 6px 24px rgba(0,0,0,.10),0 0 0 1px #eceef0;display:flex;align-items:center;padding:5px;z-index:5}
+.nav a{flex:1;height:100%;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11.5px;font-weight:500}
+.nav a.on{background:#eef0f1;font-weight:700}
+.nav svg{width:21px;height:21px}
+.fade{position:absolute;left:0;right:0;bottom:0;height:110px;background:linear-gradient(rgba(255,255,255,0),#fff 55%);z-index:4}
+.tap{position:absolute;width:38px;height:38px;border-radius:50%;background:rgba(91,95,240,.25);border:2px solid rgba(91,95,240,.7);z-index:9}
+</style></head><body>
+
+<div class="head">
+  <h1>SABAii · แท็บ “งาน” = แบบ ค (ตามวิชา) + ปุ่มปฏิทินเล็กที่กดแล้วขยาย</h1>
+  <p>ปกติเห็นลิ้นชักวิชาเต็มจอ · ปฏิทินซ่อนเป็นปุ่มเล็กมุมขวาบน ที่บอกสอบครั้งถัดไปไว้เลย · ข้อมูลในภาพเป็นตัวอย่าง</p>
+</div>
+
+<div class="row">
+
+<!-- ======= 1: collapsed ======= -->
+<div class="col">
+  <div class="cap"><b><i>1</i>ปกติ · ลิ้นชักวิชา</b><span>ปุ่ม 📅 เล็กมุมขวาบนบอกสอบถัดไปเลย ไม่ต้องกดก็รู้ว่า “สอบอีก 3 วัน”</span></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="top"><h2>งาน</h2>
+      <div class="calbtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>สอบ <em>อีก 3 วัน</em></div>
+      <div class="fbtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div>
+    </div>
+    <div class="tap" style="left:214px;top:57px"></div>
+    <div class="pad">
+      <div class="sg">
+        <div class="sc"><div class="ths"><div class="th board" style="flex:2"></div><div class="th paper" style="flex:1"></div></div><b>ฟิสิกส์</b><span class="cnt" style="background:#fdecea;color:var(--red)">2 งาน</span><div class="nx"><span style="color:var(--red);font-weight:600">แบบฝึกบท 3 · พรุ่งนี้</span><br>สอบย่อย · พฤ.</div></div>
+        <div class="sc"><div class="ths"><div class="th paper" style="flex:2"></div><div class="th sticky" style="flex:1"></div></div><b>คณิต</b><span class="cnt" style="background:#e8f1fd;color:#2d6cc0">1 งาน</span><div class="nx">ใบงานลำดับ · ศ.<br>โน้ต 2</div></div>
+        <div class="sc"><div class="ths"><div class="th voice" style="flex:1">🎙️</div><div class="th paper" style="flex:1"></div></div><b>อังกฤษ</b><span class="cnt" style="background:#fff4dc;color:#a87700">1 งาน</span><div class="nx">ท่องศัพท์ · จ.<br>เสียงครู 1 คลิป</div></div>
+        <div class="sc"><div class="ths"><div class="th sticky" style="flex:1"></div><div class="th empty" style="flex:1"></div></div><b>ไทย</b><span class="cnt" style="background:#eef0f1;color:#3a3f47">1 งาน</span><div class="nx">สรุปขุนช้างฯ · อ. หน้า<br>โน้ต 1</div></div>
+        <div class="sc" style="height:120px"><div class="ths" style="height:46px"><div class="th empty" style="flex:1"></div></div><b>เคมี</b><span class="cnt" style="background:#fdecea;color:var(--red);top:62px">สอบ 27</span><div class="nx">ไม่มีงานค้าง</div></div>
+        <div class="sc" style="height:120px;background:#fff;border:1.5px dashed #cfd2d6;display:grid;place-items:center;color:var(--sub);font-size:13px;font-weight:600">+ วิชา</div>
+      </div>
+    </div>
+    <div class="fade"></div>
+    <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/></svg>ฉัน</a></nav>
+  </div>
+</div>
+
+<div class="arrow"><svg width="40" height="40" viewBox="0 0 56 56" fill="none" stroke="#16181d" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 28h34M32 16l12 12-12 12"/></svg>แตะ<br>📅</div>
+
+<!-- ======= 2: 2-week expanded ======= -->
+<div class="col">
+  <div class="cap"><b><i>2</i>ขยาย · 2 สัปดาห์</b><span>ปฏิทินกางลงมาจากปุ่ม ลิ้นชักวิชาเลื่อนลงไป (ไม่ทับ) · วันสอบเป็นช่องแดง · จุด = สีของวิชา</span></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="top"><h2>งาน</h2>
+      <div class="calbtn on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>พ.ย. 2569 <span style="font-size:10px">▴</span></div>
+      <div class="fbtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div>
+    </div>
+    <div class="pad">
+      <div class="calcard">
+        <div class="wk">
+          <div class="h">จ</div><div class="h">อ</div><div class="h">พ</div><div class="h">พฤ</div><div class="h">ศ</div><div class="h">ส</div><div class="h">อา</div>
+          <div class="d sel">16<i><u style="background:#ff9d95"></u><u style="background:#ffd36e"></u></i></div>
+          <div class="d">17<i><u style="background:#c43d35"></u></i></div>
+          <div class="d">18<i></i></div>
+          <div class="d ex">19<small>สอบฟิส</small></div>
+          <div class="d">20<i><u style="background:#2d6cc0"></u></i></div>
+          <div class="d">21<i></i></div><div class="d">22<i></i></div>
+          <div class="d">23<i><u style="background:#a87700"></u></i></div>
+          <div class="d">24<i><u style="background:#3a3f47"></u></i></div>
+          <div class="d">25<i></i></div>
+          <div class="d">26<i><u style="background:#2d6cc0"></u></i></div>
+          <div class="d ex">27<small>สอบเคมี</small></div>
+          <div class="d">28<i></i></div><div class="d">29<i></i></div>
+        </div>
+        <div class="calfoot"><div class="legend"><span><u style="background:#fdecea;border:1px solid #c43d35"></u>สอบ</span><span><u style="background:#2d6cc0"></u>งานส่ง</span></div><span>ดึงลง = ทั้งเดือน</span></div>
+        <div class="grab"></div>
+      </div>
+      <div class="tap" style="left:170px;top:134px"></div>
+      <div class="sg">
+        <div class="sc"><div class="ths"><div class="th board" style="flex:2"></div><div class="th paper" style="flex:1"></div></div><b>ฟิสิกส์</b><span class="cnt" style="background:#fdecea;color:var(--red)">2 งาน</span><div class="nx"><span style="color:var(--red);font-weight:600">แบบฝึกบท 3 · พรุ่งนี้</span><br>สอบย่อย · พฤ.</div></div>
+        <div class="sc"><div class="ths"><div class="th paper" style="flex:2"></div><div class="th sticky" style="flex:1"></div></div><b>คณิต</b><span class="cnt" style="background:#e8f1fd;color:#2d6cc0">1 งาน</span><div class="nx">ใบงานลำดับ · ศ.<br>โน้ต 2</div></div>
+        <div class="sc"><div class="ths"><div class="th voice" style="flex:1">🎙️</div><div class="th paper" style="flex:1"></div></div><b>อังกฤษ</b><span class="cnt" style="background:#fff4dc;color:#a87700">1 งาน</span><div class="nx">ท่องศัพท์ · จ.</div></div>
+        <div class="sc"><div class="ths"><div class="th sticky" style="flex:1"></div><div class="th empty" style="flex:1"></div></div><b>ไทย</b><span class="cnt" style="background:#eef0f1;color:#3a3f47">1 งาน</span><div class="nx">สรุปขุนช้างฯ</div></div>
+      </div>
+    </div>
+    <div class="fade"></div>
+    <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/></svg>ฉัน</a></nav>
+  </div>
+</div>
+
+<div class="arrow"><svg width="40" height="40" viewBox="0 0 56 56" fill="none" stroke="#16181d" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 28h34M32 16l12 12-12 12"/></svg>แตะ<br>วันที่</div>
+
+<!-- ======= 3: day selected ======= -->
+<div class="col">
+  <div class="cap"><b><i>3</i>แตะวัน · เห็นงานของวันนั้น</b><span>แตะ พฤ. 19 → ด้านล่างเปลี่ยนเป็นรายการของวันนั้น + งานที่ควรทำก่อนวันนั้น · แตะวันเดิมซ้ำ = กลับไปลิ้นชักวิชา</span></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="top"><h2>งาน</h2>
+      <div class="calbtn on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>พ.ย. 2569 <span style="font-size:10px">▴</span></div>
+      <div class="fbtn"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div>
+    </div>
+    <div class="pad">
+      <div class="calcard">
+        <div class="wk">
+          <div class="h">จ</div><div class="h">อ</div><div class="h">พ</div><div class="h">พฤ</div><div class="h">ศ</div><div class="h">ส</div><div class="h">อา</div>
+          <div class="d" style="box-shadow:0 0 0 1.5px #16181d inset">16<i><u style="background:#c43d35"></u><u style="background:#a87700"></u></i></div>
+          <div class="d">17<i><u style="background:#c43d35"></u></i></div>
+          <div class="d">18<i></i></div>
+          <div class="d sel" style="background:#c43d35">19<small style="font-size:8.5px;font-weight:700">สอบฟิส</small></div>
+          <div class="d">20<i><u style="background:#2d6cc0"></u></i></div>
+          <div class="d">21<i></i></div><div class="d">22<i></i></div>
+          <div class="d">23<i><u style="background:#a87700"></u></i></div>
+          <div class="d">24<i><u style="background:#3a3f47"></u></i></div>
+          <div class="d">25<i></i></div>
+          <div class="d">26<i><u style="background:#2d6cc0"></u></i></div>
+          <div class="d ex">27<small>สอบเคมี</small></div>
+          <div class="d">28<i></i></div><div class="d">29<i></i></div>
+        </div>
+        <div class="grab"></div>
+      </div>
+      <div class="dayh"><b>พฤ. 19 พ.ย.</b><span>อีก 3 วัน</span></div>
+      <div class="it"><div class="ic" style="background:#fdecea;color:var(--red)">ฟิส</div><div class="tx"><b>สอบย่อยฟิสิกส์<span class="tag">สอบ</span></b><span>คาบ 3 · 10:00 · ห้อง 412 · โน้ต 3</span></div><span class="b">ดูโน้ต</span></div>
+      <div style="font-size:12px;color:var(--sub);margin:12px 0 2px;font-weight:600">ควรทำก่อนวันนั้น</div>
+      <div class="it"><div class="ic" style="background:#fdecea;color:var(--red)">ฟิส</div><div class="tx"><b>แบบฝึกบทที่ 3</b><span>ส่งพรุ่งนี้ · ~40 น. · ใช้อ่านสอบด้วย</span></div><span class="b g">ทำเลย</span></div>
+      <div class="it" style="border:0"><div class="ic" style="background:#fdecea;color:var(--red)">ฟิส</div><div class="tx"><b>ทบทวนบท 2</b><span>แนะนำ พ. 18 · ~30 น.</span></div><span class="b">ทำเลย</span></div>
+    </div>
+    <div class="fade"></div>
+    <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/></svg>ฉัน</a></nav>
+  </div>
+</div>
+
+</div>
+</body></html>

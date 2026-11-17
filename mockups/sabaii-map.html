@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16181d;--sub:#6b7079;--tile:#eef0f1;--go:#2fb36b;--go-d:#1f9356}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9dcdf;font-family:"IBM Plex Sans Thai",Loma,sans-serif;color:var(--ink);display:flex;gap:40px;padding:40px;align-items:flex-start}
+.phone{width:375px;height:812px;background:#f4f4f1;border-radius:44px;position:relative;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.18),0 0 0 10px #111}
+svg.map{position:absolute;inset:0}
+svg text{font-family:"IBM Plex Sans Thai",Loma,sans-serif}
+.status{position:absolute;top:0;left:0;right:0;height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-weight:600;font-size:15px;z-index:3}
+.status i{display:inline-block;width:24px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative}
+.status i:after{content:"";position:absolute;inset:1.5px;right:6px;background:var(--ink);border-radius:1px}
+.recenter{position:absolute;right:16px;bottom:198px;width:50px;height:50px;border-radius:50%;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.14);display:grid;place-items:center;z-index:3}
+.recenter small{position:absolute;bottom:-17px;font-size:10px;font-weight:600;color:var(--sub);white-space:nowrap}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:178px;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.08);z-index:4;padding:0 20px}
+.handle{width:40px;height:5px;border-radius:3px;background:#cfd2d6;margin:9px auto 10px}
+.search{background:var(--tile);border-radius:16px;height:50px;display:flex;align-items:center;padding:0 8px 0 16px;gap:10px}
+.search p{flex:1;font-size:16px;font-weight:600}
+.chip{background:#fff;border-radius:11px;padding:7px 10px;font-size:12.5px;display:flex;align-items:center;gap:5px;font-weight:500}
+.nav{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:300px;height:60px;background:#fff;border-radius:32px;box-shadow:0 6px 24px rgba(0,0,0,.10),0 0 0 1px #eceef0;display:flex;align-items:center;padding:5px}
+.nav a{flex:1;height:100%;border-radius:27px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-weight:500}
+.nav a.on{background:#eef0f1;font-weight:700}
+.nav svg{width:22px;height:22px}
+.notes{width:380px;font-size:14px;line-height:1.6;color:#2a2d33}
+.notes h2{font-size:20px;margin-bottom:6px}
+.notes h3{font-size:14px;margin:16px 0 4px;color:var(--go-d)}
+.notes table{border-collapse:collapse;width:100%;font-size:13px;margin-top:4px}
+.notes td{padding:5px 6px;border-bottom:1px solid #c9cdd1;vertical-align:top}
+.notes td:first-child{color:var(--sub);width:42%}
+.notes li{margin-left:18px}
+</style></head><body>
+
+<div class="phone">
+  <div class="status"><span>16:40</span><i></i></div>
+  <svg class="map" id="map" width="375" height="812" viewBox="0 0 375 812"></svg>
+  <div class="recenter">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.2" stroke-linejoin="round"><path d="M21 3L3 10.5l7.5 3 3 7.5z"/></svg>
+    <small>ตอนนี้</small>
+  </div>
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <p>ตอนนี้ทำอะไรดี?</p>
+      <span class="chip"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#16181d" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>พรุ่งนี้</span>
+    </div>
+    <nav class="nav">
+      <a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a>
+      <a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6" stroke-linecap="round"/></svg>งาน</a>
+      <a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5c1.5-2 3.4-3 5.5-3s4 1 5.5 3"/></svg>ฉัน</a>
+    </nav>
+  </div>
+</div>
+
+<div class="notes">
+  <h2>SABAii · แผนที่เวลา (ม็อกอัป v1)</h2>
+  <p>Bolt ดึงแผ่นล่างลงแล้วเห็น<b>แผนที่ถนน</b> · SABAii ดึงลงแล้วเห็น<b>แผนที่เวลา</b> — แกนตั้ง = ชั่วโมง · แกนนอน = วัน (เลื่อนซ้ายขวาไปวันถัดไป)</p>
+  <h3>แปลงของ Bolt เป็นของนักเรียน</h3>
+  <table>
+    <tr><td>จุดฟ้า + กรวยทิศทาง</td><td>“ตอนนี้” · กรวยชี้ลง = เวลาที่กำลังจะมาถึง</td></tr>
+    <tr><td>รถว่างรอบตัว</td><td>งานที่ทำได้ในช่องว่างนี้ · อันขอบเขียว = แนะนำให้ทำก่อน</td></tr>
+    <tr><td>ตึก/บล็อก</td><td>คาบเรียน · ติว · ชมรม (เวลาที่ไม่ว่าง)</td></tr>
+    <tr><td>พื้นที่สีครีม (โรงเรียน)</td><td>ช่วงอยู่โรงเรียน</td></tr>
+    <tr><td>หมุด POI</td><td>เหตุการณ์ · ธงแดง = กำหนดส่ง</td></tr>
+    <tr><td>สีถนน = รถติด</td><td>สีถนนข้างวัน = งานหนักแค่ไหน (เขียว/ส้ม/แดง)</td></tr>
+    <tr><td>ปุ่มกลับตำแหน่งฉัน</td><td>ปุ่ม “ตอนนี้” เลื่อนกลับมาที่เวลาปัจจุบัน</td></tr>
+    <tr><td>“ให้ไปที่ไหน?”</td><td>“ตอนนี้ทำอะไรดี?”</td></tr>
+  </table>
+  <h3>แตะอะไรได้</h3>
+  <ul>
+    <li>แตะงาน → ดูรายละเอียด/ทำเลย · ลากงานไปวางช่องอื่นได้</li>
+    <li>ป้ายบนสุดบอกช่องว่างที่เหลือก่อนนัดถัดไป</li>
+  </ul>
+</div>
+
+<script>
+const S='http://www.w3.org/2000/svg',m=document.getElementById('map');
+const Y=h=>128+(h-14)*60;              // 14:00 → y128, 60px/hr
+function el(t,a,txt){const e=document.createElementNS(S,t);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;m.appendChild(e);return e}
+const T={tx:24,tw:162, mx:214,mw:170}; // column x/width: today, tomorrow
+// half-hour alleys
+for(let h=13;h<=23;h+=.5) el('line',{x1:0,x2:375,y1:Y(h),y2:Y(h),stroke:'#e7e8e4','stroke-width':h%1?1:0});
+// light alleys inside columns
+[60,110,150,250,300,345].forEach(x=>el('line',{x1:x,x2:x,y1:0,y2:812,stroke:'#e9eae6','stroke-width':1}));
+// hour streets
+for(let h=14;h<=23;h++){el('line',{x1:0,x2:375,y1:Y(h),y2:Y(h),stroke:'#fff','stroke-width':5});el('line',{x1:0,x2:375,y1:Y(h),y2:Y(h),stroke:'#dfe1dc','stroke-width':1,'stroke-dasharray':'0'});}
+// school zones
+el('rect',{x:T.tx,y:Y(13.55),width:T.tw,height:Y(15.5)-Y(13.55),rx:10,fill:'#f6ecd2'});
+el('rect',{x:T.mx,y:Y(13.55),width:T.mw,height:Y(16)-Y(13.55),rx:10,fill:'#f6ecd2'});
+// free zone tint
+el('rect',{x:T.tx,y:Y(20.25),width:T.tw,height:Y(22)-Y(20.25),rx:10,fill:'#e3f4ea'});
+el('text',{x:T.tx+10,y:Y(21.2),'font-size':11,fill:'#2f8a58','font-weight':600},'ว่าง 1 ชม. 45 น.');
+// day roads with traffic colour
+function road(x,segs){el('line',{x1:x,x2:x,y1:0,y2:812,stroke:'#fff','stroke-width':12});segs.forEach(([a,b,c])=>el('line',{x1:x,x2:x,y1:Y(a),y2:Y(b),stroke:c,'stroke-width':5,'stroke-linecap':'round'}));}
+road(12,[[12,24,'#3fbf75']]);
+road(200,[[12,16,'#f2a33a'],[16,19.5,'#e2564b'],[19.5,24,'#f2a33a']]);
+// road labels (rotated, like street names)
+el('text',{x:T.tx+10,y:Y(14)-12,'font-size':12.5,'font-weight':700,fill:'#7a5a12'},'วันนี้ · จ. 16');
+el('text',{x:T.tx+T.tw-8,y:Y(14)-12,'font-size':10,fill:'#a08440','text-anchor':'end'},'โรงเรียน');
+el('text',{x:T.mx+10,y:Y(14)-12,'font-size':12.5,'font-weight':700,fill:'#7a5a12'},'พรุ่งนี้ · อ. 17');
+el('text',{x:T.mx+132,y:Y(14)-12,'font-size':10,fill:'#c43d35','font-weight':700},'แน่น');
+// hour labels along streets
+// blocks (classes etc.)
+function block(c,a,b,label,sub,fill='#dfe1e4',col='#4a4f57'){const X=c===T?T.tx+6:T.mx+6;const W=c===T?T.tw-12:T.mw-12;
+ el('rect',{x:X,y:Y(a)+3,width:W,height:Y(b)-Y(a)-6,rx:8,fill});
+ el('text',{x:X+9,y:Y(a)+19,'font-size':11.5,'font-weight':600,fill:col},label);
+ if(sub)el('text',{x:X+9,y:Y(a)+33,'font-size':10,fill:'#7a7f87'},sub);}
+block(T,14,15,'คาบ 7 · เคมี','14:00–15:00');
+block(T,18,19.5,'ติวคณิต','18:00–19:30');
+block({mx:1},14,16,'คาบ 6–7 · อังกฤษ','14:00–16:00');
+block({mx:1},16.25,17.75,'ชมรมบาส','16:15–17:45','#e9dff5','#5b3d86');
+block({mx:1},18.5,20,'ติวคณิต','18:30–20:00');
+// POI pins
+function pin(x,y,ico,label,lab2,color='#5b6068'){
+ el('circle',{cx:x,cy:y,r:13,fill:'#fff',stroke:'#d5d7da'});el('path',{d:`M${x-5} ${y+11} L${x} ${y+18} L${x+5} ${y+11}z`,fill:'#fff'});
+ el('text',{x,y:y+4.5,'font-size':13,'text-anchor':'middle',fill:color,'font-weight':700},ico);
+ if(label){el('text',{x:x+18,y:y-1,'font-size':11,'font-weight':600,fill:'#3f444c'},label);el('text',{x:x+18,y:y+12,'font-size':10,fill:'#8a8e95'},lab2);}}
+pin(T.tx+22,Y(15.62),'⌂','กลับถึงบ้าน','15:40');
+pin(T.tx+22,Y(19.75),'🍚','ข้าวเย็น','19:30');
+// deadline flag
+(function(){const x=T.tx+22,y=Y(22);el('circle',{cx:x,cy:y,r:13,fill:'#e2564b'});el('path',{d:`M${x-5} ${y+11} L${x} ${y+18} L${x+5} ${y+11}z`,fill:'#e2564b'});
+ el('path',{d:`M${x-4} ${y+6}V${y-6}h8l-2 3 2 3h-8`,fill:'#fff'});
+ el('text',{x:x+18,y:y-1,'font-size':11,'font-weight':700,fill:'#c43d35'},'ส่งการบ้านคณิต');el('text',{x:x+18,y:y+12,'font-size':10,fill:'#c43d35'},'ปิดระบบ 22:00');})();
+// task "vehicles"
+function car(x,y,w,txt,sub,bg,fg,hl){const g=el('g',{});
+ el('rect',{x,y:y+2,width:w,height:30,rx:15,fill:'#000',opacity:.12});
+ const r=el('rect',{x,y,width:w,height:30,rx:15,fill:'#fff',stroke:hl?'#2fb36b':'#d9dcdf','stroke-width':hl?2.5:1});
+ el('circle',{cx:x+15,cy:y+15,r:10,fill:bg});el('text',{x:x+15,y:y+18.5,'font-size':9,'font-weight':700,'text-anchor':'middle',fill:fg},txt[0]);
+ el('text',{x:x+30,y:y+13,'font-size':10.5,'font-weight':700,fill:'#16181d'},txt[1]);
+ el('text',{x:x+30,y:y+24.5,'font-size':9.5,fill:'#6b7079'},sub);}
+// NOW dot + cone
+(function(){const x=T.tx+32,y=Y(16.67);
+ const gr=el('defs',{});gr.innerHTML='<linearGradient id="cone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b5ff0" stop-opacity=".45"/><stop offset="1" stop-color="#5b5ff0" stop-opacity="0"/></linearGradient>';
+ el('path',{d:`M${x} ${y} L${x-22} ${y+62} L${x+22} ${y+62}z`,fill:'url(#cone)'});
+ el('circle',{cx:x,cy:y,r:22,fill:'#5b5ff0',opacity:.14});
+ el('circle',{cx:x,cy:y,r:11,fill:'#5b5ff0',stroke:'#fff','stroke-width':3.5});
+ el('line',{x1:T.tx+6,x2:T.tx+T.tw-6,y1:y,y2:y,stroke:'#5b5ff0','stroke-width':1.2,'stroke-dasharray':'3 3',opacity:.6});
+ el('text',{x:T.tx+T.tw-6,y:y-5,'font-size':10,'font-weight':700,fill:'#5b5ff0','text-anchor':'end'},'16:40');})();
+car(T.tx+44,Y(16.85),112,['ฟ','ฟิสิกส์ บท 3'],'40 น. · ส่งพรุ่งนี้','#fdecea','#c43d35',true);
+car(T.tx+40,Y(17.6),104,['E','ศัพท์ 20 คำ'],'15 น.','#fff4dc','#a87700',false);
+car(T.tx+62,Y(20.4),104,['ค','ใบงานคณิต'],'25 น.','#e8f1fd','#2d6cc0',false);
+car(T.mx+14,Y(20.3),118,['ท','สรุปขุนช้างฯ'],'30 น.','#eef0f1','#3a3f47',false);
+car(T.mx+6,Y(20.95),86,['ค','ทบทวนติว'],'20 น.','#e8f1fd','#2d6cc0',false);
+// hour badges on the middle road (shared time axis)
+for(let h=15;h<=22;h++){el('rect',{x:200-19,y:Y(h)-9,width:38,height:18,rx:9,fill:'#fff',stroke:'#d5d7da'});el('text',{x:200,y:Y(h)+4,'font-size':10,'font-weight':600,fill:'#5b6068','text-anchor':'middle'},`${h}:00`);}
+// top floating status chip
+(function(){const g=el('g',{});const x=60,y=50,w=255,h=38;
+ el('rect',{x,y:y+2,width:w,height:h,rx:19,fill:'#000',opacity:.10});
+ el('rect',{x,y,width:w,height:h,rx:19,fill:'#fff'});
+ el('circle',{cx:x+19,cy:y+19,r:6,fill:'#2fb36b'});
+ el('text',{x:x+34,y:y+16,'font-size':12,'font-weight':700,fill:'#16181d'},'ว่างอีก 1 ชม. 20 น. ก่อนติวคณิต');
+ el('text',{x:x+34,y:y+30,'font-size':10.5,fill:'#6b7079'},'พอทำฟิสิกส์ + ท่องศัพท์ได้');})();
+</script>
+</body></html>

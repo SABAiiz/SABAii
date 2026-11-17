@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Mali:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16181d;--sub:#6b7079;--tile:#eef0f1;--go:#2fb36b;--go-d:#1f9356;--red:#c43d35;--gold:#b8860b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9dcdf;font-family:"IBM Plex Sans Thai",Loma,sans-serif;color:var(--ink);padding:36px 40px 40px;width:1820px}
+.head h1{font-size:24px}.head p{color:#4a4f57;font-size:14px;margin-top:2px}
+.row{display:flex;gap:44px;margin-top:22px}
+.col{width:375px}
+.cap{margin-bottom:12px;min-height:112px}
+.cap b{font-size:17px;display:block}
+.cap b i{font-style:normal;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;margin-right:6px}
+.cap span{font-size:12.5px;color:#4a4f57;line-height:1.5;display:block;margin-top:3px}
+.cap .pc{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.cap .pc u{text-decoration:none;font-size:11px;padding:2px 8px;border-radius:10px;background:#fff}
+.cap .pc u.p{color:#1f9356}.cap .pc u.c{color:#c43d35}
+.phone{width:375px;height:812px;background:#fff;border-radius:44px;position:relative;overflow:hidden;box-shadow:0 24px 50px rgba(0,0,0,.16),0 0 0 9px #111}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-weight:600;font-size:15px}
+.status i{display:inline-block;width:24px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative}
+.status i:after{content:"";position:absolute;inset:1.5px;right:6px;background:var(--ink);border-radius:1px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;padding:6px 20px 0}
+.top h2{font-size:28px;font-weight:700;line-height:1.2}
+.fbtn{width:40px;height:40px;border-radius:50%;background:var(--tile);display:grid;place-items:center}
+.pad{padding:0 20px}
+.seg{display:flex;background:var(--tile);border-radius:12px;padding:3px;margin-top:12px}
+.seg span{flex:1;text-align:center;font-size:13px;font-weight:500;padding:6px 0;border-radius:10px;color:var(--sub)}
+.seg span.on{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.sec{font-size:17px;font-weight:700;margin:16px 0 4px}
+.sec small{font-size:12px;font-weight:400;color:var(--sub);margin-left:6px}
+.it{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #eef0f1;align-items:flex-start}
+.it:last-child{border-bottom:0}
+.ic{width:52px;height:52px;border-radius:13px;display:grid;place-items:center;font-size:13px;font-weight:700;flex:none}
+.tx{flex:1;min-width:0}
+.tx b{display:block;font-size:14.5px;font-weight:600;line-height:1.35}
+.tx span{font-size:12px;color:var(--sub)}
+.rt{font-size:13px;font-weight:600;text-align:right;white-space:nowrap}
+.rt.red{color:var(--red)}
+.btns{display:flex;gap:8px;margin-top:8px}
+.b{background:var(--tile);border-radius:18px;padding:6px 14px;font-size:12.5px;font-weight:600}
+.b.g{background:var(--go);color:#fff}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:8px;margin-left:4px;vertical-align:2px}
+.tag.exam{background:#fdecea;color:var(--red)}
+.nav{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:300px;height:58px;background:#fff;border-radius:30px;box-shadow:0 6px 24px rgba(0,0,0,.10),0 0 0 1px #eceef0;display:flex;align-items:center;padding:5px;z-index:5}
+.nav a{flex:1;height:100%;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11.5px;font-weight:500}
+.nav a.on{background:#eef0f1;font-weight:700}
+.nav svg{width:21px;height:21px}
+.fade{position:absolute;left:0;right:0;bottom:0;height:110px;background:linear-gradient(rgba(255,255,255,0),#fff 55%);z-index:4}
+/* thumbs */
+.th{border-radius:8px;flex:none;position:relative;overflow:hidden}
+.th.board{background:radial-gradient(circle at 40% 30%,#3d5a48,#24372c)}
+.th.board:after{content:"";position:absolute;left:18%;right:18%;top:30%;height:2px;background:#e9ece6;box-shadow:0 7px 0 #e9ece6,0 14px 0 #ffd36e;opacity:.85}
+.th.paper{background:repeating-linear-gradient(#fff 0 6px,#d6e4f5 6px 7px);border:1px solid #e1e3e6}
+.th.sticky{background:#ffe98a}
+.th.sticky:after{content:"";position:absolute;left:18%;right:22%;top:30%;height:2px;background:#8a7420;box-shadow:0 7px 0 #8a7420}
+.th.voice{background:#eef0f1;display:grid;place-items:center;font-size:14px}
+</style></head><body>
+
+<div class="head">
+  <h1>SABAii · แท็บ “งาน” — 4 แบบ เทียบกับข้อเสนอของเพื่อน</h1>
+  <p>Bolt แท็บนี้คือ “กิจกรรม” = ประวัติการเดินทาง (การ์ดบนสุดเด่น + รายการจัดกลุ่มตามเดือน) · ข้อมูลในภาพเป็นตัวอย่าง</p>
+</div>
+
+<div class="row">
+
+<!-- ===== A ===== -->
+<div class="col">
+  <div class="cap"><b><i>ก</i>ไทม์ไลน์ (แบบ Bolt)</b><span>การ์ดบนสุด = งานใหญ่ที่ใกล้ที่สุด พร้อมโน้ตหน้างาน · ด้านล่างจัดกลุ่มตาม “สัปดาห์นี้ / สัปดาห์หน้า” · ขวามือคือวันส่ง (ตำแหน่งเดียวกับราคาใน Bolt)</span>
+    <div class="pc"><u class="p">ต่อกับโน้ตที่ออกแบบไว้</u><u class="p">อ่านง่ายสุด</u><u class="c">ไม่เห็นภาพทั้งเดือน</u></div></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="top"><h2>งาน</h2><div class="fbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></div></div>
+    <div class="pad">
+      <div class="seg"><span class="on">ต้องทำ · 6</span><span>เสร็จแล้ว</span></div>
+      <!-- hero card -->
+      <div style="margin-top:12px;border:1px solid #e4e6e8;border-radius:20px;overflow:hidden">
+        <div style="height:118px;background:radial-gradient(circle at 40% 30%,#3d5a48,#24372c);position:relative">
+          <div style="position:absolute;left:12px;top:10px;background:#fff;border-radius:12px;padding:3px 10px;font-size:12px;font-weight:700">อีก 3 วัน · สอบ</div>
+          <div style="font-family:Mali,cursive;color:#eef0ea;position:absolute;left:24px;top:44px;font-size:15px;line-height:1.5;transform:rotate(-2deg)">สอบย่อย ฟิสิกส์ บท 2–3<br><span style="color:#ffd36e">พฤ. คาบ 3 · ห้อง 412</span></div>
+          <div style="position:absolute;right:10px;bottom:8px;display:flex;gap:4px"><div class="th paper" style="width:30px;height:30px"></div><div class="th sticky" style="width:30px;height:30px"></div></div>
+        </div>
+        <div style="padding:12px 14px;display:flex;gap:12px">
+          <div class="ic" style="background:#fdecea;color:var(--red)">ฟิส</div>
+          <div class="tx"><b>สอบย่อยฟิสิกส์<span class="tag exam">สอบ</span></b><span>พฤ. 19 พ.ย. · 10:00 · โน้ต 3</span>
+            <div class="btns"><span class="b g">อ่านเตรียมสอบ</span><span class="b">ดูโน้ต</span></div></div>
+        </div>
+      </div>
+      <div class="sec">สัปดาห์นี้</div>
+      <div class="it"><div class="ic" style="background:#fdecea;color:var(--red)">ฟิส</div><div class="tx"><b>แบบฝึกบทที่ 3</b><span>ฟิสิกส์ · ~40 น.</span></div><div class="rt red">พรุ่งนี้</div></div>
+      <div class="it"><div class="ic" style="background:#e8f1fd;color:#2d6cc0">คณิต</div><div class="tx"><b>ใบงานลำดับเลขคณิต</b><span>คณิต · ~25 น.</span></div><div class="rt">ศ.</div></div>
+      <div class="it"><div class="ic" style="background:#fff4dc;color:#a87700">Eng</div><div class="tx"><b>ท่องศัพท์ 20 คำ</b><span>อังกฤษ · สอบย่อย</span></div><div class="rt">จ.</div></div>
+    </div>
+    <div class="fade"></div>
+    <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/></svg>ฉัน</a></nav>
+  </div>
+</div>
+
+<!-- ===== B ===== -->
+<div class="col">
+  <div class="cap"><b><i>ข</i>ปฏิทินย่อ (ปรับจากของเพื่อน)</b><span>เก็บไอเดียปฏิทินไว้ แต่ย่อเหลือ 2 สัปดาห์ · ตัดโลโก้/หัวใหญ่ออก · วันสอบเป็นช่องแดงทั้งช่อง (ไม่ใช่จุดเล็ก) · แตะวัน = รายการด้านล่างเปลี่ยน</span>
+    <div class="pc"><u class="p">เห็นวันสอบทันที</u><u class="p">คนคุ้นกับปฏิทิน</u><u class="c">ยังต้องกวาดตาเอง</u></div></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="top"><h2>งาน</h2><div style="font-size:13px;color:var(--sub);font-weight:600;padding-bottom:6px">พ.ย. 2569 ▾</div></div>
+    <div class="pad">
+      <style>.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.wk .h{font-size:11px;color:#9a9ea5;padding:8px 0 2px}.wk .d{height:50px;border-radius:12px;font-size:15px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#f6f7f8}.wk .d i{display:flex;gap:2px}.wk .d i u{width:5px;height:5px;border-radius:3px;background:#2d6cc0}.wk .d.ex{background:#fdecea;color:var(--red)}.wk .d.ex small{font-size:9px;font-weight:700}.wk .d.sel{background:var(--ink);color:#fff}.wk .d.sel i u{background:#fff}.wk .d.past{opacity:.4}</style>
+      <div class="wk" style="margin-top:6px">
+        <div class="h">จ</div><div class="h">อ</div><div class="h">พ</div><div class="h">พฤ</div><div class="h">ศ</div><div class="h">ส</div><div class="h">อา</div>
+        <div class="d sel">16<i><u></u><u></u></i></div><div class="d">17<i><u></u></i></div><div class="d">18</div><div class="d ex">19<small>สอบ</small></div><div class="d">20<i><u></u></i></div><div class="d">21</div><div class="d">22</div>
+        <div class="d">23<i><u></u></i></div><div class="d">24<i><u></u><u></u></i></div><div class="d">25</div><div class="d">26<i><u></u></i></div><div class="d ex">27<small>สอบ</small></div><div class="d">28</div><div class="d">29</div>
+      </div>
+      <div style="text-align:center;font-size:11.5px;color:var(--sub);margin-top:6px">ดึงลงเพื่อดูทั้งเดือน</div>
+      <div class="sec">วันนี้ · จ. 16 <small>2 งาน</small></div>
+      <div class="it"><div class="ic" style="background:#fdecea;color:var(--red)">ฟิส</div><div class="tx"><b>แบบฝึกบทที่ 3</b><span>ส่งพรุ่งนี้ 08:00 · ~40 น.</span></div><div class="rt"><span class="b g">ทำเลย</span></div></div>
+      <div class="it"><div class="ic" style="background:#fff4dc;color:#a87700">Eng</div><div class="tx"><b>ท่องศัพท์ 20 คำ</b><span>สอบย่อย จ. 23 · ~15 น.</span></div><div class="rt"><span class="b">ทำเลย</span></div></div>
+      <div class="sec">ถัดไป</div>
+      <div class="it"><div class="ic" style="background:#fdecea;color:var(--red)">ฟิส</div><div class="tx"><b>สอบย่อยฟิสิกส์<span class="tag exam">สอบ</span></b><span>พฤ. 19 · 10:00</span></div><div class="rt red">อีก 3 วัน</div></div>
+    </div>
+    <div class="fade"></div>
+    <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/></svg>ฉัน</a></nav>
+  </div>
+</div>
+
+<!-- ===== C ===== -->
+<div class="col">
+  <div class="cap"><b><i>ค</i>ตามวิชา (ลิ้นชักโน้ต)</b><span>แต่ละวิชาเป็นลิ้นชัก เห็นรูปโน้ตล่าสุด + งานถัดไปของวิชานั้น · ตอบโจทย์ “โน้ตหน้างาน” ตรงที่สุด — หาใบงานคณิตเก่าเจอใน 1 แตะ</span>
+    <div class="pc"><u class="p">หาโน้ตง่าย</u><u class="p">คิดแบบนักเรียน (ตามวิชา)</u><u class="c">ไม่เรียงตามความด่วน</u></div></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="top"><h2>งาน</h2><div class="fbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div></div>
+    <div class="pad">
+      <style>.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.sc{background:#f6f7f8;border-radius:18px;padding:10px;height:176px;position:relative}.sc .ths{display:flex;gap:4px;height:70px}.sc .ths .th{height:70px}.sc b{display:block;font-size:15px;margin-top:8px}.sc .nx{font-size:11.5px;color:var(--sub);line-height:1.4;margin-top:2px}.sc .cnt{position:absolute;right:10px;top:88px;font-size:11px;font-weight:700;border-radius:9px;padding:1px 7px}</style>
+      <div class="sg">
+        <div class="sc"><div class="ths"><div class="th board" style="flex:2"></div><div class="th paper" style="flex:1"></div></div><b>ฟิสิกส์</b><span class="cnt" style="background:#fdecea;color:var(--red)">2 งาน</span><div class="nx"><span style="color:var(--red);font-weight:600">แบบฝึกบท 3 · พรุ่งนี้</span><br>สอบย่อย · พฤ.</div></div>
+        <div class="sc"><div class="ths"><div class="th paper" style="flex:2"></div><div class="th sticky" style="flex:1"></div></div><b>คณิต</b><span class="cnt" style="background:#e8f1fd;color:#2d6cc0">1 งาน</span><div class="nx">ใบงานลำดับ · ศ.<br>โน้ต 2</div></div>
+        <div class="sc"><div class="ths"><div class="th voice" style="flex:1">🎙️</div><div class="th paper" style="flex:1"></div></div><b>อังกฤษ</b><span class="cnt" style="background:#fff4dc;color:#a87700">1 งาน</span><div class="nx">ท่องศัพท์ · จ.<br>เสียงครู 1 คลิป</div></div>
+        <div class="sc"><div class="ths"><div class="th sticky" style="flex:1"></div><div class="th" style="flex:1;background:#eef0f1"></div></div><b>ไทย</b><span class="cnt" style="background:#eef0f1;color:#3a3f47">1 งาน</span><div class="nx">สรุปขุนช้างฯ · อ. หน้า<br>โน้ต 1</div></div>
+        <div class="sc" style="height:120px"><div class="ths" style="height:50px"><div class="th" style="flex:1;height:50px;background:#eef0f1"></div></div><b>เคมี</b><div class="nx">ไม่มีงานค้าง</div></div>
+        <div class="sc" style="height:120px;background:#fff;border:1.5px dashed #cfd2d6;display:grid;place-items:center;color:var(--sub);font-size:13px;font-weight:600">+ วิชา</div>
+      </div>
+    </div>
+    <div class="fade"></div>
+    <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/></svg>ฉัน</a></nav>
+  </div>
+</div>
+
+<!-- ===== D ===== -->
+<div class="col">
+  <div class="cap"><b><i>ง</i>เสร็จแล้ว (ประวัติแบบ Bolt ตรงตัว)</b><span>Bolt เก็บ “เที่ยวที่ไปแล้ว” · เราเก็บ “งานที่ทำเสร็จ” + เวลาที่ใช้จริง + โน้ตที่แนบ · ทองใช้กับของที่เสร็จจริงเท่านั้น · ใช้เป็นแท็บย่อย “เสร็จแล้ว” ของแบบ ก ได้</span>
+    <div class="pc"><u class="p">เห็นว่าทำไปเยอะแล้ว</u><u class="p">หาโน้ตเก่าได้</u><u class="c">ไม่ช่วยตัดสินใจตอนนี้</u></div></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="top"><h2>งาน</h2><div class="fbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></div></div>
+    <div class="pad">
+      <div class="seg"><span>ต้องทำ · 6</span><span class="on">เสร็จแล้ว</span></div>
+      <!-- latest done card -->
+      <div style="margin-top:12px;border:1px solid #efe3c2;border-radius:20px;padding:12px 14px;background:#fffcf3">
+        <div style="display:flex;gap:6px;height:84px">
+          <div class="th paper" style="flex:2;height:84px"></div><div class="th sticky" style="flex:1;height:84px"></div><div class="th board" style="flex:1;height:84px"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:10px">
+          <div class="ic" style="background:#f7edd2;color:var(--gold);font-size:22px">✓</div>
+          <div class="tx"><b>รายงานชีวะ · ระบบหายใจ</b><span>เสร็จเมื่อ อา. 15 พ.ย. 20:14 · ใช้ 55 น.</span>
+            <div class="btns"><span class="b">ดูโน้ต</span><span class="b">ทำแบบนี้อีก</span></div></div>
+        </div>
+      </div>
+      <div class="sec">พฤศจิกายน <small>เสร็จ 9 งาน</small></div>
+      <div class="it"><div class="ic" style="background:#f7edd2;color:var(--gold)">✓</div><div class="tx"><b>เคมี · แบบฝึกโมล</b><span>13 พ.ย. 21:02</span></div><div class="rt" style="color:var(--sub);font-weight:500">35 น.</div></div>
+      <div class="it"><div class="ic" style="background:#f7edd2;color:var(--gold)">✓</div><div class="tx"><b>คณิต · ใบงานที่ 5</b><span>12 พ.ย. 19:40</span></div><div class="rt" style="color:var(--sub);font-weight:500">20 น.</div></div>
+      <div class="it"><div class="ic" style="background:#f7edd2;color:var(--gold)">✓</div><div class="tx"><b>อังกฤษ · Reading Unit 4</b><span>10 พ.ย. 17:15</span></div><div class="rt" style="color:var(--sub);font-weight:500">25 น.</div></div>
+    </div>
+    <div class="fade"></div>
+    <nav class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="#16181d"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/></svg>ฉัน</a></nav>
+  </div>
+</div>
+
+</div>
+</body></html>

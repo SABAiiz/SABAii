@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Mali:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#16181d;--sub:#6b7079;--tile:#eef0f1;--go:#2fb36b;--go-d:#1f9356}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d9dcdf;font-family:"IBM Plex Sans Thai",Loma,sans-serif;color:var(--ink);padding:36px 40px 40px;width:1570px}
+.head h1{font-size:24px}.head p{color:#4a4f57;font-size:14px;margin-top:2px}
+.row{display:flex;align-items:flex-start;margin-top:22px}
+.col{width:395px}
+.cap{height:62px}
+.cap b{font-size:16px;display:block}
+.cap b i{font-style:normal;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--ink);color:#fff;font-size:13px;margin-right:6px}
+.cap span{font-size:12.5px;color:#4a4f57}
+.arrow{width:124px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:812px;margin-top:62px;gap:8px;font-size:12.5px;font-weight:600;color:#3a3f47;text-align:center}
+.arrow svg{width:56px;height:56px}
+.crop{width:395px;height:832px;overflow:hidden;position:relative;border-radius:52px}
+.crop img{position:absolute;width:900px;left:-30px;top:-30px}
+.phone{margin:10px;width:375px;height:812px;background:#f2f3ef;border-radius:44px;position:relative;overflow:hidden;box-shadow:0 24px 50px rgba(0,0,0,.16),0 0 0 10px #111}
+.status{position:absolute;top:0;left:0;right:0;height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-weight:600;font-size:15px;z-index:5}
+.status i{display:inline-block;width:24px;height:11px;border:1.5px solid var(--ink);border-radius:3px;position:relative}
+.status i:after{content:"";position:absolute;inset:1.5px;right:6px;background:var(--ink);border-radius:1px}
+.back{position:absolute;left:16px;top:54px;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.12);display:grid;place-items:center;z-index:5}
+.subjchip{position:absolute;left:70px;top:60px;height:32px;border-radius:16px;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.10);display:flex;align-items:center;gap:7px;padding:0 12px 0 5px;font-size:13px;font-weight:600;z-index:5}
+.subjchip span{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:9.5px;font-weight:700}
+.pager{position:absolute;right:12px;top:150px;display:flex;flex-direction:column;gap:7px;z-index:5;align-items:center}
+.pager i{width:7px;height:7px;border-radius:4px;background:#c4c7cc}
+.pager i.on{height:22px;background:var(--ink)}
+.pager small{font-size:9.5px;color:var(--sub);writing-mode:vertical-rl;margin-top:4px}
+.addnote{position:absolute;right:16px;top:398px;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(0,0,0,.14);display:grid;place-items:center;z-index:5;font-size:24px;font-weight:400}
+.peek{position:absolute;left:50%;transform:translateX(-50%);top:420px;width:250px;height:40px;border-radius:14px 14px 0 0;background:#fff;box-shadow:0 -2px 10px rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--sub);font-weight:500;z-index:2}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:356px;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -6px 20px rgba(0,0,0,.08);padding:0 24px;z-index:4}
+.handle{width:40px;height:5px;border-radius:3px;background:#cfd2d6;margin:9px auto 14px}
+.t1{display:flex;justify-content:space-between;align-items:flex-start}
+.t1 h2{font-size:21px;line-height:1.3}
+.meta{font-size:13.5px;color:var(--sub);margin-top:4px}
+.meta em{font-style:normal;color:#c43d35;font-weight:600}
+hr{border:0;border-top:1px solid #eceef0;margin:14px 0}
+.lbl{font-size:12px;color:#a0a4ab;text-align:center;margin-bottom:8px}
+.opts{display:flex;gap:8px}
+.opt{flex:1;height:46px;border-radius:23px;background:var(--tile);display:flex;align-items:center;justify-content:center;gap:6px;font-size:13.5px;font-weight:500}
+.cta{position:absolute;left:24px;right:24px;bottom:30px;height:56px;border-radius:28px;background:var(--go);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px}
+/* notes */
+.paper{position:absolute;background:#fff;border-radius:6px;box-shadow:0 10px 24px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.1)}
+.lined{background-image:repeating-linear-gradient(#fff 0 25px,#d6e4f5 25px 26px);}
+.hand{font-family:Mali,"IBM Plex Sans Thai",cursive;color:#20304f}
+.sticky{position:absolute;background:#ffe98a;box-shadow:0 8px 18px rgba(0,0,0,.14);padding:12px 14px;font-size:14px;line-height:1.45;z-index:3}
+.tag{position:absolute;font-size:10.5px;background:rgba(22,24,29,.75);color:#fff;border-radius:8px;padding:3px 8px}
+</style></head><body>
+
+<div class="head">
+  <h1>SABAii · ดึงหน้าแรกลง → โน้ตหน้างานของแต่ละวิชา</h1>
+  <p>ดึงแผ่นงานลงแล้ว ส่วนบน (ที่ Bolt เป็นแผนที่) กลายเป็น “โน้ตหน้างาน” — รูปหรือข้อความที่แนบไว้กับงานนั้น · เริ่มที่งานที่แนะนำอันดับ 1 แล้วปัดขึ้นไปงานถัดไปตามลำดับเดียวกับหน้าแรก · ข้อมูลในภาพเป็นตัวอย่าง</p>
+</div>
+
+<div class="row">
+
+<!-- 1. home -->
+<div class="col">
+  <div class="cap"><b><i>1</i>หน้าแรก</b><span>แผ่นงานอยู่ด้านบนตามปกติ</span></div>
+  <div class="crop"><img src="sabaii-home.png"></div>
+</div>
+
+<div class="arrow">
+  <svg viewBox="0 0 56 56" fill="none" stroke="#16181d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M28 10v34M16 32l12 12 12-12"/></svg>
+  ดึงลง<br><span style="font-weight:400;color:#6b7079">จับที่จับด้านบน<br>หรือแตะงาน</span>
+</div>
+
+<!-- 2. physics note -->
+<div class="col">
+  <div class="cap"><b><i>2</i>โน้ตงาน · ฟิสิกส์</b><span>รูปกระดานที่ถ่ายตอนครูสั่งงาน</span></div>
+  <div class="phone">
+    <div class="status" style="color:#fff"><span>16:40</span><i style="border-color:#fff"></i></div>
+    <!-- whiteboard / chalkboard photo full-bleed -->
+    <div style="position:absolute;left:0;right:0;top:0;height:470px;background:radial-gradient(120% 90% at 40% 30%,#3d5a48,#24372c);overflow:hidden">
+      <div style="position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.025) 0 2px,transparent 2px 9px)"></div>
+      <div class="hand" style="position:absolute;left:44px;top:128px;color:#f1f3ee;font-size:21px;line-height:1.55;transform:rotate(-2deg)">
+        การบ้าน ฟิสิกส์ บทที่ 3<br>
+        <span style="font-size:17px">แบบฝึกหัด ข้อ 1 – 12</span><br>
+        <span style="font-size:17px">F = ma &nbsp;&nbsp; v = u + at</span><br>
+        <span style="font-size:18px;color:#ffd36e">ส่ง อังคาร 08:00 !!</span>
+      </div>
+      <svg style="position:absolute;left:206px;top:262px" width="120" height="40"><path d="M4 30 C40 6 80 6 116 22" fill="none" stroke="#ffd36e" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(transparent,rgba(0,0,0,.25))"></div>
+      <div class="tag" style="left:20px;bottom:56px">📷 ถ่ายเมื่อ จ. 16 พ.ย. 10:12</div>
+    </div>
+    <div class="back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></div>
+    <div class="subjchip"><span style="background:#fdecea;color:#c43d35">ฟิส</span>โน้ต 1 รายการ</div>
+    <div class="pager"><i class="on" style="background:#fff"></i><i style="background:rgba(255,255,255,.4)"></i><i style="background:rgba(255,255,255,.4)"></i><i style="background:rgba(255,255,255,.4)"></i><small style="color:#dfe5df">1 / 4</small></div>
+    <div class="addnote">+</div>
+    <div class="peek"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7079" stroke-width="2.6" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg>ปัดขึ้น · คณิต</div>
+
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="t1"><div><h2>ฟิสิกส์ · แบบฝึกบทที่ 3</h2><div class="meta"><em>ส่งพรุ่งนี้ 08:00</em> · ~40 นาที · 12 ข้อ</div></div>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></div>
+      <hr>
+      <div class="lbl">เพิ่มโน้ตให้งานนี้</div>
+      <div class="opts">
+        <div class="opt">📷 รูป</div><div class="opt">✏️ ข้อความ</div><div class="opt">🎙️ เสียง</div>
+      </div>
+      <div class="cta">ทำเลย</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">
+  <svg viewBox="0 0 56 56" fill="none" stroke="#16181d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 28h34M32 16l12 12-12 12"/></svg>
+  ปัดขึ้น<br><span style="font-weight:400;color:#6b7079">ไปวิชาถัดไป<br>แผ่นล่างเปลี่ยนตาม</span>
+</div>
+
+<!-- 3. math note -->
+<div class="col">
+  <div class="cap"><b><i>3</i>โน้ตงาน · คณิต</b><span>รูปใบงานที่ถ่ายไว้ + ข้อความที่จดเอง</span></div>
+  <div class="phone">
+    <div class="status"><span>16:41</span><i></i></div>
+    <div class="back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></div>
+    <div class="subjchip"><span style="background:#e8f1fd;color:#2d6cc0">คณิต</span>โน้ต 2 รายการ</div>
+    <div class="pager"><i></i><i class="on"></i><i></i><i></i><small>2 / 4</small></div>
+
+    <!-- worksheet photo -->
+    <div class="paper" style="left:34px;top:112px;width:250px;height:290px;transform:rotate(-4deg);padding:16px 18px;overflow:hidden">
+      <div style="font-size:12px;font-weight:700;color:#3a3f47;border-bottom:2px solid #16181d;padding-bottom:5px">ใบงานที่ 6 · ลำดับเลขคณิต &nbsp;<span style="font-weight:400;color:#8a8e95">ม.5/2</span></div>
+      <div style="font-size:11px;line-height:1.75;color:#3a3f47;margin-top:8px">
+        <div style="background:#fff2a8;display:inline;padding:0 2px">สูตร aₙ = a₁ + (n − 1)d</div><br>
+        1. หาพจน์ที่ 20 ของ 3, 7, 11, …<br>
+        2. ลำดับมี a₅ = 17, d = 3 จงหา a₁<br>
+        3. หาผลบวก 15 พจน์แรกของ 2, 5, 8, …<br>
+        4. พจน์ใดของ 5, 9, 13, … มีค่า 101<br>
+        5. ระหว่าง 10 กับ 100 มีจำนวนที่ 7 หาร…<br>
+        6. ………………………………<br>
+        7. ………………………………
+      </div>
+      <svg style="position:absolute;right:14px;top:58px" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="#e2564b" stroke-width="2.4" stroke-dasharray="80 20"/></svg>
+      <div class="tag" style="left:12px;bottom:10px">📷 ถ่ายเมื่อ ศ. 13 พ.ย.</div>
+    </div>
+    <!-- sticky text note -->
+    <div class="sticky hand" style="left:178px;top:262px;width:150px;transform:rotate(3deg)">
+      ครูบอก<br>ทำแค่ <b>ข้อคี่</b> ก็พอ<br>ส่งในห้อง ไม่ต้องส่งออนไลน์
+    </div>
+    <div class="addnote">+</div>
+    <div class="peek"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7079" stroke-width="2.6" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg>ปัดขึ้น · อังกฤษ</div>
+
+    <div class="sheet">
+      <div class="handle"></div>
+      <div class="t1"><div><h2>ใบงานลำดับเลขคณิต</h2><div class="meta">คณิต · ส่งศุกร์ 20 พ.ย. · ~25 นาที</div></div>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16181d" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></div>
+      <hr>
+      <div class="lbl">เพิ่มโน้ตให้งานนี้</div>
+      <div class="opts">
+        <div class="opt">📷 รูป</div><div class="opt">✏️ ข้อความ</div><div class="opt">🎙️ เสียง</div>
+      </div>
+      <div class="cta">ทำเลย</div>
+    </div>
+  </div>
+</div>
+</div>
+</body></html>

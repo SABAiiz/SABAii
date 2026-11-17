@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Mali:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../src/styles/app.css">
+<style>
+body{background:#D6DEE9!important;padding:32px 36px 40px;width:2560px;font-family:"Inter","Noto Sans Thai Looped",sans-serif}
+.head h1{font-size:26px;color:#15233D}.head p{color:#4A5568;font-size:14.5px;margin-top:2px;max-width:1500px}
+.legend{display:flex;gap:16px;margin-top:10px;font-size:13px;color:#3B4658}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.row{display:flex;gap:34px;margin-top:18px;align-items:flex-start}
+.col{width:375px}
+.cap{min-height:108px;margin-bottom:12px}
+.cap b{font-size:16.5px;display:block;color:#15233D}
+.cap b i{font-style:normal;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#15233D;color:#fff;font-size:13px;margin-right:6px}
+.cap ul{margin:6px 0 0 18px;font-size:12.8px;color:#3B4658;line-height:1.55}
+.phone{width:375px;height:812px;border-radius:44px;overflow:hidden;position:relative;transform:translateZ(0);background:var(--page);box-shadow:0 24px 50px rgba(15,30,60,.18),0 0 0 9px #111}
+.status{height:40px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font-weight:600;font-size:14.5px;color:#15233D;position:relative;z-index:3}
+.status i{display:inline-block;width:23px;height:11px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.status i:after{content:"";position:absolute;inset:1.5px;right:6px;background:currentColor;border-radius:1px}
+.ph-nav{position:absolute;left:0;right:0;bottom:0;height:68px;background:#fff;border-radius:22px 22px 0 0;border-top:1px solid var(--border);box-shadow:0 -4px 20px rgba(21,35,61,.07);display:flex;padding:6px 16px 8px;z-index:30}
+.ph-nav a{flex:1;max-width:120px;margin:0 auto;border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11.5px;font-weight:500;color:var(--text-2)}
+.ph-nav a svg{width:21px;height:21px}
+.ph-nav a.on{background:var(--blue-light);color:var(--blue);font-weight:600}
+.lock-s{display:flex;align-items:center;justify-content:center;gap:6px}
+.lock-s svg{width:30px;height:30px}.lock-s b{font-size:22px;color:var(--blue);font-weight:700}.lock-s b span{color:var(--blue-deep)}
+.pt{text-align:center;font-size:24px;font-weight:700;color:var(--blue-deep);margin:0 0 8px}
+.bell{position:absolute;right:14px;top:44px;width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06);z-index:3}
+.bell svg{width:19px;height:19px}
+.sheet2{background:#fff;border-radius:26px 26px 0 0;box-shadow:0 -6px 26px rgba(23,105,210,.10);position:absolute;left:0;right:0;bottom:0;padding:0 16px 84px}
+.grip2{padding:10px 0 6px}.grip2 i{display:block;width:46px;height:5px;border-radius:3px;background:#CDD7E5;margin:0 auto}
+/* ระดับความสำคัญ */
+:root{--p1:#E0344B;--p1b:#FDE8EB;--p2:#E88A12;--p2b:#FFF2E0;--p3:#1769D2;--p3b:#EAF3FF;--p4:#7A8699;--p4b:#EEF1F5}
+.lv{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;border-radius:9px;padding:1px 8px;white-space:nowrap}
+.lv.l1{background:var(--p1b);color:var(--p1)}.lv.l2{background:var(--p2b);color:var(--p2)}.lv.l3{background:var(--p3b);color:var(--p3)}.lv.l4{background:var(--p4b);color:var(--p4)}
+.pr{display:flex;align-items:stretch;gap:10px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:10px 10px 10px 0;overflow:hidden}
+.pr .rk{width:34px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:3px solid var(--c);font-weight:700;font-size:18px;color:var(--c)}
+.pr .rk small{font-size:9px;font-weight:600;color:var(--text-2)}
+.pr .tx{flex:1;min-width:0}
+.pr .tx .l1r{display:flex;align-items:center;gap:6px}
+.pr .tx b{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;margin-top:2px}
+.pr .tx .why{font-size:12px;color:var(--text-2);margin-top:2px;display:flex;gap:4px;align-items:center}
+.pr .tx .why svg{width:13px;height:13px;flex:none}
+.pr .go{align-self:center;height:36px;padding:0 14px;border-radius:11px;font-size:13.5px}
+.plist{display:flex;flex-direction:column;gap:8px}
+.ghd{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;margin:12px 0 6px;color:var(--text-2)}
+.ghd i{width:8px;height:8px;border-radius:4px;display:inline-block}
+/* หน้าโน้ตของงาน */
+.npage{position:absolute;inset:0;display:flex;flex-direction:column}
+.ntop{padding:6px 16px 10px;display:flex;flex-direction:column;gap:8px;position:relative;z-index:3}
+.ntop .r1{display:flex;align-items:center;gap:8px}
+.rank{font-size:12.5px;font-weight:700;color:var(--text-2)}
+.ntop .r1 .sp{flex:1}
+.vbtn{height:32px;border-radius:16px;background:#fff;border:1px solid var(--border);display:inline-flex;align-items:center;gap:5px;padding:0 11px;font-size:12px;font-weight:600}
+.vbtn svg{width:15px;height:15px}
+.ntop h2{font-size:22px;line-height:1.3;font-weight:700}
+.ntop .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--text-2)}
+.why2{display:flex;gap:8px;align-items:flex-start;border-radius:12px;padding:8px 10px;font-size:12.5px;line-height:1.45}
+.why2 svg{width:16px;height:16px;flex:none;margin-top:1px}
+.paper{margin:0 16px;border-radius:18px;flex:1;min-height:0;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(21,35,61,.10)}
+.paper.lined{background:#fff repeating-linear-gradient(#fff 0 31px,#DCE7F5 31px 32px);background-position:0 14px;border:1px solid var(--border)}
+.paper.lined:before{content:"";position:absolute;left:44px;top:0;bottom:0;width:2px;background:#F6C3CB}
+.ink{font-family:"Mali","Noto Sans Thai Looped",cursive;color:#1D3557;font-size:16.5px;line-height:32px;padding:14px 16px 0 58px}
+.ink .ck{display:flex;gap:8px;align-items:center}
+.ink .ck i{width:16px;height:16px;border:2px solid #1D3557;border-radius:4px;display:inline-block;flex:none}
+.ink .ck.done i{background:#16B76A;border-color:#16B76A}
+.ink .ck.done span{text-decoration:line-through;opacity:.55}
+.board{background:radial-gradient(circle at 40% 30%,#3D5A48,#24372C)}
+.board .chalk{font-family:"Mali",cursive;color:#EEF1EA;font-size:19px;line-height:1.75;padding:26px 22px;transform:rotate(-1.5deg)}
+.board .chalk em{color:#FFD36E;font-style:normal}
+.stk{position:absolute;right:14px;bottom:16px;width:150px;background:#FFF3B8;color:#3D3300;padding:12px;font-family:"Mali",cursive;font-size:14px;line-height:1.45;transform:rotate(2deg);box-shadow:0 8px 16px rgba(0,0,0,.18)}
+.tag2{position:absolute;left:12px;top:12px;font-size:10.5px;background:rgba(15,26,44,.7);color:#fff;border-radius:8px;padding:2px 8px}
+.ntools{display:flex;gap:8px;padding:10px 16px 0}
+.ntools button{height:40px;border-radius:12px;background:#fff;border:1px solid var(--border);font-size:13px;font-weight:600;padding:0 12px;display:inline-flex;align-items:center;gap:6px}
+.ntools button svg{width:16px;height:16px}
+.ntools .grow{flex:1}
+.ntools .go2{background:#16B76A;color:#fff;border:0;flex:1.3;justify-content:center;font-size:14.5px}
+.nextp{margin:10px 16px 0;height:62px;border-radius:16px 16px 0 0;background:#fff;border:1px solid var(--border);border-bottom:0;display:flex;align-items:center;gap:10px;padding:0 12px;box-shadow:0 -4px 12px rgba(0,0,0,.05)}
+.nextp small{display:block;font-size:11px;color:var(--text-2)}.nextp b{font-size:13.5px;font-weight:600}
+.nextp .up{margin-left:auto;color:var(--text-2)}.nextp .up svg{width:18px;height:18px}
+.pdots{position:absolute;right:6px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px;z-index:4}
+.pdots i{width:5px;height:5px;border-radius:3px;background:#C3CDDB}.pdots i.on{height:16px;background:var(--blue)}
+/* หน้าฉันใหม่ */
+.me2{padding:6px 16px 0}
+.me2 .hi{display:flex;align-items:center;gap:12px;margin-top:6px}
+.me2 .hi h2{font-size:26px;font-weight:700;flex:1}
+.me2 .av{width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:700;font-size:20px}
+.today2{margin-top:14px;border-radius:20px;background:#fff;border:1px solid var(--border);padding:14px}
+.today2 .k{font-size:12.5px;color:var(--text-2);font-weight:600}
+.today2 .big{font-size:17px;font-weight:600;margin-top:4px;line-height:1.45}
+.today2 .big em{font-style:normal;color:var(--p1)}
+.load{display:flex;gap:4px;margin-top:12px;height:8px}
+.load i{flex:1;border-radius:4px}
+.loadlab{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text-2);margin-top:4px}
+.grp{margin-top:16px}
+.grp h3{font-size:13px;color:var(--text-2);font-weight:600;margin:0 4px 6px}
+.lst{background:#fff;border-radius:18px;border:1px solid var(--border);overflow:hidden}
+.lst div{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border);font-size:15px}
+.lst div:last-child{border-bottom:0}
+.lst div svg{width:21px;height:21px;color:var(--text)}
+.lst div .k{flex:1;font-weight:500}
+.lst div .v{font-size:12.5px;color:var(--text-2)}
+.lst div .ch{width:16px;height:16px;color:var(--text-2)}
+.sw{width:42px;height:24px;border-radius:12px;background:var(--blue);position:relative}.sw:after{content:"";position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+</style></head><body>
+<div class="head">
+  <h1>SABAii · โครงใหม่ — งานเรียงตามความสำคัญ · แต่ละงานเป็นโน้ต 1 หน้า</h1>
+  <p>ไม่ใช้อะไรจากแอปเดิม · หน้าแรกตาม Canva · แท็บ "งาน" = สมุดโน้ตที่เรียงหน้าตามความสำคัญ ปัดขึ้นไปงานถัดไป · ทุกงานมี "อันดับ + ระดับ + เหตุผล" · ข้อมูลในภาพเป็นตัวอย่าง (วันนี้ จ. 16 พ.ย. 16:40)</p>
+  <div class="legend"><b>ระดับ:</b><span><span class="lv l1">ด่วนมาก</span> ส่ง/สอบภายใน 24 ชม. หรือเลยกำหนด</span><span><span class="lv l2">สำคัญ</span> สอบใน 3 วัน · งานที่เวลาว่างเริ่มไม่พอ</span><span><span class="lv l3">ปกติ</span> ยังมีเวลา</span><span><span class="lv l4">รอได้</span> ยังไม่มีกำหนด / เกิน 7 วัน</span></div>
+</div>
+<div class="row">
+
+<!-- 1 HOME -->
+<div class="col">
+  <div class="cap"><b><i>1</i>หน้าแรก</b><ul>
+    <li>โครงตาม Canva: โลโก้ · เพิ่มงาน 2×2 · งานแนะนำ</li>
+    <li>งานแนะนำ = <b style="display:inline;font-size:12.8px">เรียงตามความสำคัญ</b> มีเลขอันดับ ระดับสี และเหตุผล 1 บรรทัด</li>
+    <li>ไม่ใช่แค่บอกว่ามีงาน — บอกว่าทำไมต้องทำก่อน</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="bell" data-i="bell"></div>
+    <div class="lock-s" data-cap></div>
+    <div class="pt">หน้าแรก</div>
+    <div class="sheet2" style="top:112px">
+      <div class="grip2"><i></i></div>
+      <div class="bar-title" style="margin:2px 0 8px"><h2>เพิ่มงานหลายอย่าง หลายครั้ง หลายเวลา</h2></div>
+      <div class="qgrid2" style="gap:8px" data-q></div>
+      <div class="bar-title" style="margin:14px 0 8px"><h2>งานแนะนำวันนี้</h2><span style="font-size:12px;color:var(--text-2)">เรียงตามความสำคัญ</span></div>
+      <div class="plist">
+        <div class="pr" style="--c:var(--p1)"><div class="rk">1</div><div class="tx"><div class="l1r"><span class="lv l1">ด่วนมาก</span><span style="font-size:11.5px;color:var(--text-2)">ฟิสิกส์</span></div><b>แบบฝึกหัดบทที่ 3</b><div class="why"><span data-i="clock"></span>ส่งพรุ่งนี้ 08:00 · เหลือ 15 ชม. · ยังไม่เริ่ม</div></div><button class="go">ทำเลย</button></div>
+        <div class="pr" style="--c:var(--p2)"><div class="rk">2</div><div class="tx"><div class="l1r"><span class="lv l2">สำคัญ</span><span style="font-size:11.5px;color:var(--text-2)">ฟิสิกส์</span></div><b>อ่านสอบย่อยไฟฟ้า</b><div class="why"><span data-i="clock"></span>สอบ พฤ. · ต้องอ่าน ~2 ชม. ว่างแค่ 2 เย็น</div></div><button class="go">ทำเลย</button></div>
+        <div class="pr" style="--c:var(--p3)"><div class="rk">3</div><div class="tx"><div class="l1r"><span class="lv l3">ปกติ</span><span style="font-size:11.5px;color:var(--text-2)">อังกฤษ</span></div><b>ท่องศัพท์ Unit 5</b><div class="why"><span data-i="clock"></span>ส่งพรุ่งนี้ · ใช้แค่ 15 นาที</div></div><button class="go">ทำเลย</button></div>
+      </div>
+    </div>
+    <div class="ph-nav" data-nav="0"></div>
+  </div>
+</div>
+
+<!-- 2 HOME PULLED -->
+<div class="col">
+  <div class="cap"><b><i>2</i>หน้าแรก · ดึงแผ่นลง (หน้าเลื่อน)</b><ul>
+    <li>แผ่นลงล่างเหลือ "จะเริ่มงานไหน? · อื่นๆ" ตาม Canva</li>
+    <li>ด้านบนคือโน้ตของ <b style="display:inline;font-size:12.8px">งานอันดับ 1</b> พร้อมเหตุผลว่าทำไมต้องทำก่อน</li>
+    <li>ปัดขึ้น = งานอันดับถัดไป (เหมือนแท็บงาน)</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="ntop"><div class="r1"><span class="rank">อันดับ 1 จาก 5</span><span class="lv l1">ด่วนมาก</span></div>
+      <h2 style="font-size:19px">ฟิสิกส์ · แบบฝึกหัดบทที่ 3</h2>
+      <div class="why2" style="background:var(--p1b);color:#8E1B2C"><span data-i="flag"></span><span>ส่งพรุ่งนี้ 08:00 เหลือ 15 ชม. · ยังไม่เริ่ม · พรุ่งนี้เย็นมีซ้อมบาส</span></div></div>
+    <div class="paper board" style="position:absolute;left:0;right:0;top:186px;bottom:220px"><div class="chalk">การบ้าน ฟิสิกส์ บทที่ 3<br>แบบฝึกหัด ข้อ 1 – 12<br>F = ma &nbsp; v = u + at<br><em>ส่ง อังคาร 08:00 !!</em></div><span class="tag2">📷 รูปกระดาน · จ. 10:12</span><div class="stk">ครูบอก ทำแค่ข้อคี่</div></div>
+    <div class="sheet2" style="padding-bottom:80px"><div class="grip2"><i></i></div><div class="where"><span data-i="search"></span><button class="q">จะเริ่มงานไหน?</button><button class="other">อื่นๆ</button></div></div>
+    <div class="ph-nav" data-nav="0"></div>
+  </div>
+</div>
+
+<!-- 3 NOTE PAGE 1 -->
+<div class="col">
+  <div class="cap"><b><i>3</i>แท็บงาน · หน้าโน้ตอันดับ 1</b><ul>
+    <li>เปิดแท็บ "งาน" = เจอหน้าโน้ตของงานสำคัญที่สุดทันที</li>
+    <li>หัวหน้า: อันดับ · ระดับ · เหตุผล · กำหนดส่ง</li>
+    <li>ตัวหน้าเป็นโน้ต: รูปกระดาน + กระดาษโน้ตที่จดเอง · ด้านล่างมีหน้าถัดไปโผล่ให้ปัดขึ้น</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="pdots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+    <div class="npage" style="top:40px;bottom:68px">
+      <div class="ntop"><div class="r1"><span class="rank">อันดับ 1 จาก 5</span><span class="lv l1">ด่วนมาก</span><span class="sp"></span><span class="vbtn"><span data-i="list"></span>ภาพรวม</span><span class="vbtn"><span data-i="cal"></span></span></div>
+        <h2>แบบฝึกหัดบทที่ 3</h2>
+        <div class="meta"><span class="chipsubj" style="width:auto;height:auto;padding:2px 8px;border-radius:8px;font-size:11.5px;background:#8B5CF6">ฟิสิกส์</span>ส่ง อ. 17 พ.ย. 08:00 · ~40 นาที</div>
+        <div class="why2" style="background:var(--p1b);color:#8E1B2C"><span data-i="flag"></span><span>ทำก่อนเพราะ เหลือ 15 ชม. และยังไม่เริ่ม · พรุ่งนี้เย็นไม่ว่าง</span></div></div>
+      <div class="paper board"><div class="chalk">การบ้าน ฟิสิกส์ บทที่ 3<br>แบบฝึกหัด ข้อ 1 – 12<br>F = ma &nbsp; v = u + at<br><em>ส่ง อังคาร 08:00 !!</em></div><span class="tag2">📷 รูปกระดาน · 1/2</span><div class="stk">ครูบอก ทำแค่ข้อคี่<br>ส่งในห้อง</div></div>
+      <div class="ntools"><button><span data-i="pen"></span>จด</button><button><span data-i="camera"></span>รูป</button><button class="go2">ทำเลย</button></div>
+      <div class="nextp"><span class="lv l2">2</span><div><small>หน้าถัดไป · ปัดขึ้น</small><b>อ่านสอบย่อยไฟฟ้า · สำคัญ</b></div><span class="up" data-i="up"></span></div>
+    </div>
+    <div class="ph-nav" data-nav="1"></div>
+  </div>
+</div>
+
+<!-- 4 NOTE PAGE 2 -->
+<div class="col">
+  <div class="cap"><b><i>4</i>ปัดขึ้น · หน้าโน้ตอันดับ 2</b><ul>
+    <li>งานที่ไม่มีรูป = หน้ากระดาษเส้นให้จดได้เลย</li>
+    <li>จดเป็นรายการติ๊กได้ (☐ บทที่ 2 · ☐ บทที่ 3) — ติ๊กครบระบบเลื่อนอันดับให้เอง</li>
+    <li>ความคืบหน้าของโน้ตเห็นบนหัวหน้า</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>16:41</span><i></i></div>
+    <div class="pdots"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+    <div class="npage" style="top:40px;bottom:68px">
+      <div class="ntop"><div class="r1"><span class="rank">อันดับ 2 จาก 5</span><span class="lv l2">สำคัญ</span><span class="sp"></span><span class="vbtn"><span data-i="list"></span>ภาพรวม</span><span class="vbtn"><span data-i="cal"></span></span></div>
+        <h2>อ่านสอบย่อยไฟฟ้า</h2>
+        <div class="meta"><span class="chipsubj" style="width:auto;height:auto;padding:2px 8px;border-radius:8px;font-size:11.5px;background:#8B5CF6">ฟิสิกส์</span>สอบ พฤ. 19 พ.ย. 10:00 · ห้อง 412 · อ่านแล้ว 1/3</div>
+        <div class="why2" style="background:var(--p2b);color:#8A4B00"><span data-i="flag"></span><span>สำคัญเพราะ สอบอีก 3 วัน ต้องอ่าน ~2 ชม. แต่ว่างแค่ 2 เย็น</span></div></div>
+      <div class="paper lined"><div class="ink">
+        สอบย่อย บท 2–3 (ไฟฟ้า)<br>
+        <span class="ck done"><i></i><span>บทที่ 2 กระแสไฟฟ้า</span></span>
+        <span class="ck"><i></i><span>บทที่ 3 วงจร + สูตร</span></span>
+        <span class="ck"><i></i><span>ทำโจทย์เก่าปีที่แล้ว</span></span>
+        ครูบอกออกเรื่อง R ต่อขนาน เยอะ!
+      </div></div>
+      <div class="ntools"><button><span data-i="pen"></span>จด</button><button><span data-i="camera"></span>รูป</button><button class="go2">ทำเลย</button></div>
+      <div class="nextp"><span class="lv l3">3</span><div><small>หน้าถัดไป · ปัดขึ้น</small><b>ท่องศัพท์ Unit 5 · ปกติ</b></div><span class="up" data-i="up"></span></div>
+    </div>
+    <div class="ph-nav" data-nav="1"></div>
+  </div>
+</div>
+
+<!-- 5 OVERVIEW -->
+<div class="col">
+  <div class="cap"><b><i>5</i>แท็บงาน · ภาพรวม</b><ul>
+    <li>กด "ภาพรวม" = เห็นทุกหน้าเรียงตามความสำคัญ จัดกลุ่มตามระดับ</li>
+    <li>แตะงานไหน = เปิดหน้าโน้ตของงานนั้น</li>
+    <li>ปุ่มปฏิทินเล็กอยู่มุมขวาเหมือนเดิม</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div style="padding:0 16px">
+      <div style="display:flex;align-items:center;gap:8px;margin:2px 0 10px"><h2 style="font-size:24px;font-weight:700;flex:1;color:var(--blue-deep)">งาน · ภาพรวม</h2><span class="vbtn"><span data-i="cal"></span>ปฏิทิน</span></div>
+      <div class="ghd"><i style="background:var(--p1)"></i>ด่วนมาก · 1</div>
+      <div class="plist"><div class="pr" style="--c:var(--p1)"><div class="rk">1</div><div class="tx"><b>ฟิสิกส์ · แบบฝึกหัดบทที่ 3</b><div class="why">เหลือ 15 ชม. · ยังไม่เริ่ม · โน้ต 2</div></div></div></div>
+      <div class="ghd"><i style="background:var(--p2)"></i>สำคัญ · 1</div>
+      <div class="plist"><div class="pr" style="--c:var(--p2)"><div class="rk">2</div><div class="tx"><b>ฟิสิกส์ · อ่านสอบย่อยไฟฟ้า</b><div class="why">สอบ พฤ. · อ่านแล้ว 1/3</div></div></div></div>
+      <div class="ghd"><i style="background:var(--p3)"></i>ปกติ · 2</div>
+      <div class="plist">
+        <div class="pr" style="--c:var(--p3)"><div class="rk">3</div><div class="tx"><b>อังกฤษ · ท่องศัพท์ Unit 5</b><div class="why">ส่งพรุ่งนี้ · 15 นาที</div></div></div>
+        <div class="pr" style="--c:var(--p3)"><div class="rk">4</div><div class="tx"><b>คณิต · ใบงานลำดับเลขคณิต</b><div class="why">ส่ง ศ. 20 · 25 นาที</div></div></div></div>
+      <div class="ghd"><i style="background:var(--p4)"></i>รอได้ · 1</div>
+      <div class="plist"><div class="pr" style="--c:var(--p4)"><div class="rk">5</div><div class="tx"><b>ไทย · สรุปขุนช้างขุนแผน</b><div class="why">ส่ง อ. 24 · ยังเหลือ 8 วัน</div></div></div></div>
+    </div>
+    <div class="ph-nav" data-nav="1"></div>
+  </div>
+</div>
+
+<!-- 6 ME -->
+<div class="col">
+  <div class="cap"><b><i>6</i>หน้าฉัน (ออกแบบใหม่)</b><ul>
+    <li>ชื่อใหญ่ชิดซ้าย + การ์ด "สัปดาห์นี้" บอกภาระงานเป็นประโยค</li>
+    <li>แถบภาระ 7 วันข้างหน้า (เขียว/ส้ม/แดง) จากงานจริง</li>
+    <li>ตั้งค่าเป็นกลุ่มรายการเรียบ ๆ ไม่มีกราฟ ไม่มีคะแนน</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>16:40</span><i></i></div>
+    <div class="me2">
+      <div class="hi"><h2>น้ำ</h2><div class="av">น</div></div>
+      <div style="font-size:13px;color:var(--text-2)">ข้อมูลอยู่ในเครื่องนี้ · ยังไม่มีบัญชี</div>
+      <div class="today2"><div class="k">สัปดาห์นี้</div>
+        <div class="big">ค้าง 5 งาน · <em>พฤหัสหนักสุด</em><br>เสร็จไปแล้ว 3 งานใน 7 วัน</div>
+        <div class="load"><i style="background:#E0344B"></i><i style="background:#16B76A"></i><i style="background:#16B76A"></i><i style="background:#E88A12"></i><i style="background:#16B76A"></i><i style="background:#DDE4EE"></i><i style="background:#DDE4EE"></i></div>
+        <div class="loadlab"><span>จ.</span><span>อ.</span><span>พ.</span><span>พฤ.</span><span>ศ.</span><span>ส.</span><span>อา.</span></div></div>
+      <div class="grp"><h3>การเรียน</h3><div class="lst"><div><span data-i="book"></span><span class="k">วิชาของฉัน</span><span class="v">8 วิชา</span><span class="ch" data-i="right"></span></div><div><span data-i="flag"></span><span class="k">วิธีจัดลำดับงาน</span><span class="v">กำหนดส่ง + เวลาว่าง</span><span class="ch" data-i="right"></span></div></div></div>
+      <div class="grp"><h3>แอป</h3><div class="lst"><div><span data-i="theme"></span><span class="k">ธีม</span><span class="v">สว่าง</span><span class="ch" data-i="right"></span></div><div><span data-i="bell"></span><span class="k">แจ้งเตือน</span><span class="v">ยังไม่เปิดในรุ่นนี้</span></div></div></div>
+      <div class="grp"><h3>ข้อมูล</h3><div class="lst"><div><span data-i="save"></span><span class="k">สำรองข้อมูล</span><span class="ch" data-i="right"></span></div><div><span data-i="restore"></span><span class="k">กู้คืน</span><span class="ch" data-i="right"></span></div></div></div>
+    </div>
+    <div class="ph-nav" data-nav="2"></div>
+  </div>
+</div>
+
+</div>
+<script type="module">
+import { ICON } from '../src/ui/dom.js';
+const P = 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+ICON.clock = `<svg viewBox="0 0 24 24" ${P}><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
+ICON.flag = `<svg viewBox="0 0 24 24" ${P}><path d="M5 21V4h11l-2 4 2 4H5"/></svg>`;
+document.querySelectorAll('[data-i]').forEach(e => e.innerHTML = ICON[e.dataset.i] || '');
+document.querySelectorAll('[data-cap]').forEach(e => e.innerHTML = ICON.cap + '<b>SABAii<span>.com</span></b>');
+document.querySelectorAll('[data-q]').forEach(e => e.innerHTML = [['mic','พูด'],['image','แนบรูป'],['pen','พิมพ์'],['camera','ถ่ายรูป']].map(([i,l]) => `<button class="qb" style="min-height:58px;padding:8px 10px"><span class="ic" style="width:38px;height:38px">${ICON[i]}</span><b style="font-size:15.5px">${l}</b></button>`).join(''));
+document.querySelectorAll('[data-nav]').forEach(e => e.innerHTML = [['home','หน้าหลัก'],['list','งาน'],['user','ฉัน']].map(([i,l],k) => `<a class="${k==e.dataset.nav?'on':''}">${ICON[i]}${l}</a>`).join(''));
+</script>
+</body></html>
