@@ -6,19 +6,37 @@
   <title>SABAii.com</title>
   <meta name="description" content="เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง">
   <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0E1626" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#081236" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Mali:wght@500;600&display=swap">
   <link rel="stylesheet" href="src/styles/app.css">
   <script type="module" src="src/main.js"></script>
 </head>
 <body>
-  <main id="app" aria-live="off">
-    <p style="padding:40px 0;text-align:center;color:#69778F">กำลังเปิด SABAii…</p>
-  </main>
+  <!-- ชั้นหลัง = โน้ตหน้างาน (1 หน้า = 1 งาน) · ปัดขึ้นลงเปลี่ยนงาน ปัดซ้ายขวาเปลี่ยนโน้ต -->
+  <div id="stage" aria-label="โน้ตหน้างาน"></div>
+  <div id="note-ui">
+    <button class="fab" id="note-back" aria-label="กลับหน้าแรก"></button>
+    <div class="subjchip" id="note-chip"></div>
+    <div class="pager" id="note-pager" aria-hidden="true"></div>
+    <button class="fab" id="note-add" aria-label="เพิ่มโน้ต"></button>
+    <button class="peek" id="note-peek"></button>
+  </div>
+  <!-- แผ่นล่าง 3 ระดับ = หน้าแรก -->
+  <section id="sheet" aria-label="หน้าแรก">
+    <div class="grab" tabindex="0" role="button" aria-label="ย่อ/ขยายแผ่นงาน (ดึงลงเพื่อดูโน้ตหน้างาน)"><i></i><small class="hint">ดึงลงเพื่อดูโน้ตหน้างาน</small></div>
+    <div class="pane pane-home" id="pane-home"><p class="muted center" style="padding:40px 0">กำลังเปิด SABAii…</p></div>
+    <div class="pane pane-note" id="pane-note"></div>
+  </section>
+  <main id="page" hidden></main>
+  <nav id="nav" aria-label="เมนูหลัก">
+    <a href="#/home" data-r="home"></a>
+    <a href="#/tasks" data-r="tasks"></a>
+    <a href="#/me" data-r="me"></a>
+  </nav>
   <noscript>SABAii.com ต้องเปิด JavaScript</noscript>
 </body>
 </html>

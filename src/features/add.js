@@ -1,236 +1,181 @@
-// แผ่นเพิ่มงาน: พิมพ์ (หลายบรรทัด = หลายงาน) · พูด · แนบรูป · ถ่ายรูป · ฟอร์มทีละช่อง · วันสอบ
-// ทุกทางที่ระบบ "ตีความ" ข้อความเอง ต้องผ่านหน้าตรวจสอบก่อนบันทึกเสมอ (สเปก 3.1)
-import { h, ICON, toast } from '../ui/dom.js';
-import { openSheet } from '../ui/sheet.js';
+// เพิ่มงาน 4 แบบ (พิมพ์ · พูด · แนบรูป · ถ่ายรูป) → หน้าตรวจสอบ → บันทึก
+// + เพิ่มโน้ตให้งาน · แก้ไขงาน · ดูรูปเต็มจอ
+// กฎ: ไม่เดาเวลาเมื่อผู้ใช้ไม่ได้บอก (สเปก 3.1) · กดบันทึกซ้ำต้องไม่ได้งานซ้ำ · ข้อความที่พิมพ์ค้างต้องถามก่อนทิ้ง (สเปก 3)
+import { h, ic, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
 import { draftsFromText } from '../domain/parse.js';
 import { TYPES, newId } from '../domain/tasks.js';
-import { toYMD } from '../domain/dates.js';
-import { startListening, speechSupported } from './voice.js';
 import { pickImage, prepareImage } from './images.js';
+import { speechSupported, startListening } from './voice.js';
+import { app, S, task, fullTitle, notesOf, urlOf, visibleSubjects } from './shared.js';
 
-let store;
-export function initAdd(s) { store = s; }
+const subjOptions = sel => [h('option', { value: '' }, 'ไม่ระบุวิชา'), ...visibleSubjects().map(s => h('option', { value: s.id, selected: s.id === sel }, s.name))];
+const typeOptions = sel => Object.entries(TYPES).map(([k, v]) => h('option', { value: k, selected: k === sel }, v));
+const micBlock = msg => h('div', { style: { textAlign: 'center' } }, h('div.mic', { html: ic('mic') }), h('p.muted', msg));
 
-const subjectsForParse = () => store.state.subjects.filter(s => !s.hidden);
+async function getImage(camera) {
+  const f = await pickImage({ camera });
+  if (!f) return null;
+  try { return await prepareImage(f); } catch (e) { toast(e.message); return null; }
+}
 
-/** เปิดแผ่นเพิ่มงาน · mode: menu | type | speak | attach | camera | form | exam | paste */
-export function openAdd(mode = 'menu', preset = {}) {
-  const sh = openSheet({ title: 'เพิ่มงาน', state: mode === 'menu' ? 'compact' : 'expanded' });
-  const go = { menu, type: typeView, speak, attach: () => imageFlow(false), camera: () => imageFlow(true), form: () => review([blank(preset)], { manual: true }), exam: () => review([blank({ ...preset, type: 'exam' })], { manual: true }), paste };
-  (go[mode] || menu)();
+/** kind: text · voice · photo · camera */
+export async function addTask(kind = 'text', preset = '') {
+  if (kind === 'voice' && !speechSupported()) return voiceUnavailable('เครื่องนี้ใช้การพูดไม่ได้');
+  let img = null;
+  if (kind === 'photo' || kind === 'camera') { img = await getImage(kind === 'camera'); if (!img) return; }
+  const ta = h('textarea.field', { id: 'add-text', 'aria-label': 'งานที่ต้องทำ',
+    placeholder: img ? 'งานในรูปคืออะไร? เช่น "ฟิสิกส์ แบบฝึก 4.1 ส่งศุกร์"' : 'เช่น "คณิต ใบงาน 7 ส่งศุกร์"\nวางข้อความจากครูได้เลย — หลายงานก็ได้ บรรทัดละงาน' });
+  ta.value = preset;
+  let rec = null;
+  const body = h('div',
+    img ? h('img.preview', { src: img.url, alt: 'รูปที่เลือก' }) : '',
+    kind === 'voice' ? micBlock('กำลังฟัง… พูดชื่องาน วิชา และวันส่ง') : '',
+    h('label.flabel', { for: 'add-text' }, img ? 'ชื่องาน (ยังไม่มีระบบอ่านรูปอัตโนมัติ — พิมพ์เอง)' : 'งานที่ต้องทำ'), ta);
+  const m = openModal({
+    title: kind === 'voice' ? 'พูดงาน' : img ? 'งานจากรูป' : 'พิมพ์งาน', body,
+    foot: h('button.btn.primary', { onclick: () => { rec?.stop(); review(ta.value, img); } }, 'ตรวจสอบก่อนบันทึก'),
+    isDirty: () => !!ta.value.trim() || !!img,
+    onClose: () => rec?.abort(),
+  });
+  if (kind === 'voice') {
+    rec = startListening({ onText: t => { ta.value = t; }, onEnd: (t, err) => { if (err && !t) { m.close(true); voiceUnavailable(err === 'not-allowed' ? 'ไม่ได้อนุญาตให้ใช้ไมโครโฟน' : 'ฟังไม่ได้ยิน ลองใหม่หรือพิมพ์แทน'); } } });
+  } else setTimeout(() => ta.focus(), 320);
+}
+function voiceUnavailable(why) {
+  openModal({ title: 'พูดงาน', body: h('div', h('p', why), h('p.muted', 'พิมพ์หรือวางข้อความแทนได้ — ระบบแยกวิชาและวันส่งให้เหมือนกัน')),
+    foot: h('button.btn.primary', { onclick: () => addTask('text') }, 'พิมพ์แทน') });
+}
 
-  function menu() {
-    sh.setTitle('เพิ่มงาน'); sh.setState('compact'); sh.setDirty(() => false);
-    const main = [
-      ['speak', 'mic', 'พูด', 'บอกงานด้วยเสียง'], ['attach', 'image', 'แนบรูป', 'จากอัลบั้ม/แชท'],
-      ['type', 'pen', 'พิมพ์', 'หลายบรรทัด = หลายงาน'], ['camera', 'camera', 'ถ่ายรูป', 'กระดาน · ใบงาน'],
-    ];
-    sh.setBody(
-      h('div.qgrid', main.map(([k, ic, b, s]) => h('button.qbtn', { onclick: () => go[k]() }, h('span.ic', { html: ICON[ic] }), h('b', b), h('small', s)))),
-      h('div.opts',
-        h('button', { onclick: paste }, h('span', { html: ICON.paste }), h('span', 'วางข้อความจากครู', h('small', 'ก๊อปจากไลน์/แชทแล้ววาง'))),
-        h('button', { onclick: () => go.form() }, h('span', { html: ICON.form }), h('span', 'พิมพ์เองทีละช่อง', h('small', 'กรอกวิชา ชื่องาน วันส่งเอง'))),
-        h('button', { onclick: () => go.exam() }, h('span', { html: ICON.exam }), h('span', 'เพิ่มวันสอบ', h('small', 'วิชา หัวข้อ วัน เวลา ห้องสอบ'))),
-        h('button', { disabled: true, 'aria-disabled': 'true' }, h('span', { html: ICON.spark }), h('span', 'ผู้ช่วย AI', h('small', 'ยังไม่เปิดใช้ในรุ่นนี้'))),
-      ));
-    sh.setFoot();
+function review(text, img) {
+  const drafts = draftsFromText(text, { now: new Date(), subjects: S().subjects });
+  if (!drafts.length) {
+    if (!img) { toast('ยังไม่ได้พิมพ์อะไรเลย'); return; }
+    drafts.push({ title: 'งานจากรูป', subject_id: null, type: 'homework', due_date: null, due_time: null, flags: { noSubject: true, noDate: true } });
   }
-
-  // ---------- พิมพ์ ----------
-  function typeView(initial = '') {
-    sh.setTitle('พิมพ์งาน'); sh.setState('expanded');
-    const ta = h('textarea.in', { id: 'add-text', rows: 6, placeholder: 'เช่น คณิตทำแบบฝึกหัดหน้า 20 ส่งวันศุกร์\nอังกฤษ ท่องศัพท์วันพุธ', 'aria-label': 'ข้อความงาน' });
-    ta.value = initial;
-    sh.setDirty(() => ta.value.trim().length > 0);
-    const next = h('button.btn.blue.block', { onclick: () => {
-      const text = ta.value.trim();
-      if (!text) { ta.focus(); return; }
-      let drafts;
-      try { drafts = draftsFromText(text, { subjects: subjectsForParse() }); }
-      catch { drafts = [blank({ title: text.split('\n')[0] })]; toast('ตัวแกะข้อความไม่พร้อม — กรอกเองได้เลย'); }
-      review(drafts, { back: () => typeView(text) });
-    } }, 'ตรวจสอบก่อนบันทึก');
-    sh.setBody(
-      h('label.f', { for: 'add-text' }, 'พิมพ์งาน 1 บรรทัดต่อ 1 งาน'),
-      ta,
-      h('p.hint', 'บอกวิชา งาน และวันส่งในประโยคเดียวได้เลย ระบบจะแยกให้แล้วให้ตรวจก่อนบันทึก'),
-    );
-    sh.setFoot(next);
-    setTimeout(() => ta.focus(), 280);
-  }
-
-  async function paste() {
-    let text = '';
-    try { text = await navigator.clipboard.readText(); } catch { /* ไม่ให้สิทธิ์ก็พิมพ์/วางเองได้ */ }
-    typeView(text);
-    if (!text) toast('กดค้างในช่องแล้วเลือก "วาง" ได้เลย');
-  }
-
-  // ---------- พูด ----------
-  function speak() {
-    sh.setTitle('พูดงาน'); sh.setState('compact'); sh.setDirty(() => false);
-    if (!speechSupported()) {
-      sh.setBody(h('div.empty', h('b', 'เบราว์เซอร์นี้ยังฟังเสียงไม่ได้'), 'พิมพ์แทนได้เลย ข้อความจะถูกแยกเป็นงานให้เหมือนกัน'));
-      sh.setFoot(h('button.btn.blue.block', { onclick: () => typeView() }, 'พิมพ์แทน'));
-      return;
-    }
-    const live = h('p', { 'aria-live': 'polite', style: { minHeight: '48px', textAlign: 'center', color: 'var(--text-2)' } }, 'กำลังฟัง… พูดได้เลย');
-    const stopBtn = h('button.btn.blue.block', 'หยุดฟัง');
-    sh.setBody(h('div.listening', h('div.pulse', { html: ICON.mic }), live),
-      h('p.hint', { style: { textAlign: 'center' } }, 'ใช้ระบบฟังเสียงของเบราว์เซอร์ · SABAii ไม่เก็บไฟล์เสียง'));
-    sh.setFoot(stopBtn);
-    let finalText = '';
-    const session = startListening({
-      onText: (txt, isFinal) => { live.textContent = txt; if (isFinal) finalText = txt; },
-      onEnd: (txt, err) => {
-        const text = (txt || finalText).trim();
-        if (err) {
-          const why = err === 'not-allowed' ? 'ไม่ได้อนุญาตไมโครโฟน' : err === 'no-speech' ? 'ไม่ได้ยินเสียง' : err === 'network' ? 'ต่ออินเทอร์เน็ตไม่ได้' : 'ฟังไม่สำเร็จ';
-          sh.setBody(h('div.empty', h('b', why), 'พิมพ์แทนได้เลย หรือลองพูดอีกครั้ง'));
-          sh.setFoot(h('div.row', h('button.btn', { onclick: speak }, 'ลองอีกครั้ง'), h('button.btn.blue', { onclick: () => typeView(text) }, 'พิมพ์แทน')));
-          return;
-        }
-        typeView(text); // ให้แก้ข้อความที่ฟังผิดได้ก่อนแยกเป็นงาน
-      },
-    });
-    stopBtn.onclick = () => session.stop();
-    sh.onClose(() => session.abort());
-  }
-
-  // ---------- รูป ----------
-  async function imageFlow(camera) {
-    sh.setTitle(camera ? 'ถ่ายรูป' : 'แนบรูป'); sh.setState('compact');
-    const pickBtn = h('button.btn.blue.block', camera ? 'เปิดกล้อง' : 'เลือกรูปจากเครื่อง');
-    const altBtn = camera && h('button.btn.block', { style: { marginTop: '8px' } }, 'เลือกรูปจากเครื่องแทน');
-    const run = async (useCamera) => {
-      let file;
-      try { file = await pickImage({ camera: useCamera }); } catch { return; }
-      if (!file) return;
-      let img;
-      try { img = await prepareImage(file); }
-      catch (e) { toast(e.message || 'เปิดรูปนี้ไม่ได้'); return; }
-      imageReview(img);
-    };
-    pickBtn.onclick = () => run(camera);
-    if (altBtn) altBtn.onclick = () => run(false);
-    sh.setBody(h('div.empty', h('b', camera ? 'ถ่ายใบงานหรือกระดาน' : 'เลือกรูปใบงาน/แชทจากครู'), 'รูปจะติดไปกับงานเป็นโน้ต · รองรับ JPEG PNG WebP'));
-    sh.setFoot(h('div', pickBtn, altBtn));
-  }
-
-  function imageReview(img) {
-    sh.setTitle('งานจากรูป'); sh.setState('expanded');
-    let rotation = 0;
-    const pv = h('img.preview', { src: img.url, alt: 'รูปที่เลือก' });
-    const ta = h('textarea.in', { rows: 3, id: 'img-text', placeholder: 'เช่น ฟิสิกส์ แบบฝึกบท 3 ส่งพรุ่งนี้ 8 โมง' });
-    sh.setDirty(() => true);
-    const rotate = h('button.btn', { onclick: () => { rotation = (rotation + 90) % 360; pv.style.transform = `rotate(${rotation}deg)`; } }, 'หมุนรูป');
-    sh.setBody(pv, h('div.row', { style: { marginTop: '8px' } }, rotate),
-      h('label.f', { for: 'img-text' }, 'งานในรูปนี้คืออะไร'), ta,
-      h('p.hint', 'การอ่านตัวหนังสือจากรูปอัตโนมัติ (OCR) ยังไม่เปิดในรุ่นนี้ — พิมพ์สั้น ๆ แล้วระบบจะแยกวิชาและวันส่งให้'));
-    sh.setFoot(h('button.btn.blue.block', { onclick: async () => {
-      const text = ta.value.trim();
-      if (!text) { ta.focus(); toast('พิมพ์ชื่องานสั้น ๆ ก่อน'); return; }
-      const blob = rotation ? await img.rotated(rotation) : img.blob;
-      let drafts;
-      try { drafts = draftsFromText(text, { subjects: subjectsForParse() }).slice(0, 1); } catch { drafts = [blank({ title: text })]; }
-      review(drafts, { image: { blob, size: blob.size, mime_type: blob.type }, back: () => imageReview(img) });
-    } }, 'ตรวจสอบก่อนบันทึก'));
-  }
-
-  // ---------- หน้าตรวจสอบ ----------
-  function review(drafts, { back, image, manual } = {}) {
-    drafts = drafts.map(d => ({ ...d, draft_key: d.draft_key || newId('d') }));
-    sh.setTitle(manual ? (drafts[0].type === 'exam' ? 'เพิ่มวันสอบ' : 'เพิ่มงาน') : `ตรวจสอบ ${drafts.length} งาน`);
-    sh.setState('expanded');
-    sh.setDirty(() => drafts.length > 0);
-    const holder = h('div');
-    const saveBtn = h('button.btn.green.block');
-    const render = () => {
-      holder.replaceChildren(...drafts.map((d, i) => draftEditor(d, i, drafts.length > 1 ? () => { drafts.splice(i, 1); render(); } : null)));
-      saveBtn.textContent = drafts.length > 1 ? `บันทึก ${drafts.length} งาน` : 'บันทึกงาน';
-      saveBtn.disabled = !drafts.length;
-    };
-    render();
-    saveBtn.onclick = async () => {
-      const bad = drafts.findIndex(d => !String(d.title || '').trim());
-      if (bad >= 0) { toast('งานที่ ' + (bad + 1) + ' ยังไม่มีชื่อ'); holder.querySelectorAll('input[name=title]')[bad]?.focus(); return; }
+  const key = newId('d'); // กันกดบันทึกซ้ำ: ร่างชุดเดียวกันบันทึกได้ครั้งเดียว
+  const rows = drafts.map((d, i) => {
+    const title = h('input.field', { value: d.title, 'aria-label': `ชื่องานที่ ${i + 1}`, id: `d${i}-title` });
+    const sub = h('select.field', { 'aria-label': 'วิชา', id: `d${i}-subj` }, subjOptions(d.subject_id));
+    const type = h('select.field', { 'aria-label': 'ประเภท', id: `d${i}-type` }, typeOptions(d.type));
+    const date = h('input.field', { type: 'date', value: d.due_date || '', 'aria-label': 'วันส่ง', id: `d${i}-date` });
+    const time = h('input.field', { type: 'time', value: d.due_time || '', 'aria-label': 'เวลาส่ง', id: `d${i}-time` });
+    const warn = [d.flags?.noSubject && 'ไม่รู้วิชา', d.flags?.noDate && 'ไม่รู้วันส่ง', (d.flags?.noTime || (d.due_date && !d.due_time)) && 'ไม่ได้ระบุเวลา — ระบบจะไม่เดาเวลาให้'].filter(Boolean);
+    const el = h('div.draft', title, h('div.frow', sub, type), h('div.frow', date, time), warn.length ? h('p.warn', warn.join(' · ')) : '',
+      drafts.length > 1 ? h('button.link', { onclick: () => { el.remove(); rows.splice(rows.indexOf(row), 1); saveBtn.textContent = `บันทึก ${rows.length} งาน`; } }, 'ไม่เอางานนี้') : '');
+    const row = { el, i, get: () => ({ title: title.value.trim(), subject_id: sub.value || null, type: type.value, due_date: date.value || null, due_time: time.value || null, source: img ? 'photo' : 'text', draft_key: `${key}-${i}` }) };
+    return row;
+  });
+  const saveBtn = h('button.btn.primary', {
+    onclick: async () => {
+      const items = rows.map(r => r.get()).filter(x => x.title);
+      if (!items.length) return toast('ใส่ชื่องานก่อนนะ');
       saveBtn.disabled = true;
       try {
-        const saved = await store.addTasks(drafts.map(clean));
-        if (image && saved[0]) await store.addAttachment(saved[0].id, { kind: 'image', ...image });
-        sh.setDirty(() => false); sh.close();
-        toast(saved.length > 1 ? `บันทึกแล้ว ${saved.length} งาน` : 'บันทึกแล้ว');
-      } catch (e) {
-        saveBtn.disabled = false;
-        toast('บันทึกไม่สำเร็จ: ' + (e.message || 'ลองอีกครั้ง'));
-      }
-    };
-    sh.setBody(
-      !manual && h('p.hint', 'ระบบแยกให้จากข้อความ ช่องสีส้มคือส่วนที่ระบบไม่แน่ใจ แก้ได้ก่อนบันทึก'),
-      holder,
-      back && h('button.btn.ghost.block', { style: { marginTop: '12px' }, onclick: back }, 'กลับไปแก้ข้อความ'),
-    );
-    sh.setFoot(saveBtn);
+        const saved = await app.store.addTasks(items);
+        if (img && saved[0]) await app.store.addAttachment(saved[0].id, { kind: 'image', blob: img.blob, size: img.blob.size, mime_type: img.blob.type });
+        closeModal();
+        toast(`บันทึก ${saved.length} งานแล้ว`, saved[0] ? { label: 'ดูโน้ต', run: () => app.openNotes(saved[0].id) } : null);
+      } catch (e) { saveBtn.disabled = false; toast(e.message || 'บันทึกไม่สำเร็จ'); }
+    },
+  }, rows.length === 1 ? 'บันทึกงาน' : `บันทึก ${rows.length} งาน`);
+  openModal({ title: 'ตรวจสอบก่อนบันทึก', body: h('div', img ? h('img.preview.small', { src: img.url, alt: 'รูปที่แนบ' }) : '', rows.map(r => r.el)),
+    foot: [h('button.btn.ghost', { onclick: () => addTask('text', text) }, 'แก้ข้อความ'), saveBtn], isDirty: () => !saveBtn.disabled });
+}
+
+/** เพิ่มโน้ตให้งาน: photo · camera · text · voice · pick (ให้เลือก) */
+export async function addNote(id, kind) {
+  const t = task(id); if (!t) return;
+  if (kind === 'pick') {
+    openModal({ title: 'เพิ่มโน้ต', body: h('div.pills.col',
+      h('button.pill', { onclick: () => addNote(id, 'camera'), html: ic('camera') + 'ถ่ายรูป' }),
+      h('button.pill', { onclick: () => addNote(id, 'photo'), html: ic('img') + 'เลือกรูป' }),
+      h('button.pill', { onclick: () => addNote(id, 'text'), html: ic('text') + 'จดข้อความ' }),
+      h('button.pill', { onclick: () => addNote(id, 'voice'), html: ic('mic') + 'พูดเป็นข้อความ' })) });
+    return;
   }
+  if (kind === 'photo' || kind === 'camera') {
+    closeModal();
+    const img = await getImage(kind === 'camera'); if (!img) return;
+    await app.store.addAttachment(id, { kind: 'image', blob: img.blob, size: img.blob.size, mime_type: img.blob.type });
+    URL.revokeObjectURL(img.url);
+    toast('เพิ่มรูปแล้ว'); return;
+  }
+  if (kind === 'voice' && !speechSupported()) { toast('เครื่องนี้ใช้พูดไม่ได้ — จดแทนนะ'); kind = 'text'; }
+  const ta = h('textarea.field', { id: 'note-text', 'aria-label': 'ข้อความโน้ต', placeholder: 'ครูบอกอะไร? จำอะไรไว้? เช่น "ทำแค่ข้อคี่"' });
+  let rec = null;
+  openModal({
+    title: `โน้ต · ${fullTitle(t)}`, body: h('div', kind === 'voice' ? micBlock('กำลังฟัง…') : '', ta),
+    foot: h('button.btn.primary', { onclick: async () => {
+      rec?.stop(); const v = ta.value.trim(); if (!v) return toast('ยังว่างอยู่');
+      await app.store.addAttachment(id, { kind: 'text', text: v.slice(0, 2000) }); closeModal(); toast('จดโน้ตแล้ว');
+    } }, 'บันทึกโน้ต'),
+    isDirty: () => !!ta.value.trim(), onClose: () => rec?.abort(),
+  });
+  if (kind === 'voice') rec = startListening({ onText: v => { ta.value = v; }, onEnd: () => {} }); else setTimeout(() => ta.focus(), 320);
 }
 
-function blank(p = {}) {
-  return { title: p.title || '', subject_id: p.subject_id || null, subject_name: '', type: p.type || 'homework', due_date: p.due_date || null, due_time: null, flags: {} };
+export function editTask(id) {
+  const t = task(id); if (!t) return;
+  const f = (tag, props, label) => { const el = h(tag, props); return [h('label.flabel', { for: props.id }, label), el]; };
+  const [lt, title] = f('input.field', { id: 'e-title', value: t.title, maxlength: 200 }, 'ชื่องาน');
+  const sub = h('select.field', { id: 'e-subj' }, subjOptions(t.subject_id));
+  const type = h('select.field', { id: 'e-type' }, typeOptions(t.type));
+  const date = h('input.field', { type: 'date', id: 'e-date', value: t.due_date || '' });
+  const time = h('input.field', { type: 'time', id: 'e-time', value: t.due_time || '' });
+  const place = h('input.field', { id: 'e-place', value: t.place || '', placeholder: 'เช่น ห้อง 412' });
+  const est = h('input.field', { type: 'number', id: 'e-est', min: 5, step: 5, value: t.est_min ? String(t.est_min) : '', placeholder: 'ไม่ระบุ' });
+  const desc = h('textarea.field.short', { id: 'e-desc', placeholder: 'รายละเอียดเพิ่มเติม' }); desc.value = t.description || '';
+  const lab = (id2, txt, el) => h('div', h('label.flabel', { for: id2 }, txt), el);
+  const notes = notesOf(id);
+  openModal({
+    title: 'แก้ไขงาน', isDirty: () => title.value.trim() !== t.title || desc.value !== (t.description || ''),
+    body: h('div', lt, title, h('div.frow', lab('e-subj', 'วิชา', sub), lab('e-type', 'ประเภท', type)),
+      h('div.frow', lab('e-date', 'วันส่ง / วันสอบ', date), lab('e-time', 'เวลา (ไม่ใส่ก็ได้)', time)),
+      h('div.frow', lab('e-place', 'สถานที่', place), lab('e-est', 'ใช้เวลาประมาณ (นาที)', est)),
+      lab('e-desc', 'รายละเอียด', desc),
+      h('button.list-btn', { onclick: async () => { await app.store.patchTask(id, { pinned_at: t.pinned_at ? null : new Date().toISOString() }); closeModal(); toast(t.pinned_at ? 'เลิกปักหมุดแล้ว' : 'ปักไว้บนสุดแล้ว'); }, html: ic('pin') + `<span>${t.pinned_at ? 'เลิกปักหมุด' : 'ปักไว้บนสุดของงานแนะนำ'}</span>` }),
+      notes.length ? h('div', h('label.flabel', `โน้ต ${notes.length} รายการ`), h('div.strip', notes.map(a => h('div.notewrap', miniOf(a),
+        h('button.del', { 'aria-label': 'ลบโน้ตนี้', html: ic('trash'), onclick: async () => {
+          if (!await confirmBox({ title: 'ลบโน้ตนี้?', ok: 'ลบ', danger: true })) return;
+          await app.store.removeAttachment(a.id); closeModal(); editTask(id);
+        } }))))) : ''),
+    foot: [
+      h('button.btn.danger', { onclick: async () => {
+        if (!await confirmBox({ title: 'ลบงานนี้?', body: 'กู้คืนได้ทันทีจากปุ่ม "เลิกทำ" หลังลบ', ok: 'ลบงาน', danger: true })) return;
+        await app.store.removeTask(id); closeModal(); toast('ลบงานแล้ว', { label: 'เลิกทำ', run: () => app.store.restoreTask(id) });
+      } }, 'ลบ'),
+      h('button.btn.primary', { onclick: async () => {
+        if (!title.value.trim()) return toast('ต้องมีชื่องาน');
+        await app.store.patchTask(id, { title: title.value.trim(), subject_id: sub.value || null, type: type.value, due_date: date.value || null, due_time: time.value || null, place: place.value.trim(), est_min: +est.value || null, description: desc.value.trim() });
+        closeModal(); toast('บันทึกแล้ว');
+      } }, 'บันทึก')],
+  });
 }
-function clean(d) {
-  const { flags, raw, ...rest } = d;
-  return rest;
+
+/** ภาพย่อโน้ตแบบ Canva: วาดโน้ตจริงขนาดเต็ม (กว้าง 300) แล้วย่อทั้งแผ่น */
+const MINI_W = 300;
+export function noteEl(a, i = 0) {
+  const tilt = i % 2 ? 'tilt-r' : 'tilt-l';
+  const d = new Date(a.created_at);
+  const when = h('span.ntag', { html: ic(a.kind === 'text' ? 'text' : 'camera') },
+    `${a.kind === 'text' ? 'จดเมื่อ' : 'ถ่ายเมื่อ'} ${d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' })} ${d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`);
+  if (a.kind === 'image') {
+    const src = urlOf(a);
+    return h('div.nitem.photo.' + tilt, { style: { '--src': `url("${src}")` } },
+      h('button.zoom', { 'aria-label': 'ดูรูปเต็มจอ', onclick: () => viewPhoto(src) }, h('img', { src, alt: 'รูปโน้ตของงาน', loading: 'lazy' })), when);
+  }
+  return h('div.nitem.sticky.' + tilt, a.text, when);
 }
-
-/** ฟอร์มแก้ร่าง 1 ชิ้น — ใช้ทั้งหน้าตรวจสอบและหน้าแก้ไขงาน */
-export function draftEditor(d, i, onRemove, subjects = store.state.subjects) {
-  const f = d.flags || {};
-  const id = k => `d${i}-${k}`;
-  const set = (k, v) => { d[k] = v; };
-  const live = subjects.filter(s => !s.hidden || s.id === d.subject_id);
-
-  const subjSel = h('select.in', { id: id('subj'), class: f.noSubject ? 'warn' : '', onchange: e => {
-    const v = e.target.value;
-    if (v.startsWith('new:')) { set('subject_id', null); set('subject_name', v.slice(4)); }
-    else { set('subject_id', v || null); set('subject_name', ''); }
-  } },
-    h('option', { value: '' }, 'ไม่ระบุวิชา'),
-    live.map(s => h('option', { value: s.id, selected: s.id === d.subject_id }, s.name)),
-    !d.subject_id && d.subject_name && h('option', { value: 'new:' + d.subject_name, selected: true }, `+ วิชาใหม่: ${d.subject_name}`));
-
-  const typeSeg = h('div.seg', { role: 'group', 'aria-label': 'ประเภท' }, Object.entries({ homework: 'การบ้าน', exam: 'สอบ', project: 'งานกลุ่ม', activity: 'กิจกรรม' }).map(([k, label]) =>
-    h('button', { type: 'button', 'aria-pressed': String(d.type === k), onclick: e => {
-      set('type', k);
-      e.currentTarget.parentElement.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === e.currentTarget)));
-      examBox.hidden = k !== 'exam';
-      dateLbl.textContent = k === 'exam' ? 'วันสอบ' : 'วันส่ง';
-      timeLbl.textContent = k === 'exam' ? 'เวลาเริ่ม' : 'เวลา';
-    } }, label)));
-
-  const date = h('input.in', { type: 'date', id: id('date'), value: d.due_date || '', class: (f.noDate || f.dateFuzzy) ? 'warn' : '', onchange: e => set('due_date', e.target.value || null) });
-  const time = h('input.in', { type: 'time', id: id('time'), value: d.due_time || '', onchange: e => set('due_time', e.target.value || null) });
-  const dateLbl = h('label.f', { for: id('date') }, d.type === 'exam' ? 'วันสอบ' : 'วันส่ง');
-  const timeLbl = h('label.f', { for: id('time') }, d.type === 'exam' ? 'เวลาเริ่ม' : 'เวลา');
-  const examBox = h('div', { hidden: d.type !== 'exam' },
-    h('div.two', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
-      h('div', h('label.f', { for: id('end') }, 'เวลาสิ้นสุด (ถ้ารู้)'), h('input.in', { type: 'time', id: id('end'), value: d.end_time || '', onchange: e => set('end_time', e.target.value || null) })),
-      h('div', h('label.f', { for: id('place') }, 'ห้องสอบ (ถ้ารู้)'), h('input.in', { id: id('place'), value: d.place || '', onchange: e => set('place', e.target.value) }))));
-
-  return h('div.draft',
-    h('div.dh', h('b', onRemove ? `งานที่ ${i + 1}` : ''), onRemove && h('button.btn.danger', { style: { height: '36px', padding: '0 10px' }, onclick: onRemove }, 'ลบออก')),
-    h('label.f', { for: id('title') }, d.type === 'exam' ? 'หัวข้อสอบ' : 'ชื่องาน'),
-    h('input.in', { id: id('title'), name: 'title', value: d.title || '', maxlength: 200, oninput: e => set('title', e.target.value) }),
-    h('label.f', { for: id('subj') }, 'วิชา'), subjSel,
-    f.noSubject && h('p.hint.warn', 'ไม่เจอชื่อวิชาในข้อความ'),
-    h('label.f', 'ประเภท'), typeSeg,
-    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' } },
-      h('div', dateLbl, date), h('div', timeLbl, time)),
-    f.noDate ? h('p.hint.warn', 'ไม่เจอวันที่ในข้อความ — ใส่เองหรือเว้นไว้ก็ได้')
-      : f.dateFuzzy ? h('p.hint.warn', 'ระบบไม่แน่ใจวันที่ ตรวจอีกที')
-      : f.noTime ? h('p.hint', 'ไม่ได้ระบุเวลา — ระบบจะไม่เดาเวลาให้') : null,
-    examBox,
-    h('label.f', { for: id('desc') }, 'รายละเอียด (ไม่ใส่ก็ได้)'),
-    h('textarea.in', { id: id('desc'), rows: 2, style: { minHeight: '64px' }, oninput: e => set('description', e.target.value) }, d.description || ''),
-  );
+export function miniOf(a, w = 96, hgt = 128, cls = '') {
+  const k = w / MINI_W;
+  return h('div.mini' + cls, { style: { width: w + 'px', height: hgt + 'px' }, 'aria-hidden': 'true' },
+    h('div.mini-in', { style: { width: MINI_W + 'px', height: Math.round(hgt / k) + 'px', transform: `scale(${k})` } }, noteEl(a)));
 }
-export { TYPES, toYMD };
+export function viewPhoto(src) {
+  const box = h('div.viewer', { role: 'dialog', 'aria-label': 'รูปเต็มจอ', onclick: () => close() },
+    h('img', { src, alt: 'รูปโน้ตของงาน' }), h('button.fab', { 'aria-label': 'ปิด', html: ic('close') }));
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  const close = () => { box.remove(); removeEventListener('keydown', onKey); };
+  addEventListener('keydown', onKey);
+  document.body.append(box);
+}
