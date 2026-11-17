@@ -101,7 +101,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   check('แตะวัน → มีรายการของวันนั้น', await page.locator('.daylist').isVisible());
   await shot('06-tasks-month');
   await page.locator('.proj', { hasText: 'คณิต' }).first().click();
-  await page.waitForSelector('.board');
+  await page.waitForSelector('#page .tcard'); // อย่าใช้ .board — ชนกับโน้ตกระดานในชั้นหลัง
   check('แตะการ์ดคณิต → หน้าโปรเจกต์มีโน้ต', (await page.locator('.tcard .strip > div').count()) >= 2);
   await shot('07-subject');
   await page.getByRole('button', { name: 'เปิดโน้ตเต็มจอ' }).first().click();
