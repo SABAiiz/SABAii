@@ -38,11 +38,13 @@ button, a { cursor: pointer; border: 0; background: none; text-decoration: none;
 .npage .wash { position: absolute; inset: 0; opacity: .5; }
 .nrow {
   position: absolute; left: 0; right: 0; top: calc(64px + env(safe-area-inset-top, 0px)); bottom: calc(var(--low) + 50px);
-  display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px 56px 12px 20px; scrollbar-width: none;
+  /* การ์ดอยู่กลางคอลัมน์พอดี: ช่องซ้าย = ช่องขวา (คอลัมน์กว้างสุด 560 · การ์ดกว้าง 80% สูงสุด 420) */
+  --card-w: min(80vw, 420px); --side: calc((min(100vw, 560px) - var(--card-w)) / 2);
+  display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px var(--side); scroll-padding: 0 var(--side); scrollbar-width: none;
 }
 .nrow::-webkit-scrollbar { display: none; }
-.nitem { flex: none; width: min(80vw, 420px); height: 100%; scroll-snap-align: center; position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,.16), 0 1px 3px rgba(0,0,0,.1); }
-.nitem.tilt-l { transform: rotate(-1.6deg); } .nitem.tilt-r { transform: rotate(1.4deg); }
+.nitem { flex: none; width: var(--card-w, min(80vw, 420px)); height: 100%; scroll-snap-align: center; position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,.16), 0 1px 3px rgba(0,0,0,.1); }
+/* การ์ดโน้ตตั้งตรง ไม่เอียง (เจ้าของบอกว่าดูเบี้ยว) */
 .ntag { position: absolute; left: 12px; bottom: 12px; font-size: 11px; background: rgba(22,24,29,.72); color: #fff; border-radius: 8px; padding: 3px 9px; display: flex; gap: 5px; align-items: center; }
 .ntag svg { width: 12px; height: 12px; }
 .nitem.board { background: radial-gradient(120% 90% at 40% 30%, #3d5a48, #23362b); color: #F1F3EE; }
@@ -53,7 +55,7 @@ button, a { cursor: pointer; border: 0; background: none; text-decoration: none;
 .nitem.sheet h4 { font-size: 13px; border-bottom: 2px solid #16181d; padding-bottom: 6px; margin-bottom: 8px; }
 .nitem.sheet .txt { font-size: 13px; line-height: 2; white-space: pre-line; background-image: repeating-linear-gradient(transparent 0 25px, #d6e4f5 25px 26px); }
 .nitem.sheet mark { background: #FFF2A8; }
-.nitem.sticky { background: #FFE98A; color: #20304f; font-family: var(--hand); font-size: 20px; line-height: 1.55; padding: 26px 22px; white-space: pre-line; width: min(64vw, 320px); }
+.nitem.sticky { background: #FFE98A; color: #20304f; font-family: var(--hand); font-size: 20px; line-height: 1.55; padding: 26px 22px; white-space: pre-line; }
 .nitem.photo { background: #1b1f2a; }
 .nitem.photo::before { content: ""; position: absolute; inset: -20px; background: var(--src) center / cover; filter: blur(18px) brightness(.75); }
 .nitem.photo .zoom { position: absolute; inset: 0; display: block; cursor: zoom-in; }
