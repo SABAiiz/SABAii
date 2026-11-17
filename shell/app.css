@@ -194,19 +194,20 @@ h1.big { font-size: 26px; font-weight: 800; line-height: 1.25; letter-spacing: -
 .filters button { white-space: nowrap; padding: 8px 14px; border-radius: 999px; background: var(--surface); font-weight: 600; font-size: 14px; }
 .filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .proj { background: var(--surface); border-radius: 20px; padding: 8px; text-align: left; display: flex; flex-direction: column; gap: 8px; }
 .proj:active { transform: scale(.98); }
-.thumb { height: 112px; border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--sheet-bg); padding: 6px; }
-.thumb > div { border-radius: 8px; overflow: hidden; position: relative; }
-.thumb .t-board { background: radial-gradient(120% 90% at 40% 30%, #3d5a48, #23362b); }
-.thumb .t-board::after { content: ""; position: absolute; left: 14%; right: 20%; top: 30%; height: 40%; background: repeating-linear-gradient(#e9efe6 0 2px, transparent 2px 9px); opacity: .6; }
-.thumb .t-sheet { background: #fff repeating-linear-gradient(transparent 0 9px, #d6e4f5 9px 10px); border: 1px solid var(--border); }
-.thumb .t-sticky { background: #FFE98A; }
-.thumb .t-sticky::after { content: ""; position: absolute; left: 14%; right: 18%; top: 22%; height: 46%; background: repeating-linear-gradient(#b8a24c 0 2px, transparent 2px 9px); opacity: .5; }
-.thumb .t-photo img { width: 100%; height: 100%; object-fit: cover; }
-.thumb .t-none { background: var(--surface-2); }
-.thumb.one { grid-template-columns: 1fr; }
+.cover { height: 140px; border-radius: 14px; position: relative; overflow: hidden; display: grid; place-items: center; }
+.cover .mini { position: absolute; top: 50%; left: 50%; box-shadow: 0 6px 14px rgba(11,27,77,.18), 0 1px 2px rgba(11,27,77,.12); }
+.cover .mini.solo { transform: translate(-50%, -50%) rotate(-3deg); }
+.cover .mini.back { transform: translate(-82%, -52%) rotate(-8deg); }
+.cover .mini.front { transform: translate(-22%, -46%) rotate(5deg); }
+.cover-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--text-2); font-size: 12px; }
+/* ภาพย่อโน้ต: โน้ตจริงขนาดเต็มที่ถูกย่อ */
+.mini { border-radius: 8px; overflow: hidden; flex: none; position: relative; background: var(--sheet-bg); }
+.mini-in { transform-origin: 0 0; pointer-events: none; }
+.mini-in .nitem { width: 100% !important; height: 100% !important; transform: none !important; box-shadow: none !important; border-radius: 0; }
+.mini-in .ntag { display: none; }
 .proj .ph { display: flex; justify-content: space-between; align-items: center; padding: 0 6px; gap: 6px; }
 .proj b { font-size: 16px; font-weight: 800; }
 .proj .cnt { font-size: 11.5px; font-weight: 700; border-radius: 8px; padding: 2px 8px; white-space: nowrap; }
@@ -222,11 +223,8 @@ h1.big { font-size: 26px; font-weight: 800; line-height: 1.25; letter-spacing: -
 .tcard b { font-weight: 800; font-size: 16px; }
 .tcard.done b { text-decoration: line-through; color: var(--text-2); }
 .strip { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; scrollbar-width: none; }
-.strip > * { flex: none; width: 96px; height: 120px; border-radius: 10px; overflow: hidden; position: relative; font-size: 10px; }
-.strip .s-board { background: radial-gradient(120% 90% at 40% 30%, #3d5a48, #23362b); color: #F1F3EE; font-family: var(--hand); padding: 8px; white-space: pre-line; line-height: 1.4; }
-.strip .s-sheet { background: #fff; color: #2b3240; padding: 8px; white-space: pre-line; border: 1px solid var(--border); line-height: 1.5; }
-.strip .s-sticky { background: #FFE98A; color: #20304f; font-family: var(--hand); padding: 8px; white-space: pre-line; font-size: 11px; line-height: 1.4; }
-.strip img { width: 100%; height: 100%; object-fit: cover; }
+.strip > * { flex: none; width: 96px; height: 128px; border-radius: 10px; position: relative; }
+.strip .mini { box-shadow: 0 2px 6px rgba(11,27,77,.12); border: 1px solid var(--border); }
 .strip .s-add { border: 2px dashed var(--border); display: grid; place-items: center; color: var(--text-2); font-size: 24px; background: transparent; }
 .row-actions { display: flex; gap: 8px; margin-top: 10px; }
 .row-actions button { flex: 1; height: 40px; border-radius: 12px; background: var(--sheet-bg); font-weight: 600; font-size: 14px; }

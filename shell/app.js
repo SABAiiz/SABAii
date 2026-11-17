@@ -438,15 +438,25 @@ function editTask(id) {
     h('label.flabel', { for: 'e-title' }, 'ชื่องาน'), title, h('label.flabel', { for: 'e-subj' }, 'วิชา'), sub,
     h('div.frow', h('div', h('label.flabel', { for: 'e-date' }, 'วันส่ง'), date), h('div', h('label.flabel', { for: 'e-time' }, 'เวลา'), time)),
     h('div.frow', h('div', h('label.flabel', { for: 'e-est' }, 'ใช้เวลาประมาณ (นาที)'), est), h('label.flabel', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '36px' } }, exam, 'เป็นการสอบ')),
-    t.notes.length ? h('div', h('label.flabel', `โน้ต ${t.notes.length} รายการ`), h('div.strip', t.notes.map(n => h('div', { style: { position: 'relative' } }, thumbOf(n, 's'),
+    t.notes.length ? h('div', h('label.flabel', `โน้ต ${t.notes.length} รายการ`), h('div.strip', t.notes.map(n => h('div', { style: { position: 'relative' } }, mini(n, 96, 128),
       h('button.fab', { style: { position: 'absolute', right: '4px', top: '4px', width: '28px', height: '28px' }, 'aria-label': 'ลบโน้ตนี้', html: ic('trash'), onclick: () => { t.notes = t.notes.filter(x => x !== n); save(); refresh(); editTask(id); } }))))) : null),
   [h('button.btn.danger', { onclick: () => { const i = db.tasks.indexOf(t); db.tasks.splice(i, 1); save(); closeModal(); refresh(); toast('ลบงานแล้ว', { label: 'กู้คืน', fn: () => { db.tasks.splice(i, 0, t); save(); refresh(); } }); } }, 'ลบ'),
    h('button.btn.primary', { onclick: () => { if (!title.value.trim()) return toast('ใส่ชื่องานก่อนนะ'); Object.assign(t, { title: title.value.trim(), subject_id: sub.value || null, due_date: date.value || null, due_time: time.value || null, est: +est.value || null, type: exam.checked ? 'exam' : (t.type === 'exam' ? 'homework' : t.type) }); save(); closeModal(); refresh(); toast('บันทึกแล้ว'); } }, 'บันทึก')]);
 }
-function thumbOf(n, pre) {
-  if (n.kind === 'photo') return h('div', h('img', { src: n.src, alt: '' }));
-  const short = String(n.text || '').replace(/<\/?(em|mark)>/g, '').split('\n').slice(0, 4).join('\n');
-  return h(`div.${pre}-${n.kind}`, short);
+/** ภาพย่อแบบ Canva: วาดโน้ตจริงขนาดเต็ม (กว้าง 300) แล้วย่อลงทั้งแผ่น — สัดส่วนตัวหนังสือเหมือนของจริง ไม่ใช่ข้อความยัดกล่อง */
+const MINI_W = 300;
+function mini(n, w, hgt, cls = '') {
+  const k = w / MINI_W, inner = h('div.mini-in', { style: { width: MINI_W + 'px', height: Math.round(hgt / k) + 'px', transform: `scale(${k})` } }, noteEl(n, 0));
+  return h('div.mini' + cls, { style: { width: w + 'px', height: hgt + 'px' }, 'aria-hidden': 'true' }, inner);
+}
+/** ปกการ์ดวิชา: โน้ตล่าสุด 1–2 แผ่นวางซ้อนเอียงบนพื้นสีวิชา */
+function cover(notes, s) {
+  // แผ่นหลัง = รูป/กระดาน/ใบงานแผ่นแรก (เห็นว่าวิชานี้มีอะไร) · แผ่นหน้า = โน้ตล่าสุด
+  const main = notes.find(n => n.kind !== 'sticky'), latest = notes[notes.length - 1];
+  const last = [...new Set([main || notes[notes.length - 2], latest].filter(Boolean))];
+  return h('div.cover', { style: { background: s.tint } },
+    last.length ? last.map((n, i) => mini(n, 82, 108, last.length === 2 ? (i ? '.front' : '.back') : '.solo'))
+      : h('div.cover-empty', badge(s), h('small', 'ยังไม่มีโน้ต')));
 }
 
 /* ---------------- หน้า "งาน" ---------------- */
@@ -500,9 +510,9 @@ function renderTasks() {
   const cards = [...db.subjects, { id: '' }].map(s => {
     const all = db.tasks.filter(x => (x.subject_id || '') === s.id), list = all.filter(pick).sort((a, b) => dueSortKey(a) - dueSortKey(b));
     if (!list.length) return null;
-    const ss = subj(s.id), notes = all.flatMap(x => x.notes).slice(-2), first = list[0], d = dueInfo(first);
+    const ss = subj(s.id), notes = all.flatMap(x => x.notes), first = list[0], d = dueInfo(first);
     return h('button.proj', { onclick: () => { location.hash = '#/subject/' + (s.id || 'none'); } },
-      h('div.thumb' + (notes.length < 2 ? '.one' : ''), notes.length ? notes.map(n => thumbOf(n, 't')) : h('div.t-none')),
+      cover(notes, ss),
       h('div.ph', h('b', ss.name.replace(/^ภาษา/, '')), h('span.cnt', { style: { background: ss.tint, color: ss.color } }, `${list.length} งาน`)),
       h('small', tv.filter === 'done' ? first.title : [d.urgent ? h('em', first.title) : first.title, ' · ', d.text]));
   }).filter(Boolean);
@@ -530,7 +540,7 @@ function renderSubject(id) {
     h('div.board', list.map(t => h('article.tcard' + (t.status === 'done' ? '.done' : ''),
       h('div.top', h('div', h('b', t.title), h('small.muted', { style: { display: 'block' } }, t.status === 'done' ? 'เสร็จแล้ว' : dueLine(t))),
         h('button.iconbtn', { 'aria-label': 'แก้ไขงาน', html: ic('edit'), onclick: () => editTask(t.id) })),
-      h('div.strip', t.notes.map(n => thumbOf(n, 's')), h('button.s-add', { 'aria-label': 'เพิ่มโน้ต', onclick: () => addNote(t.id, 'pick') }, '+')),
+      h('div.strip', t.notes.map(n => mini(n, 96, 128)), h('button.s-add', { 'aria-label': 'เพิ่มโน้ต', onclick: () => addNote(t.id, 'pick') }, '+')),
       t.status !== 'done' ? h('div.row-actions', h('button', { onclick: () => openNotes(t.id) }, 'เปิดโน้ตเต็มจอ'), h('button', { onclick: () => finish(t.id) }, 'เสร็จแล้ว')) : null)),
       h('button.proj.new', { style: { minHeight: '64px' }, onclick: () => addTask('text', s.id ? s.name.replace(/^ภาษา/, '') + ' ' : '') }, `+ เพิ่มงาน${s.id ? 'วิชานี้' : ''}`)),
   );
