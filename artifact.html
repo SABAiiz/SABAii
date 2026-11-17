@@ -1,9 +1,27 @@
 <title>SABAii.com</title>
+<meta name="description" content="SABAii 0.4 — เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Mali:wght@500;600&display=swap">
 <link rel="stylesheet" href="src/styles/app.css">
 <script type="module" src="src/main.js"></script>
-<main id="app">
-  <p style="padding:40px 0;text-align:center;color:#69778F">กำลังเปิด SABAii…</p>
-</main>
+<!-- หน้าเดียวกับ index.html (รุ่นสำหรับลิงก์ทดลองบน claude.ai — ไม่มี service worker/manifest) -->
+<div id="stage" aria-label="โน้ตหน้างาน"></div>
+<div id="note-ui">
+  <button class="fab" id="note-back" aria-label="กลับหน้าแรก"></button>
+  <div class="subjchip" id="note-chip"></div>
+  <div class="pager" id="note-pager" aria-hidden="true"></div>
+  <button class="fab" id="note-add" aria-label="เพิ่มโน้ต"></button>
+  <button class="peek" id="note-peek"></button>
+</div>
+<section id="sheet" aria-label="หน้าแรก">
+  <div class="grab" tabindex="0" role="button" aria-label="ย่อ/ขยายแผ่นงาน (ดึงลงเพื่อดูโน้ตหน้างาน)"><i></i><small class="hint">ดึงลงเพื่อดูโน้ตหน้างาน</small></div>
+  <div class="pane pane-home" id="pane-home"><p class="muted center" style="padding:40px 0">กำลังเปิด SABAii…</p></div>
+  <div class="pane pane-note" id="pane-note"></div>
+</section>
+<main id="page" hidden></main>
+<nav id="nav" aria-label="เมนูหลัก">
+  <a href="#/home" data-r="home"></a>
+  <a href="#/tasks" data-r="tasks"></a>
+  <a href="#/me" data-r="me"></a>
+</nav>
