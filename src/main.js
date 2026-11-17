@@ -21,7 +21,7 @@ async function boot() {
   try { store = createStore(await openBestDB()); await store.load(); }
   catch (e) { document.body.append(h('div.fatal', h('b', 'เปิดข้อมูลในเครื่องไม่ได้'), h('p', String(e.message || e)))); return; }
   app.store = store;
-  applyTheme(store.state.prefs.theme || 'system');
+  applyTheme();
   if (store.state.dbKind !== 'indexeddb') document.body.append(h('div.storage-warn', 'เบราว์เซอร์นี้เก็บข้อมูลถาวรไม่ได้ (โหมดส่วนตัว?) — งานจะหายเมื่อปิดหน้า'));
 
   const page = $('#page'), nav = $('#nav');
