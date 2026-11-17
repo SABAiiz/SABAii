@@ -223,7 +223,6 @@ function renderHome() {
   const focus = !q && hs.when === 'all'; // ไม่ได้ค้นหา/กรอง = โชว์แค่ 3 งานแรก
   const shown = focus ? list.slice(0, TOP) : list;
   const name = S().prefs.display_name;
-  const hasSamples = S().tasks.some(t => t.source === 'sample' && !t.deleted_at);
   const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน...', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
   const empty = !S().tasks.some(t => !t.deleted_at && t.status !== 'done');
   paneHome.replaceChildren(
@@ -247,8 +246,6 @@ function renderHome() {
           h('div.row2', h('button.btn.primary', { onclick: () => addTask('text') }, '+ เพิ่มงานใหม่'),
             h('button.btn.ghost', { onclick: async () => { await app.store.addSamples(); toast('ใส่งานตัวอย่าง 6 งานแล้ว · ลบได้ในหน้าฉัน'); } }, 'ลองงานตัวอย่าง')))
       : h('div.empty-note', 'ไม่พบงานที่ตรงกับที่ค้นหา'),
-    focus && list.length > TOP ? h('a.more', { href: '#/tasks' }, `งานอื่นอีก ${list.length - TOP} งาน · ดูในหน้างาน`, h('span', { html: ic('right') })) : '',
-    hasSamples && list.length ? h('p.muted.center', 'มีงานตัวอย่างอยู่ · ลบทั้งหมดได้ในหน้า "ฉัน"') : '',
   );
   if (keepFocus) { const el = $('#home-q'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
 }

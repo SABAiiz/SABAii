@@ -216,7 +216,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     tp.on('pageerror', e => errors.push('touch: ' + e.message));
     await tp.goto(BASE + '#/home'); await tp.waitForSelector('.tiles');
     await tp.evaluate(() => window.__sabaii.addSamples()); await wait(500);
-    check('งานแนะนำไม่เกิน 3 งาน + ปุ่มไปหน้างาน (6 งาน)', (await tp.locator('.pane-home .trow').count()) === 3 && await tp.locator('a.more', { hasText: 'งานอื่นอีก 3 งาน' }).isVisible());
+    check('งานแนะนำไม่เกิน 3 งาน (มี 6 งาน) · ใต้รายการเว้นว่าง', (await tp.locator('.pane-home .trow').count()) === 3 && (await tp.locator('.pane-home a.more, .pane-home p.muted.center').count()) === 0);
     check('ชั้นโน้ตมีแค่ 3 งานเดียวกัน', (await tp.evaluate(() => window.__ui.homeState().pages.length)) === 3);
     await tp.fill('#home-q', 'ขุนช้าง');
     check('ค้นหา → เจองานที่อยู่นอก 3 อันดับได้', (await tp.locator('.pane-home .trow').count()) === 1 && await tp.getByText('ผลการค้นหา').isVisible());
