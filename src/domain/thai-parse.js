@@ -115,7 +115,7 @@ function pickYear(day, mon, yearTxt, base) {
 
 /** หาวิชาจากรายชื่อวิชาของผู้ใช้ (ชื่อ + ชื่อเล่น) — คำยาวก่อน กัน "ไทย" แย่ง "ภาษาไทย" */
 export function findSubject(t, subjects) {
-  const low = t.toLowerCase().replace(/เลขที่/g, ' ');
+  const low = t.toLowerCase().replace(/เลขที่|คิดเลข/g, ' ');
   const keys = subjects.flatMap(s => [s.name, ...(s.aliases || [])].map(k => ({ s, k: k.toLowerCase() })))
     .filter(x => x.k.length >= 2).sort((a, b) => b.k.length - a.k.length);
   const hit = keys.find(x => low.includes(x.k));

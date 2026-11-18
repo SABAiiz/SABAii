@@ -194,6 +194,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await shot('08-me');
 
   // D: ออฟไลน์ เพิ่มงาน → เปิดใหม่ งานยังอยู่
+  await page.mouse.move(195, 300); await page.mouse.wheel(0, -2000); await wait(400); // หน้าฉันยาว เลื่อนลงแล้วเมนูล่างหลบ → เลื่อนกลับขึ้นก่อน
   await page.locator('#nav a[data-r="home"]').click(); await wait(300);
   await ctx.setOffline(true);
   await typeAdd('เคมี ทำแลป ส่งพุธ');
@@ -272,6 +273,58 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     check('นิ้ว: เต็มจอแล้วดึงลงจากรายการ (อยู่บนสุด) → แผ่นลงตามนิ้ว', (await tst()).snapIdx < 2, `snap=${(await tst()).snapIdx}`);
     await tctx.close();
   }
+
+  // 0.4.2: หน้าฉัน — ดึงงานอัตโนมัติ (ยังไม่เปิด) + ปุ่มพูดเริ่มที่โหมดไหน
+  await page.keyboard.press('Escape'); await wait(300);
+  await page.evaluate(() => { location.hash = '#/me'; }); await wait(500);
+  check('ฉัน: มีหมวด "ดึงงานอัตโนมัติ" (Classroom · ห้องเรียน ยังไม่เปิด)', await page.getByText('ดึงงานอัตโนมัติ').isVisible()
+    && (await page.locator('.list-btn', { hasText: 'Google Classroom' }).textContent()).includes('ยังไม่เปิด')
+    && (await page.locator('.list-btn', { hasText: 'ห้องเรียน' }).textContent()).includes('ยังไม่เปิด'));
+  await page.locator('.list-btn', { hasText: 'Google Classroom' }).click(); await wait(300);
+  check('ฉัน: แตะ Classroom → บอกว่ายังไม่เปิด ต้องมีบัญชี', await page.getByText(/ต้องมีบัญชีและเซิร์ฟเวอร์/).isVisible());
+  await page.keyboard.press('Escape'); await wait(400);
+  const listenRow = page.locator('.list-btn', { hasText: 'ปุ่มพูด เริ่มที่' });
+  const modeBefore = await listenRow.textContent();
+  await listenRow.click(); await wait(400);
+  check('ฉัน: ปุ่มพูดเริ่มที่ ฉันพูดเอง → ครูกำลังสั่งงาน', modeBefore.includes('ฉันพูดเอง') && (await listenRow.textContent()).includes('ครูกำลังสั่งงาน'));
+
+  // 0.4.2: ฟังครู — เสียงปลอม: รอบแรกพูดแล้วเบราว์เซอร์ตัดเอง (เงียบ) · รอบต่อไปรอจนกดหยุด
+  await page.evaluate(() => {
+    window.__fakeSR = { starts: 0 };
+    const Fake = class {
+      start() {
+        const n = ++window.__fakeSR.starts;
+        if (n === 1) {
+          const text = 'โอเค วันนี้พอแค่นี้ การบ้านนะ แบบฝึกหัด 4.3 ข้อ 1 ถึง 15 ไม่ต้องทำข้อ 9 นะ ส่งวันศุกร์ก่อนแปดโมง แล้วก็อาทิตย์หน้าสอบย่อยบทที่ 4 วันอังคาร ออกเรื่องโพรเจกไทล์กับวงกลม 10 คะแนน';
+          setTimeout(() => this.onresult?.({ results: [Object.assign([{ transcript: text }], { isFinal: true })] }), 60);
+          setTimeout(() => this.onend?.(), 160);
+        }
+      }
+      stop() { setTimeout(() => this.onend?.(), 10); }
+      abort() { setTimeout(() => this.onend?.(), 10); }
+    };
+    for (const k of ['SpeechRecognition', 'webkitSpeechRecognition']) Object.defineProperty(window, k, { value: Fake, configurable: true, writable: true });
+  });
+  await page.evaluate(() => { location.hash = '#/home'; }); await wait(600);
+  check('หน้าแรก: ปุ่มพูดเขียนว่า "พูดเอง หรือฟังครู"', (await page.locator('.tile', { hasText: 'พูด' }).textContent()).includes('พูดเอง หรือฟังครู'));
+  await page.locator('.tile', { hasText: 'พูด' }).click(); await wait(900);
+  check('ฟังครู: เปิดมาที่โหมดที่ตั้งไว้ · เบราว์เซอร์ตัดแล้วฟังต่อเอง', (await page.locator('.lmode [aria-pressed="true"]').textContent()) === 'ครูกำลังสั่งงาน'
+    && (await page.evaluate(() => window.__fakeSR.starts)) >= 2 && (await page.locator('.lstatus').textContent()).includes('กำลังฟัง'));
+  check('ฟังครู: แยกได้ 2 งาน · โชว์คำที่ครูพูด', (await page.locator('.lrow').count()) === 2 && (await page.locator('.lquote').first().textContent()).includes('ไม่ต้องทำข้อ 9'));
+  await shot('12-listen-teacher');
+  await page.locator('.qchips .qchip').first().click(); await wait(200);
+  const cls = await page.locator('.qchips .qchip[aria-pressed="true"]').textContent();
+  await page.locator('#add-save').click(); await wait(700);
+  const tt = (await tasks()).filter(t => t.source === 'teacher');
+  const att = await page.evaluate(ids => window.__sabaii.state.attachments.filter(a => ids.includes(a.task_id) && a.kind === 'text').map(a => a.text), tt.map(t => t.id));
+  const hw = tt.find(t => /4\.3/.test(t.title)), ex = tt.find(t => t.type === 'exam');
+  check('ฟังครู: บันทึก 2 งาน วัน/เวลาถูก · วิชาของคาบใช้กับทุกงาน', tt.length === 2 && hw?.due_date === '2026-11-20' && hw?.due_time === '08:00' && ex?.due_date === '2026-11-24'
+    && tt.every(t => t.subject_id && t.subject_id === tt[0].subject_id), `${cls} · ${tt.map(t => `${t.title}/${t.due_date}`).join(' | ')}`);
+  check('ฟังครู: ทุกงานมีโน้ต "ครูพูด" เก็บประโยคจริง', att.length === 2 && att.every(a => a.startsWith('ครูพูด')) && att.some(a => a.includes('ไม่ต้องทำข้อ 9')));
+  check('ฟังครู: ปิดแล้วหยุดฟัง (ไม่ฟังค้าง)', await page.evaluate(() => { const n = window.__fakeSR.starts; return new Promise(r => setTimeout(() => r(window.__fakeSR.starts === n), 600)); }));
+  await page.fill('#home-q', 'แบบฝึกหัด 4.3'); await wait(300);
+  check('หน้าแรก: งานจากฟังครูมีป้าย "ฟังครู"', (await page.locator('.pane-home .trow .tag.teach').count()) >= 1);
+  await page.fill('#home-q', ''); await wait(200);
 
   check('ไม่มี error ใน console', errors.length === 0, errors.slice(0, 3).join(' | '));
   await browser.close();
