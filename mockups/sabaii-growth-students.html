@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<title>SABAii ข้อเสนอเพื่อเด็ก ม.ปลาย–มหาลัย</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700;800&family=Mali:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#0A6CF1;--navy:#0B1B4D;--bl:#E7F0FE;--sf:#F1F4FA;--sf2:#E4EAF5;--bd:#E1E7F2;--t2:#5E6B85;--red:#D9443A;--redl:#FDECEE;--ok:#14A06B;--okl:#E3F6EE;--warn:#F4A340}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#D9E1EE;font-family:"Inter","Noto Sans Thai Looped",sans-serif;color:var(--navy);width:2560px;padding:40px 44px 48px;-webkit-font-smoothing:antialiased}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:40px}
+.top h1{font-size:38px;font-weight:800;letter-spacing:-.3px}
+.top h1 span{color:var(--blue)}
+.top p{font-size:17px;color:#3B4658;margin-top:6px;max-width:1300px;line-height:1.55}
+.top .why{background:#fff;border-radius:18px;padding:16px 22px;font-size:15px;line-height:1.6;max-width:860px;box-shadow:0 4px 16px rgba(11,27,77,.06)}
+.top .why b{color:var(--blue)}
+.groups{display:flex;gap:20px;margin-top:30px}
+.grp{background:rgba(255,255,255,.55);border-radius:30px;padding:20px 14px 24px;flex:1}
+.grp h2{font-size:23px;font-weight:800;display:flex;align-items:center;gap:10px}
+.grp h2 i{font-style:normal;width:34px;height:34px;border-radius:10px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:17px}
+.grp .sub{font-size:14.5px;color:#3B4658;margin:4px 0 16px 44px;max-width:760px;line-height:1.5}
+.pair{display:flex;gap:22px;justify-content:center}
+.col{width:375px}
+.cap{min-height:96px;margin-bottom:14px}
+.cap b{display:block;font-size:16.5px}
+.cap ul{margin:5px 0 0 18px;font-size:13px;color:#3B4658;line-height:1.55}
+.cap .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:6px;vertical-align:2px}
+.now{background:var(--okl);color:var(--ok)}.later{background:#FFF1DC;color:#B26A00}.big{background:var(--redl);color:var(--red)}
+.phone{width:375px;height:812px;border-radius:46px;overflow:hidden;position:relative;background:#fff;box-shadow:0 24px 50px rgba(15,30,60,.2),0 0 0 9px #111;transform:translateZ(0)}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font-weight:600;font-size:14.5px;position:relative;z-index:5}
+.status em{font-style:normal;display:inline-block;width:24px;height:11px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.status em:after{content:"";position:absolute;inset:1.5px;right:7px;background:currentColor;border-radius:1px}
+.badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:10.5px;font-weight:700;flex:none}
+.m{background:#E7F0FE;color:#0A6CF1}.p{background:#F1E8FD;color:#7B3FD6}.e{background:#E3F6EE;color:#14A06B}.c{background:#FFF1DC;color:#C77700}.s{background:#FDECEE;color:#D9443A}.th{background:#FDE9F3;color:#C2357D}
+.btn{background:var(--blue);color:#fff;border-radius:16px;height:52px;display:grid;place-items:center;font-weight:700;font-size:16.5px}
+.btn.dk{background:var(--navy)}
+.chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 11px;border-radius:14px;background:var(--sf);font-size:12.5px;font-weight:600;color:var(--navy)}
+.chip.on{background:var(--navy);color:#fff}
+svg.ic{width:18px;height:18px;flex:none}
+.nav{position:absolute;left:24px;right:24px;bottom:18px;height:62px;border-radius:31px;background:#fff;box-shadow:0 6px 24px rgba(21,35,61,.14);display:flex;padding:6px;z-index:9}
+.nav a{flex:1;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--t2);gap:1px}
+.nav a.on{background:var(--bl);color:var(--blue);font-weight:700}
+.nav svg{width:20px;height:20px}
+
+/* phone 1 paste */
+.p1{background:#5A6782}
+.p1 .dim{position:absolute;inset:0;background:linear-gradient(#8C97AE,#6B7792)}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:26px 26px 0 0;padding:10px 16px 20px}
+.grip{width:44px;height:5px;border-radius:3px;background:#D3DAE6;margin:0 auto 10px}
+.sheet h3{font-size:19px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.paste{margin-top:10px;background:var(--sf);border-radius:14px;padding:10px 12px;font-size:12.5px;line-height:1.6;color:#3B4658;position:relative}
+.paste .from{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:#06C755;margin-bottom:4px}
+.paste .from i{width:16px;height:16px;border-radius:5px;background:#06C755;display:inline-block}
+.found{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+.found b{font-size:15.5px}.found span{font-size:12.5px;color:var(--blue);font-weight:600}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.row:last-child{border-bottom:0}
+.ck{width:22px;height:22px;border-radius:7px;background:var(--blue);display:grid;place-items:center;flex:none}
+.ck svg{width:14px;height:14px}
+.ck.off{background:#fff;border:2px solid #C7D0DF}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t small{font-size:11.5px;color:var(--t2)}
+.row .t small.r{color:var(--red);font-weight:600}
+.row .t small.q{color:#B26A00;font-weight:600}
+
+/* phone 2 week */
+.hdr{padding:4px 18px 0}
+.hdr h3{font-size:24px;font-weight:800}
+.hdr .meta{font-size:13px;color:var(--t2);margin-top:2px}
+.seg{display:flex;background:var(--sf);border-radius:12px;padding:3px;margin:12px 18px 0}
+.seg span{flex:1;text-align:center;font-size:13px;font-weight:600;padding:6px 0;border-radius:9px;color:var(--t2)}
+.seg span.on{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.load{display:flex;gap:6px;padding:14px 18px 6px;align-items:flex-end;height:118px}
+.load div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--t2)}
+.load div i{width:100%;border-radius:8px;background:#CFE0FC;display:block}
+.load div.hv i{background:var(--red)}
+.load div.td{color:var(--blue)}
+.load div.td i{background:var(--blue)}
+.load div em{font-style:normal;font-size:12px;color:var(--navy);font-weight:700}
+.warn{margin:6px 18px 0;background:var(--redl);color:var(--red);border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:600;display:flex;gap:8px;align-items:center}
+.day{padding:10px 18px 0}
+.day h4{font-size:13px;color:var(--t2);font-weight:700;margin-bottom:2px;display:flex;justify-content:space-between}
+.day h4 span{color:var(--blue)}
+.mini{display:flex;align-items:center;gap:10px;padding:6px 0}
+.mini .o{width:20px;height:20px;border-radius:50%;border:2px solid #C3CCDB;flex:none}
+.mini .o.d{background:var(--ok);border-color:var(--ok);display:grid;place-items:center}
+.mini .o.d svg{width:12px;height:12px}
+.mini b{font-size:13.5px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini b.x{color:#9AA5B8;text-decoration:line-through;font-weight:500}
+.mini .sb{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px}
+
+/* phone 3 room */
+.room{background:linear-gradient(160deg,#0B1B4D,#163A8C);color:#fff;padding:4px 18px 18px;border-radius:0 0 26px 26px;margin-top:-44px;padding-top:52px}
+.room .r1{display:flex;justify-content:space-between;align-items:center}
+.room h3{font-size:24px;font-weight:800}
+.room .code{font-size:12px;background:rgba(255,255,255,.14);padding:4px 10px;border-radius:9px;font-weight:600}
+.avs{display:flex;align-items:center;margin-top:10px}
+.avs i{width:28px;height:28px;border-radius:50%;border:2px solid #163A8C;margin-left:-8px;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:700}
+.avs i:first-child{margin-left:0}
+.avs span{margin-left:10px;font-size:13px;opacity:.9}
+.upd{margin:14px 16px 0;background:#FFF6E5;border:1px solid #FFE0A6;border-radius:14px;padding:10px 12px;font-size:12.8px;line-height:1.5}
+.upd b{color:#B26A00}
+.feed{padding:4px 16px}
+.post{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:12px;margin-top:10px}
+.post .who{font-size:11.5px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.post .who i{width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;font-style:normal;font-size:9.5px;font-weight:700}
+.post .ti{display:flex;gap:10px;align-items:center;margin-top:8px}
+.post .ti b{font-size:14.5px;display:block}
+.post .ti small{font-size:12px;color:var(--red);font-weight:600}
+.post .ft{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.post .ft span{font-size:11.5px;color:var(--t2)}
+.post .ft em{font-style:normal;font-size:12px;font-weight:700;color:var(--ok);background:var(--okl);padding:4px 10px;border-radius:9px}
+.post .ft em.add{color:#fff;background:var(--blue)}
+.prog{height:5px;background:var(--sf2);border-radius:3px;margin-top:8px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ok);border-radius:3px}
+
+/* phone 4 onboarding */
+.ob{padding:6px 22px}
+.ob .step{display:flex;gap:6px;margin-bottom:18px}
+.ob .step i{flex:1;height:4px;border-radius:2px;background:var(--sf2)}
+.ob .step i.on{background:var(--blue)}
+.ob h3{font-size:25px;font-weight:800;line-height:1.3}
+.ob p{font-size:13.5px;color:var(--t2);margin-top:4px}
+.lv{display:flex;gap:10px;margin-top:16px}
+.lv div{flex:1;border:2px solid var(--bd);border-radius:18px;padding:14px 12px;text-align:center}
+.lv div b{display:block;font-size:17px;margin-top:6px}
+.lv div small{font-size:11.5px;color:var(--t2)}
+.lv div.on{border-color:var(--blue);background:var(--bl)}
+.lv .em{font-size:28px;line-height:1}
+.lbl{font-size:13px;font-weight:700;margin:18px 0 8px;color:var(--navy)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.join{border:2px dashed #B9CBEA;border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:12px;background:#F7FAFF}
+.join .qr{width:52px;height:52px;border-radius:10px;background:
+ conic-gradient(from 90deg at 30% 30%,#0B1B4D 25%,transparent 0) 0 0/13px 13px,#fff;border:3px solid #0B1B4D;flex:none}
+.join b{font-size:14px;display:block}
+.join small{font-size:12px;color:var(--t2)}
+.join .inp{margin-left:auto;font-weight:800;letter-spacing:1px;font-size:15px;color:var(--blue)}
+
+/* phone 5 lock screen */
+.lock{background:linear-gradient(170deg,#2B4FA8 0%,#5C7FD1 45%,#E4B7C8 100%);color:#fff}
+.lock .status{color:#fff}
+.clock{text-align:center;margin-top:20px}
+.clock small{font-size:16px;font-weight:600;opacity:.9}
+.clock b{display:block;font-size:84px;font-weight:700;line-height:1;letter-spacing:-2px;margin-top:2px}
+.ntf{margin:12px 12px 0;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);color:#0B1B4D;border-radius:20px;padding:11px 13px}
+.ntf .h{display:flex;align-items:center;gap:7px;font-size:11.5px;color:#4A5568;font-weight:600}
+.ntf .h i{width:20px;height:20px;border-radius:6px;background:var(--navy);display:grid;place-items:center;font-style:normal;color:#fff;font-size:10px;font-weight:800}
+.ntf .h span{margin-left:auto;font-weight:500}
+.ntf b{display:block;font-size:14px;margin-top:5px}
+.ntf p{font-size:13px;line-height:1.5;color:#26324D;margin-top:1px}
+.ntf .acts{display:flex;gap:8px;margin-top:8px}
+.ntf .acts span{flex:1;text-align:center;font-size:12.5px;font-weight:700;background:rgba(11,27,77,.08);border-radius:10px;padding:7px 0}
+.ntf .acts span.go{background:var(--blue);color:#fff}
+.wdg{margin:14px 12px 0;display:flex;gap:10px}
+.wdg div{flex:1;background:rgba(255,255,255,.22);backdrop-filter:blur(8px);border-radius:18px;padding:10px 12px;font-size:12px;font-weight:600}
+.wdg div b{display:block;font-size:26px;font-weight:800;line-height:1.1}
+.note-n{position:absolute;left:14px;right:14px;bottom:20px;font-size:11px;background:rgba(11,27,77,.55);border-radius:10px;padding:7px 10px;line-height:1.45}
+
+/* phone 6 story */
+.story{background:linear-gradient(165deg,#0A6CF1 0%,#0B1B4D 70%)}
+.story .status{color:#fff}
+.card9{position:absolute;left:22px;right:22px;top:58px;bottom:150px;border-radius:26px;background:linear-gradient(170deg,#FFFFFF 0%,#EAF2FF 100%);padding:22px 20px;color:var(--navy);box-shadow:0 20px 40px rgba(0,0,0,.25)}
+.card9 .who{font-size:13px;font-weight:700;color:var(--blue)}
+.card9 h3{font-size:22px;font-weight:800;line-height:1.25;margin-top:2px}
+.card9 .bign{font-size:86px;font-weight:800;line-height:1;margin-top:14px;letter-spacing:-3px;color:var(--blue)}
+.card9 .bign small{font-size:20px;letter-spacing:0;color:var(--navy);margin-left:6px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.stats div{background:#fff;border-radius:14px;padding:9px 11px;font-size:11.5px;color:var(--t2);font-weight:600;box-shadow:0 1px 4px rgba(11,27,77,.06)}
+.stats div b{display:block;font-size:20px;color:var(--navy);font-weight:800}
+.dots{display:flex;gap:5px;margin-top:14px;align-items:flex-end;height:54px}
+.dots i{flex:1;border-radius:6px;background:#BFD5FB}
+.dots i.hi{background:var(--blue)}
+.dl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2);margin-top:4px;padding:0 2px}
+.card9 .wm{position:absolute;left:20px;right:20px;bottom:16px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t2)}
+.card9 .wm b{font-size:16px;color:var(--navy)}
+.card9 .wm b span{color:var(--blue)}
+.shbar{position:absolute;left:22px;right:22px;bottom:30px;display:flex;flex-direction:column;gap:10px}
+.shbar .btn{background:linear-gradient(90deg,#F58529,#DD2A7B,#8134AF)}
+.shbar .btn.w{background:rgba(255,255,255,.14);color:#fff}
+
+/* strategy */
+.strat{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:24px;margin-top:34px}
+.box{background:#fff;border-radius:24px;padding:22px 24px;box-shadow:0 4px 16px rgba(11,27,77,.06)}
+.box h3{font-size:20px;font-weight:800;margin-bottom:10px}
+.box table{width:100%;border-collapse:collapse;font-size:13.5px}
+.box th{text-align:left;font-size:12.5px;color:var(--t2);padding:6px 8px;border-bottom:2px solid var(--bd)}
+.box td{padding:8px;border-bottom:1px solid var(--bd);vertical-align:top;line-height:1.5}
+.box td:first-child{font-weight:700;white-space:nowrap}
+.box ol,.box ul{margin-left:20px;font-size:14px;line-height:1.65}
+.box li{margin-bottom:5px}
+.box li b{color:var(--blue)}
+.box .fine{font-size:12.5px;color:var(--t2);margin-top:10px;line-height:1.55}
+</style></head>
+<body>
+
+<div class="top">
+  <div>
+    <h1>SABAii — ทำยังไงให้เด็ก <span>ม.ปลาย–มหาลัย</span> ใช้จริง</h1>
+    <p>แอปจดงานมีเยอะ ที่เด็กเลิกใช้เพราะ <b>"จดช้ากว่าแคปแชท LINE"</b> และ <b>"จดคนเดียว เหนื่อย"</b> — ข้อเสนอนี้แก้ 3 จุด: จดได้ทีละเยอะในไม่กี่วินาที · ทั้งห้องใช้ด้วยกัน (คนเดียวจด ทั้งห้องได้) · เห็นงานโดยไม่ต้องเปิดแอป</p>
+  </div>
+  <div class="why">คู่แข่งตัวจริงของ SABAii ไม่ใช่แอปอื่น แต่คือ <b>กลุ่ม LINE ห้อง + แคปหน้าจอ + โน้ตในมือถือ</b><br>
+  ถ้าการจดงานใน SABAii <b>เร็วกว่าแคปจอ</b> และ <b>เพื่อนในห้องอยู่ในนี้แล้ว</b> เด็กจะย้ายมาเอง</div>
+</div>
+
+<div class="groups">
+
+<!-- ========== กลุ่ม 1 ========== -->
+<div class="grp">
+  <h2><i>1</i>จดได้ทีละเยอะ ไม่กี่วินาที</h2>
+  <div class="sub">ตอบโจทย์ "อยากให้จดงานได้เยอะๆ" — จดเยอะต้องเร็ว และพอมีงานเยอะต้องดูไม่ลาย</div>
+  <div class="pair">
+    <div class="col">
+      <div class="cap"><b>วางทั้งก้อนจาก LINE → ได้หลายงาน<span class="tag now">ทำได้เลย</span></b>
+        <ul><li>ก๊อปข้อความที่หัวหน้าห้องส่งในกลุ่ม วางทีเดียว แอปแยกเป็นงานให้ พร้อมวิชา + วันส่ง</li>
+        <li>ติ๊กเอาออกได้ · ตัวแกะตอนนี้รู้ "ส่งศ." "จ.หน้า" แล้ว หลายบรรทัด = หลายงานอยู่แล้ว</li></ul></div>
+      <div class="phone p1">
+        <div class="dim"></div>
+        <div class="status" style="color:#fff"><span>19:42</span><em></em></div>
+        <div class="sheet" style="top:96px">
+          <div class="grip"></div>
+          <h3>เพิ่มงาน <span class="chip">ปิด</span></h3>
+          <div class="paste">
+            <div class="from"><i></i>วางจาก LINE · กลุ่ม ม.5/2 (ห้องเรา)</div>
+            📢 งานสัปดาห์นี้นะทุกคน<br>
+            - คณิต ใบงาน 8 ลำดับเรขาคณิต ส่ง พฤ.<br>
+            - ฟิสิกส์ แบบฝึก 4.2 ข้อ 1-20 ส่งศ.<br>
+            - อิ้ง สอบท่องศัพท์ Unit 7 จ.หน้า<br>
+            - เคมี รายงานแลป (กลุ่ม) ส่ง 28 พ.ย.<br>
+            - สังคม อ่านบท 5 ก่อนคาบ
+          </div>
+          <div class="found"><b>เจอ 5 งาน</b><span>แก้ทีละงาน</span></div>
+          <div class="row"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 8 ลำดับเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ · พฤ. 20 พ.ย.</small></div></div>
+          <div class="row"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.2 ข้อ 1-20</b><small>ศ. 21 พ.ย.</small></div></div>
+          <div class="row"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="badge e">Eng</div><div class="t"><b>สอบท่องศัพท์ Unit 7</b><small>สอบ · จ. 24 พ.ย.</small></div></div>
+          <div class="row"><div class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="badge c">เคมี</div><div class="t"><b>รายงานแลป (งานกลุ่ม)</b><small>ศ. 28 พ.ย.</small></div></div>
+          <div class="row"><div class="ck off"></div><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ก่อนคาบ</b><small class="q">ไม่มีวันส่ง · แตะเพื่อเลือก</small></div></div>
+          <div class="btn" style="margin-top:12px">บันทึก 4 งาน</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap"><b>มุมมองสัปดาห์ — งานเยอะแต่ไม่ลาย<span class="tag now">ทำได้เลย</span></b>
+        <ul><li>แท่งบอก "วันไหนหนัก" ก่อนเห็นรายการ · แถวบาง ใส่ได้ 15+ งานในจอเดียว</li>
+        <li>ติ๊กวงกลม = เสร็จ (ไม่ต้องเข้าการ์ด) · สลับ วันนี้ / สัปดาห์ / วิชา</li></ul></div>
+      <div class="phone">
+        <div class="status"><span>19:43</span><em></em></div>
+        <div class="hdr"><h3>สัปดาห์นี้</h3><div class="meta">17–23 พ.ย. · 14 งาน · เสร็จแล้ว 6</div></div>
+        <div class="seg"><span>วันนี้</span><span class="on">สัปดาห์</span><span>วิชา</span></div>
+        <div class="load">
+          <div><em>2</em><i style="height:26px"></i>จ.</div>
+          <div class="td"><em>3</em><i style="height:38px"></i>อ.</div>
+          <div><em>2</em><i style="height:26px"></i>พ.</div>
+          <div class="hv"><em>5</em><i style="height:66px"></i>พฤ.</div>
+          <div><em>1</em><i style="height:14px"></i>ศ.</div>
+          <div><em>1</em><i style="height:14px"></i>ส.</div>
+          <div><em>0</em><i style="height:4px"></i>อา.</div>
+        </div>
+        <div class="warn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>พฤ. หนัก 5 งาน — เริ่ม 2 งานคืนนี้ดีไหม?</div>
+        <div class="day"><h4>วันนี้ · อ. 18 <span>3</span></h4>
+          <div class="mini"><span class="o d"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><b class="x">ไทย · สรุปบทอ่าน หน้า 40</b><span class="sb th">ไทย</span></div>
+          <div class="mini"><span class="o"></span><b>อังกฤษ · Workbook p.52</b><span class="sb e">Eng</span></div>
+          <div class="mini"><span class="o"></span><b>ชีวะ · วาดเซลล์พืช</b><span class="sb e">ชีวะ</span></div>
+        </div>
+        <div class="day"><h4>พ. 19 <span>2</span></h4>
+          <div class="mini"><span class="o"></span><b>สังคม · ใบงานเศรษฐศาสตร์</b><span class="sb s">สังคม</span></div>
+          <div class="mini"><span class="o"></span><b>คอม · ส่งโค้ด Python ลูป</b><span class="sb m">คอม</span></div>
+        </div>
+        <div class="day"><h4 style="color:var(--red)">พฤ. 20 · หนัก <span style="color:var(--red)">5</span></h4>
+          <div class="mini"><span class="o"></span><b>คณิต · ใบงาน 8 ลำดับเรขาคณิต</b><span class="sb m">คณิต</span></div>
+          <div class="mini"><span class="o"></span><b>เคมี · สมดุลเคมี ข้อ 1-10</b><span class="sb c">เคมี</span></div>
+          <div class="mini"><span class="o"></span><b>ไทย · เรียงความ 1 หน้า</b><span class="sb th">ไทย</span></div>
+        </div>
+        <div class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 19a7 7 0 0113 0"/></svg>ฉัน</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== กลุ่ม 2 ========== -->
+<div class="grp">
+  <h2><i>2</i>ทั้งห้องใช้ด้วยกัน — คนเดียวจด ทั้งห้องได้</h2>
+  <div class="sub">ตัวดึงคนเข้าแอปที่แรงที่สุด: หัวหน้าห้อง/คนขยันจด 1 คน → เพื่อน 30–40 คนได้งานครบโดยไม่ต้องจดเอง</div>
+  <div class="pair">
+    <div class="col">
+      <div class="cap"><b>ห้องเรียน · งานที่เพื่อนเพิ่มเข้ามาเอง<span class="tag later">ต้องมีบัญชี + ซิงก์</span></b>
+        <ul><li>ใครในห้องเพิ่มงาน → เข้างานของทุกคน · ครูเลื่อนส่ง แก้ที่เดียว ทุกคนได้ด้วย</li>
+        <li>"เพื่อนทำเสร็จแล้ว 18 คน" ช่วยให้รู้ว่าเริ่มได้แล้ว · มหาลัย = กลุ่มวิชา/กลุ่มงาน</li></ul></div>
+      <div class="phone">
+        <div class="status" style="color:#fff"><span>20:05</span><em></em></div>
+        <div class="room">
+          <div class="r1"><h3>ห้อง ม.5/2</h3><span class="code">โค้ด 52-K7Q</span></div>
+          <div class="avs"><i style="background:#FFD36E;color:#6B4A00">ม</i><i style="background:#9FE3C4;color:#0B5B3B">ต</i><i style="background:#C9B5F5;color:#3D2380">พ</i><i style="background:#FFB4B4;color:#7A1F1F">บ</i><i style="background:#fff;color:#0B1B4D">+28</i><span>32 คนในห้อง · ใช้งานวันนี้ 24</span></div>
+        </div>
+        <div class="upd">🔔 <b>ปอนด์แก้ไข:</b> ฟิสิกส์ แบบฝึก 4.2 — ครูเลื่อนส่งเป็น <b>จ. 24 พ.ย.</b> (อัปเดตให้ทุกคนแล้ว)</div>
+        <div class="feed">
+          <div class="post">
+            <div class="who"><i style="background:#FFD36E;color:#6B4A00">ม</i>มายด์ เพิ่มเมื่อ 5 นาทีที่แล้ว · จากรูปกระดาน</div>
+            <div class="ti"><div class="badge m">คณิต</div><div><b>ใบงาน 8 ลำดับเรขาคณิต</b><small>ส่งพรุ่งนี้ 08:00</small></div></div>
+            <div class="prog"><i style="width:56%"></i></div>
+            <div class="ft"><span>เพื่อนทำเสร็จแล้ว 18 คน</span><em>✓ อยู่ในงานของฉัน</em></div>
+          </div>
+          <div class="post">
+            <div class="who"><i style="background:#9FE3C4;color:#0B5B3B">ต</i>ต้นข้าว เพิ่มเมื่อ 1 ชม. · แนบรูปตาราง</div>
+            <div class="ti"><div class="badge c">เคมี</div><div><b>รายงานแลป (กลุ่มละ 4 คน)</b><small style="color:var(--t2)">ศ. 28 พ.ย.</small></div></div>
+            <div class="prog"><i style="width:12%"></i></div>
+            <div class="ft"><span>เสร็จ 4 คน · กลุ่มเรา: มายด์ ต้น พลอย บีม</span><em>✓ อยู่ในงานของฉัน</em></div>
+          </div>
+          <div class="post">
+            <div class="who"><i style="background:#C9B5F5;color:#3D2380">พ</i>พลอย เพิ่มเมื่อวาน</div>
+            <div class="ti"><div class="badge e">Eng</div><div><b>สอบท่องศัพท์ Unit 7</b><small style="color:var(--t2)">สอบ จ. 24 พ.ย.</small></div></div>
+            <div class="ft"><span>มีโน้ตศัพท์ 2 รูป</span><em class="add">+ เพิ่มเข้างานฉัน</em></div>
+          </div>
+        </div>
+        <div class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>หน้าหลัก</a><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>งาน</a><a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 19a5.5 5.5 0 0111 0M15 15.5a4.5 4.5 0 016 3.5"/></svg>ห้อง</a><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 19a7 7 0 0113 0"/></svg>ฉัน</a></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap"><b>เปิดครั้งแรก 30 วิ · ไม่ต้องสมัคร<span class="tag now">ทำได้เลย (ยกเว้นโค้ดห้อง)</span></b>
+        <ul><li>เลือก ม.ปลาย/มหาลัย → วิชาขึ้นมาให้เลย ไม่ต้องพิมพ์ทีละวิชา</li>
+        <li>มีโค้ดห้อง/สแกน QR ที่เพื่อนส่งมา → ได้งานทั้งห้องตั้งแต่วินาทีแรก</li></ul></div>
+      <div class="phone">
+        <div class="status"><span>20:30</span><em></em></div>
+        <div class="ob">
+          <div class="step"><i class="on"></i><i class="on"></i><i></i></div>
+          <h3>เรียนอยู่ระดับไหน?</h3>
+          <p>เลือกแล้ววิชาจะขึ้นมาให้ แก้ทีหลังได้</p>
+          <div class="lv">
+            <div class="on"><div class="em">🎒</div><b>ม.ปลาย</b><small>ม.4 – ม.6</small></div>
+            <div><div class="em">🎓</div><b>มหาลัย</b><small>ปี 1 – ปี 4</small></div>
+          </div>
+          <div class="lbl">ชั้น</div>
+          <div class="chips"><span class="chip">ม.4</span><span class="chip on">ม.5</span><span class="chip">ม.6</span></div>
+          <div class="lbl">สาย</div>
+          <div class="chips"><span class="chip on">วิทย์-คณิต</span><span class="chip">ศิลป์-ภาษา</span><span class="chip">ศิลป์-คำนวณ</span><span class="chip">อื่นๆ</span></div>
+          <div class="lbl">วิชาของฉัน (แตะเพื่อเอาออก)</div>
+          <div class="chips">
+            <span class="chip" style="background:#E7F0FE;color:#0A6CF1">คณิต ✓</span><span class="chip" style="background:#F1E8FD;color:#7B3FD6">ฟิสิกส์ ✓</span><span class="chip" style="background:#FFF1DC;color:#C77700">เคมี ✓</span><span class="chip" style="background:#E3F6EE;color:#14A06B">ชีวะ ✓</span><span class="chip" style="background:#E3F6EE;color:#14A06B">อังกฤษ ✓</span><span class="chip" style="background:#FDE9F3;color:#C2357D">ไทย ✓</span><span class="chip" style="background:#FDECEE;color:#D9443A">สังคม ✓</span><span class="chip">+ เพิ่ม</span>
+          </div>
+          <div class="lbl">มีห้องที่เพื่อนสร้างไว้ไหม?</div>
+          <div class="join"><div class="qr"></div><div><b>สแกน QR / ใส่โค้ดห้อง</b><small>ได้งานที่เพื่อนจดไว้ทันที</small></div><span class="inp">52-K7Q</span></div>
+          <div class="btn" style="margin-top:18px">เริ่มเลย — ไม่ต้องสมัคร</div>
+          <p style="text-align:center;margin-top:8px;font-size:12px">ข้ามได้ · งานเก็บในเครื่องจนกว่าจะเข้าห้อง</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== กลุ่ม 3 ========== -->
+<div class="grp">
+  <h2><i>3</i>เห็นงานโดยไม่ต้องเปิดแอป</h2>
+  <div class="sub">เด็กไม่ได้ลืมจด แต่ลืม "เปิดดู" — ให้แอปไปหาเขาเอง และให้สิ่งที่อยากแชร์ต่อ</div>
+  <div class="pair">
+    <div class="col">
+      <div class="cap"><b>แจ้งเตือน 2 ครั้ง/วัน ไม่สแปม<span class="tag later">ต้องติดตั้งลงหน้าจอ</span></b>
+        <ul><li>07:00 สรุปวันนี้ · 20:00 "ส่งพรุ่งนี้ ยังไม่ได้ทำ" + ปุ่มทำเลย/เลื่อน</li>
+        <li>ตั้งเวลาเองได้ · ปิดได้ทีละแบบ (ไม่เตือนทุกงาน)</li></ul></div>
+      <div class="phone lock">
+        <div class="status"><span></span><em></em></div>
+        <div class="clock"><small>อังคาร 18 พฤศจิกายน</small><b>20:00</b></div>
+        <div class="wdg"><div><b>3</b>งานส่งพรุ่งนี้</div><div><b>24 วัน</b>ถึงสอบปลายภาค</div></div>
+        <div class="ntf">
+          <div class="h"><i>S</i>SABAii<span>ตอนนี้</span></div>
+          <b>ส่งพรุ่งนี้ 3 งาน · ยังไม่ได้ทำ 2</b>
+          <p>คณิต ใบงาน 8 (08:00) · เคมี สมดุลเคมี ข้อ 1-10 — ใช้เวลาราว 1 ชม.</p>
+          <div class="acts"><span class="go">ทำเลย</span><span>เตือน 21:00</span></div>
+        </div>
+        <div class="ntf">
+          <div class="h"><i>S</i>SABAii · ห้อง ม.5/2<span>19:42</span></div>
+          <b>มายด์เพิ่มงานใหม่ 4 งาน</b>
+          <p>เข้างานของคุณแล้ว · พฤ. หนัก 5 งาน</p>
+        </div>
+        <div class="ntf" style="opacity:.85">
+          <div class="h"><i>S</i>SABAii<span>07:00</span></div>
+          <b>วันนี้มี 3 งาน ☀️</b>
+          <p>อังกฤษ Workbook p.52 · ชีวะ วาดเซลล์พืช · +1</p>
+        </div>
+        <div class="note-n">วิดเจ็ตบนจอ (แถบ "3 งาน / 24 วัน") ทำได้เฉพาะแอปที่ลงจากสโตร์ — ตอนนี้เป็นเว็บแอป ใช้แจ้งเตือนแทนก่อน</div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="cap"><b>สรุปสัปดาห์ แชร์ลงสตอรี่ได้<span class="tag big">ตัวพาคนใหม่มา</span></b>
+        <ul><li>ทุกวันอาทิตย์ได้การ์ดสวยๆ "สัปดาห์นี้เคลียร์ 12 งาน" มีชื่อ SABAii ติดมุม</li>
+        <li>เด็กแชร์เพราะดูดี ไม่ใช่เพราะได้แต้ม (ไม่ทำเกม/เหรียญตามสเปก)</li></ul></div>
+      <div class="phone story">
+        <div class="status"><span>21:10</span><em></em></div>
+        <div class="card9">
+          <div class="who">สัปดาห์ของมายด์ · 17–23 พ.ย.</div>
+          <h3>เคลียร์งานไปแล้ว</h3>
+          <div class="bign">12<small>งาน</small></div>
+          <div class="stats">
+            <div><b>9</b>ส่งก่อนกำหนด</div>
+            <div><b>6 ชม.</b>เวลาที่ตั้งใจทำ</div>
+            <div><b>ฟิสิกส์</b>วิชาที่ทำเยอะสุด</div>
+            <div><b>24 วัน</b>ถึงสอบปลายภาค</div>
+          </div>
+          <div class="dots"><i style="height:40%"></i><i style="height:62%"></i><i style="height:30%"></i><i class="hi" style="height:100%"></i><i style="height:50%"></i><i style="height:20%"></i><i style="height:12%"></i></div>
+          <div class="dl"><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span></div>
+          <div class="wm"><span>จดงานทั้งห้องใน 3 วิ</span><b>SABAii<span>.</span>com</b></div>
+        </div>
+        <div class="shbar"><div class="btn">แชร์ลง IG สตอรี่</div><div class="btn w">บันทึกรูป</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== กลยุทธ์ ========== -->
+<div class="strat">
+  <div class="box">
+    <h3>ม.ปลาย กับ มหาลัย ต่างกันตรงไหน</h3>
+    <table>
+      <tr><th></th><th>ม.ปลาย</th><th>มหาลัย</th></tr>
+      <tr><td>งานมาจากไหน</td><td>ครูสั่งในห้อง/กระดาน · กลุ่ม LINE ห้อง</td><td>LMS / Google Classroom / อีเมล · กลุ่ม LINE วิชา</td></tr>
+      <tr><td>หน่วย</td><td>ห้อง (ม.5/2) — คนชุดเดิมทุกวิชา</td><td>วิชา (รหัสวิชา + Sec) · กลุ่มงาน 3–6 คน</td></tr>
+      <tr><td>ปวดหัวสุด</td><td>งานเยอะหลายวิชา ส่งวันเดียวกัน · TCAS</td><td>โปรเจกต์กลุ่มยาว · ใครทำส่วนไหน · สอบกลาง/ปลายภาค</td></tr>
+      <tr><td>SABAii ควรเน้น</td><td>วางทั้งก้อน · มุมมองสัปดาห์ · ห้อง</td><td>แบ่งงานในกลุ่ม · ตารางสอบ · นับถอยหลัง</td></tr>
+    </table>
+    <div class="fine">แนะนำ: <b>เริ่มที่ ม.ปลายก่อน</b> — ห้องเดียวกันทุกวิชา คนหนึ่งจดแล้วทั้งห้องได้ประโยชน์ทันที ขยายไปมหาลัยทีหลังด้วยฟีเจอร์ "กลุ่มงาน"</div>
+  </div>
+  <div class="box">
+    <h3>ปล่อยยังไงให้คนมาใช้</h3>
+    <ol>
+      <li><b>หาคนจดประจำห้อง 5–10 ห้อง</b> — คนที่ส่งสรุปงานในกลุ่ม LINE อยู่แล้ว ให้เขาจดใน SABAii แล้วส่งลิงก์ห้องแทน</li>
+      <li><b>ปล่อยช่วงที่งานถล่ม</b> — เปิดเทอม · 2 สัปดาห์ก่อนสอบกลางภาค</li>
+      <li><b>คลิปสั้น TikTok/Reels</b> — "วางแชท LINE → ได้ 5 งานใน 3 วิ" โชว์ของจริง ไม่ต้องพูดเยอะ</li>
+      <li><b>การ์ดสรุปสัปดาห์</b> ติดชื่อ SABAii ไปในสตอรี่เอง</li>
+    </ol>
+  </div>
+  <div class="box">
+    <h3>ทำอะไรก่อน</h3>
+    <ol>
+      <li><b>วางทั้งก้อน + มุมมองสัปดาห์</b> — ใช้ของที่มีอยู่ ทำในเครื่องได้เลย</li>
+      <li><b>เปิดครั้งแรก 30 วิ</b> (เลือกระดับ → วิชาขึ้นเอง)</li>
+      <li><b>การ์ดสรุปสัปดาห์</b> — ทำรูปในเครื่องได้ ไม่ต้องมีเซิร์ฟเวอร์</li>
+      <li><b>แจ้งเตือน 07:00 / 20:00</b> — ต้องติดตั้งลงหน้าจอก่อน (iPhone iOS 16.4+)</li>
+      <li><b>ห้องเรียน</b> — ต้องมีบัญชี + ซิงก์ (เฟส 4) งานใหญ่สุด แต่ดึงคนได้มากสุด</li>
+    </ol>
+  </div>
+  <div class="box">
+    <h3>รู้ได้ไงว่าเวิร์ก</h3>
+    <ul>
+      <li><b>กลับมาใช้สัปดาห์ที่ 2</b> — เป้าตั้งต้น 4 ใน 10 คน</li>
+      <li><b>งานที่จด/คน/สัปดาห์</b> — ถ้าต่ำกว่า 5 แปลว่ายังจดในแอปอื่นอยู่</li>
+      <li><b>เวลาจาก "วาง" ถึง "บันทึก"</b> — ต้องเร็วกว่าแคปจอ (ไม่เกิน 10 วิ)</li>
+      <li><b>คนใหม่มาจากห้อง/การ์ดแชร์</b> กี่ %</li>
+    </ul>
+    <div class="fine">ตัวเลขเป้าเป็นค่าตั้งต้นให้ปรับ ยังไม่มีข้อมูลผู้ใช้จริง · ทดลองกับ 2–3 ห้องก่อนดีที่สุด</div>
+  </div>
+</div>
+
+</body></html>
