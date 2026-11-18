@@ -46,8 +46,7 @@ export const sane = ymd => !ymd || (ymd >= addDaysYMD(today(), -366) && ymd <= a
 
 /** เพิ่มงานแบบเร็ว: พิมพ์ → เห็นผลทันที → แตะชิปแก้ → บันทึก (ไม่มีหน้าตรวจสอบแยก) · kind: text · photo · camera · voice (→ listen.js) */
 export async function addTask(kind = 'text', preset = '') {
-  if (kind === 'voice' && !speechSupported()) return voiceUnavailable('เครื่องนี้ใช้การพูดไม่ได้');
-  if (kind === 'voice') return listenTask();
+  if (kind === 'voice') return listenTask(); // ฟังไม่ได้ก็ยังเปิด — พิมพ์/วางแทนได้ในหน้าเดียวกัน
   let img = null;
   if (kind === 'photo' || kind === 'camera') { img = await getImage(kind === 'camera'); if (!img) return; }
   const ta = h('textarea.field.quick', { id: 'add-text', rows: 2, 'aria-label': 'งานที่ต้องทำ',
@@ -96,10 +95,6 @@ export async function addTask(kind = 'text', preset = '') {
   });
   paint();
   setTimeout(() => ta.focus(), 320);
-}
-export function voiceUnavailable(why) {
-  openModal({ title: 'พูดงาน', body: h('div', h('p', why), h('p.muted', 'พิมพ์แทนได้ — ระบบแยกวิชาและวันส่งให้เหมือนกัน')),
-    foot: h('button.btn.primary', { onclick: () => addTask('text') }, 'พิมพ์แทน') });
 }
 
 /** เพิ่มโน้ตให้งาน: photo · camera · text · voice · pick (ให้เลือก) */

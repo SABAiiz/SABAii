@@ -359,6 +359,7 @@ div.flabel { margin-bottom: 0; }
 .lstatus { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
 .ldot { width: 10px; height: 10px; border-radius: 50%; background: var(--error); animation: blink 1.2s ease-in-out infinite; }
 @keyframes blink { 50% { opacity: .3; } }
+.lbtn[hidden] { display: none; }
 .lbtn { height: 36px; padding: 0 14px; font-size: 14px; flex: none; }
 .lsec { font-size: 13px; font-weight: 700; color: var(--text-2); margin: 12px 0 2px; }
 .lrow { cursor: pointer; align-items: flex-start; }
@@ -369,3 +370,4 @@ div.flabel { margin-bottom: 0; }
 .tag.teach { background: #F1E8FD; color: #6B35C2; }
 .sec.mhead2 { margin-top: 22px; }
 .sec.mhead2 + .mlist { margin-top: 0; }
+.lstatus.bad { color: var(--error); }

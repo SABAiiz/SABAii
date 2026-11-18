@@ -127,9 +127,13 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   // C: ไมโครโฟนใช้ไม่ได้ → พิมพ์แทนได้
   await page.evaluate(() => { delete window.webkitSpeechRecognition; delete window.SpeechRecognition; });
   await page.locator('.tile', { hasText: 'พูด' }).click();
-  check('C เสียงใช้ไม่ได้ → มีปุ่ม "พิมพ์แทน"', await page.getByRole('button', { name: 'พิมพ์แทน' }).isVisible());
-  await page.getByRole('button', { name: 'พิมพ์แทน' }).click();
-  check('C กดพิมพ์แทน → ช่องพิมพ์เปิด', await page.locator('#add-text').isVisible());
+  await wait(300);
+  check('C เสียงใช้ไม่ได้ → หน้าพูดยังเปิด บอกว่าฟังไม่ได้ ให้พิมพ์/วางแทน', /ฟังเสียงไม่ได้.*พิมพ์หรือวาง/.test(await page.locator('.lstatus').textContent()) && await page.locator('#listen-toggle').isHidden());
+  await page.fill('#add-text', 'การบ้านนะ แบบฝึก 2.1 ส่งพรุ่งนี้ แล้วก็อ่านหน้า 10 ถึง 12');
+  await page.locator('.lmode button', { hasText: 'ครูกำลังสั่งงาน' }).click(); await wait(200);
+  check('C พิมพ์/วางสิ่งที่ครูพูดแทน → แยกงานได้เหมือนกัน (2 งาน)', (await page.locator('.lrow').count()) === 2);
+  await page.locator('.lmode button', { hasText: 'ฉันพูดเอง' }).click(); await wait(100);
+  await page.fill('#add-text', '');
   await page.keyboard.press('Escape'); await wait(400);
 
   // ปักหมุด + ลบ/กู้คืน

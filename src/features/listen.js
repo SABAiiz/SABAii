@@ -7,13 +7,20 @@ import { h, toast, openModal, closeModal, badge } from '../ui/kit.js';
 import { draftsFromText } from '../domain/parse.js';
 import { tasksFromSpeech } from '../domain/speech.js';
 import { newId } from '../domain/tasks.js';
-import { startListening } from './voice.js';
+import { startListening, speechEngine } from './voice.js';
 import { app, S, subj } from './shared.js';
-import { subjChips, dayChips, dueText, sane, voiceUnavailable } from './add.js';
+import { subjChips, dayChips, dueText, sane } from './add.js';
 
 export const MODES = { self: 'ฉันพูดเอง', teacher: 'ครูกำลังสั่งงาน' };
 export const listenMode = () => (S().prefs.listen_mode === 'teacher' ? 'teacher' : 'self');
-const FATAL = new Set(['not-allowed', 'service-not-allowed', 'audio-capture', 'start-failed', 'language-not-supported']);
+// ฟังต่อไม่ได้แน่ ๆ (ไม่ต้องลองใหม่เอง)
+const FATAL = new Set(['not-allowed', 'service-not-allowed', 'audio-capture', 'start-failed', 'language-not-supported', 'unsupported',
+  'not_granted', 'unavailable', 'dismissed', 'no_gesture', 'rate_limited', 'upstream_error', 'invalid_argument']);
+const WHY = {
+  'not-allowed': 'ไม่ได้อนุญาตให้ใช้ไมโครโฟน', not_granted: 'ไม่ได้อนุญาตให้ใช้ไมโครโฟน', dismissed: 'ยังไม่ได้อนุญาตไมโครโฟน — แตะ "ฟังต่อ" เพื่อลองใหม่',
+  'no-speech': 'ไม่ได้ยินเสียง', rate_limited: 'ตอนนี้ฟังไม่ได้ ลองใหม่อีกสักครู่', 'audio-capture': 'เปิดไมโครโฟนไม่ได้',
+};
+const whyText = err => WHY[err] || 'เครื่องนี้ฟังเสียงไม่ได้';
 const mmss = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 
 export function listenTask() {
@@ -28,7 +35,7 @@ export function listenTask() {
   const ov = { subject_id: undefined, due_date: undefined }; // ฉันพูดเอง: ชิปที่แตะเอง (งานเดียว)
   let classSubj = null;     // ครูพูด: วิชาของคาบนี้ ใช้กับทุกงาน
   const off = new Set();    // ครูพูด: งานที่ติ๊กออก (จำด้วยประโยคดิบ)
-  let rec = null, listening = false, userStop = false, prefix = '', startedAt = 0, tick = null, saving = false, restarts = 0;
+  let rec = null, listening = false, userStop = false, prefix = '', startedAt = 0, tick = null, saving = false, restarts = 0, failed = speechEngine() ? '' : 'unsupported';
 
   function current() {
     const opts = { now: new Date(), subjects: S().subjects };
@@ -41,14 +48,17 @@ export function listenTask() {
   const chosen = list => (mode === 'teacher' ? list.filter(d => !off.has(d.raw)) : list).filter(d => d.title);
 
   function paintStatus() {
-    status.replaceChildren(listening ? h('i.ldot') : '', listening ? `กำลังฟัง ${mmss(Date.now() - startedAt)}` : 'หยุดฟังแล้ว');
+    status.classList.toggle('bad', !listening && !!failed);
+    status.replaceChildren(listening ? h('i.ldot') : '', listening ? `กำลังฟัง ${mmss(Date.now() - startedAt)}`
+      : failed ? `${whyText(failed)} · พิมพ์หรือวางสิ่งที่ได้ยินแทนได้` : 'หยุดฟังแล้ว');
     toggleBtn.textContent = listening ? 'หยุดฟัง' : 'ฟังต่อ';
+    toggleBtn.hidden = !listening && (failed === 'unsupported' || failed === 'unavailable' || failed === 'not_granted' || failed === 'not-allowed');
   }
   function paint() {
     segBox.replaceChildren(...Object.entries(MODES).map(([k, v]) => h('button', { type: 'button', 'aria-pressed': String(k === mode), onclick: () => {
       if (k === mode) return;
       mode = k; off.clear(); app.store.setPref('listen_mode', k, false); paint();
-      if (k === 'teacher' && !listening && !saving) listen();
+      if (k === 'teacher' && !listening && !saving && !failed) listen();
     } }, v)));
     ta.rows = mode === 'teacher' ? 4 : 2;
     ta.placeholder = mode === 'teacher' ? 'เปิดไว้ตอนครูสั่งงาน ข้อความจะขึ้นตรงนี้ · แก้ได้' : 'พูดชื่องาน วิชา และวันส่ง เช่น "คณิต ใบงาน 7 ส่งศุกร์"';
@@ -74,24 +84,23 @@ export function listenTask() {
   }
 
   function listen() {
-    userStop = false; listening = true; prefix = ta.value.trim();
+    if (!speechEngine()) { failed = 'unsupported'; paintStatus(); return; }
+    userStop = false; listening = true; failed = ''; prefix = ta.value.trim();
     if (!startedAt) startedAt = Date.now();
     clearInterval(tick); tick = setInterval(paintStatus, 1000);
-    rec = startListening({
+    const r = startListening({
       onText: t => { ta.value = (prefix ? prefix + ' ' : '') + t; paint(); },
       onEnd: (t, err) => {
         rec = null;
         if (userStop || saving) return;
-        if (err && FATAL.has(err) && !ta.value.trim()) {
-          listening = false; clearInterval(tick); closeModal(true);
-          return voiceUnavailable(err === 'not-allowed' ? 'ไม่ได้อนุญาตให้ใช้ไมโครโฟน' : 'เครื่องนี้ฟังไม่ได้ ลองใหม่หรือพิมพ์แทน');
-        }
-        // ครูพูด: เบราว์เซอร์หยุดเองเมื่อเงียบ → ฟังต่อ (กันวนไม่รู้จบด้วยเพดาน)
-        if (mode === 'teacher' && !(err && FATAL.has(err)) && restarts < 60) { restarts++; return listen(); }
-        if (mode === 'self' && err && !ta.value.trim()) { listening = false; clearInterval(tick); closeModal(true); return voiceUnavailable('ฟังไม่ได้ยิน ลองใหม่หรือพิมพ์แทน'); }
-        listening = false; clearInterval(tick); paintStatus();
+        // ครูพูด + เสียงของเบราว์เซอร์: หยุดเองเมื่อเงียบ → ฟังต่อ (dictation ของ claude.ai ฟังยาวได้เอง ไม่ต้องเริ่มใหม่)
+        if (mode === 'teacher' && r.engine === 'web' && !(err && FATAL.has(err)) && restarts < 60) { restarts++; return listen(); }
+        listening = false; clearInterval(tick);
+        if (err && !ta.value.trim()) { failed = err; setTimeout(() => ta.focus(), 50); }
+        paintStatus();
       },
     });
+    rec = r;
     paintStatus();
   }
   function stop() { userStop = true; listening = false; clearInterval(tick); rec?.stop(); paintStatus(); }
