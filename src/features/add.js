@@ -6,6 +6,7 @@ import { draftsFromText } from '../domain/parse.js';
 import { TYPES, newId } from '../domain/tasks.js';
 import { pickImage, prepareImage } from './images.js';
 import { speechSupported, startListening } from './voice.js';
+import { listenTask } from './listen.js';
 import { app, S, subj, task, today, dueInfo, fullTitle, notesOf, urlOf, visibleSubjects } from './shared.js';
 import { badge } from '../ui/kit.js';
 import { addDaysYMD, fromYMD, relDay, DOW_SHORT } from '../domain/dates.js';
@@ -22,12 +23,12 @@ async function getImage(camera) {
 /* ---------- ชิปเลือกเร็ว (แทนช่องกรอก) ---------- */
 const nameShort = s => s.name.replace(/^ภาษา/, '');
 /** ชิปวิชา: แตะเลือก · แตะซ้ำ = ไม่ระบุ */
-function subjChips(sel, onPick) {
+export function subjChips(sel, onPick) {
   return h('div.qchips', { role: 'group', 'aria-label': 'วิชา' }, visibleSubjects().map(s =>
     h('button.qchip', { type: 'button', 'aria-pressed': String(s.id === sel), style: { '--c': s.color }, onclick: () => onPick(s.id === sel ? null : s.id) }, nameShort(s))));
 }
 /** ชิปวัน: วันนี้ · พรุ่งนี้ · 5 วันถัดไป · เลือกวัน (ปฏิทิน) · ไม่มีวันส่ง */
-function dayChips(sel, onPick) {
+export function dayChips(sel, onPick) {
   const td = today(), days = Array.from({ length: 7 }, (_, i) => addDaysYMD(td, i));
   const label = (d, i) => i === 0 ? 'วันนี้' : i === 1 ? 'พรุ่งนี้' : `${DOW_SHORT[fromYMD(d).getDay()]} ${fromYMD(d).getDate()}`;
   const other = sel && !days.includes(sel);
@@ -36,16 +37,16 @@ function dayChips(sel, onPick) {
     days.map((d, i) => h('button.qchip', { type: 'button', 'aria-pressed': String(d === sel), onclick: () => onPick(d === sel ? null : d) }, label(d, i))),
     h('label.qchip.qpick', { 'aria-pressed': String(!!other) }, h('span', { html: ic('cal') }), other ? relDay(sel, td) : 'วันอื่น', pick));
 }
-const dueText = d => {
+export const dueText = d => {
   const t = { due_date: d.due_date, due_time: d.due_time, type: d.type };
   return d.due_date ? dueInfo(t).text : 'ไม่มีวันส่ง';
 };
 /** ปีแปลก ๆ (เช่นพิมพ์ปีผิดในช่องวันที่) ไม่รับ */
-const sane = ymd => !ymd || (ymd >= addDaysYMD(today(), -366) && ymd <= addDaysYMD(today(), 3 * 366)) ? ymd : null;
+export const sane = ymd => !ymd || (ymd >= addDaysYMD(today(), -366) && ymd <= addDaysYMD(today(), 3 * 366)) ? ymd : null;
 
-/** เพิ่มงานแบบเร็ว: พิมพ์ → เห็นผลทันที → แตะชิปแก้ → บันทึก (ไม่มีหน้าตรวจสอบแยก) · kind: text · voice · photo · camera */
+/** เพิ่มงานแบบเร็ว: พิมพ์ → เห็นผลทันที → แตะชิปแก้ → บันทึก (ไม่มีหน้าตรวจสอบแยก) · kind: text · photo · camera · voice (→ listen.js) */
 export async function addTask(kind = 'text', preset = '') {
-  if (kind === 'voice' && !speechSupported()) return voiceUnavailable('เครื่องนี้ใช้การพูดไม่ได้');
+  if (kind === 'voice') return listenTask(); // ฟังไม่ได้ก็ยังเปิด — พิมพ์/วางแทนได้ในหน้าเดียวกัน
   let img = null;
   if (kind === 'photo' || kind === 'camera') { img = await getImage(kind === 'camera'); if (!img) return; }
   const ta = h('textarea.field.quick', { id: 'add-text', rows: 2, 'aria-label': 'งานที่ต้องทำ',
@@ -54,7 +55,7 @@ export async function addTask(kind = 'text', preset = '') {
   const ov = { subject_id: undefined, due_date: undefined }; // ที่ผู้ใช้แตะชิปเลือกเอง (ใช้กับงานเดียว)
   const preview = h('div.qpreview', { 'aria-live': 'polite' });
   const key = newId('d');
-  let drafts = [], rec = null, saving = false;
+  let drafts = [], saving = false;
   const saveBtn = h('button.btn.primary', { id: 'add-save', onclick: () => save() }, 'บันทึก');
 
   const current = () => drafts.map((d, i) => drafts.length === 1 ? { ...d,
@@ -74,9 +75,9 @@ export async function addTask(kind = 'text', preset = '') {
   }
   async function save() {
     const items = current().filter(d => d.title).map((d, i) => ({ title: d.title, subject_id: d.subject_id || null, type: d.type || 'homework',
-      due_date: sane(d.due_date), due_time: d.due_time || null, source: img ? 'photo' : kind === 'voice' ? 'voice' : 'text', draft_key: `${key}-${i}` }));
+      due_date: sane(d.due_date), due_time: d.due_time || null, source: img ? 'photo' : 'text', draft_key: `${key}-${i}` }));
     if (!items.length || saving) return;
-    saving = true; saveBtn.disabled = true; rec?.stop();
+    saving = true; saveBtn.disabled = true;
     try {
       const saved = await app.store.addTasks(items);
       if (img && saved[0]) await app.store.addAttachment(saved[0].id, { kind: 'image', blob: img.blob, size: img.blob.size, mime_type: img.blob.type });
@@ -87,20 +88,13 @@ export async function addTask(kind = 'text', preset = '') {
   ta.addEventListener('input', paint);
   ta.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); save(); } });
   openModal({
-    title: kind === 'voice' ? 'พูดงาน' : img ? 'งานจากรูป' : 'พิมพ์งาน',
-    body: h('div', img ? h('img.preview.small', { src: img.url, alt: 'รูปที่เลือก' }) : '', kind === 'voice' ? micBlock('กำลังฟัง… พูดชื่องาน วิชา และวันส่ง') : '', ta, preview),
+    title: img ? 'งานจากรูป' : 'พิมพ์งาน',
+    body: h('div', img ? h('img.preview.small', { src: img.url, alt: 'รูปที่เลือก' }) : '', ta, preview),
     foot: saveBtn,
     isDirty: () => !saving && (!!ta.value.trim() || !!img),
-    onClose: () => rec?.abort(),
   });
   paint();
-  if (kind === 'voice') {
-    rec = startListening({ onText: t => { ta.value = t; paint(); }, onEnd: (t, err) => { if (err && !t) { closeModal(); voiceUnavailable(err === 'not-allowed' ? 'ไม่ได้อนุญาตให้ใช้ไมโครโฟน' : 'ฟังไม่ได้ยิน ลองใหม่หรือพิมพ์แทน'); } } });
-  } else setTimeout(() => ta.focus(), 320);
-}
-function voiceUnavailable(why) {
-  openModal({ title: 'พูดงาน', body: h('div', h('p', why), h('p.muted', 'พิมพ์แทนได้ — ระบบแยกวิชาและวันส่งให้เหมือนกัน')),
-    foot: h('button.btn.primary', { onclick: () => addTask('text') }, 'พิมพ์แทน') });
+  setTimeout(() => ta.focus(), 320);
 }
 
 /** เพิ่มโน้ตให้งาน: photo · camera · text · voice · pick (ให้เลือก) */

@@ -4,6 +4,7 @@ import { toYMD, fromYMD, addDaysYMD, daysBetween, DOW_SHORT } from '../domain/da
 import { summary, isLive, nextExam } from '../domain/tasks.js';
 import { SUBJECT_COLORS } from '../data/store.js';
 import { app, S, subj, today } from './shared.js';
+import { MODES, listenMode } from './listen.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
@@ -38,6 +39,14 @@ export function meView(root) {
           h('span', DOW_SHORT[fromYMD(d).getDay()]));
       })),
     ),
+    h('div.sec.mhead2', h('h2', 'ดึงงานอัตโนมัติ')),
+    h('div.mlist',
+      row('link', 'Google Classroom', 'ยังไม่เปิด', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว'), 'งานที่ครูโพสต์เข้ามาเอง'),
+      row('users', 'ห้องเรียน', 'ยังไม่เปิด', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้'), 'เพื่อนจด ทั้งห้องได้')),
+    h('div.sec.mhead2', h('h2', 'ผู้ช่วยจดงาน')),
+    h('div.mlist',
+      row('mic', 'ปุ่มพูด เริ่มที่', MODES[listenMode()], toggleListen, 'ไม่เก็บไฟล์เสียง')),
+    h('div.sec.mhead2', h('h2', 'อื่นๆ')),
     h('div.mlist',
       row('book', 'วิชาของฉัน', `${s.subjects.filter(x => !x.hidden).length} วิชา`, subjectsModal),
       row('spark', 'งานตัวอย่าง', hasSamples ? 'ลบออก' : 'ลองใส่', toggleSamples),
@@ -51,6 +60,14 @@ export function meView(root) {
   );
 }
 
+function notYet(name, what) {
+  openModal({ title: name, body: h('div', h('p', what), h('p.muted', 'ยังไม่เปิดในรุ่นนี้ — ต้องมีบัญชีและเซิร์ฟเวอร์ก่อน ตอนนี้งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น')) });
+}
+async function toggleListen() {
+  const next = listenMode() === 'teacher' ? 'self' : 'teacher';
+  await app.store.setPref('listen_mode', next);
+  toast(`ปุ่มพูดจะเริ่มที่ "${MODES[next]}"`);
+}
 function editName() {
   const inp = h('input.field', { id: 'me-name', value: S().prefs.display_name || '', maxlength: 40, 'aria-label': 'ชื่อที่แสดง', placeholder: 'ชื่อเล่น' });
   openModal({ title: 'ชื่อที่แสดง', body: h('div', inp, h('p.muted', 'ไม่ต้องใส่ชื่อจริง ไม่ต้องบอกโรงเรียน')),

@@ -1,0 +1,206 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><title>SABAii แบบ 7 หลายแบบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>:root{--blue:#0A6CF1;--navy:#0B1B4D;--bl:#E7F0FE;--sf:#F1F4FA;--sf2:#E4EAF5;--bd:#E1E7F2;--t2:#5E6B85;--red:#D9443A;--redl:#FDECEE;--ok:#14A06B;--okl:#E3F6EE;--warn:#F4A340}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#D9E1EE;font-family:"Inter","Noto Sans Thai Looped",sans-serif;color:var(--navy);width:2560px;padding:40px 44px 48px;-webkit-font-smoothing:antialiased}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:40px}
+.top h1{font-size:38px;font-weight:800;letter-spacing:-.3px}
+.top h1 span{color:var(--blue)}
+.top p{font-size:17px;color:#3B4658;margin-top:6px;max-width:1300px;line-height:1.55}
+.top .why{background:#fff;border-radius:18px;padding:16px 22px;font-size:15px;line-height:1.6;max-width:860px;box-shadow:0 4px 16px rgba(11,27,77,.06)}
+.top .why b{color:var(--blue)}
+.groups{display:flex;gap:20px;margin-top:30px}
+.grp{background:rgba(255,255,255,.55);border-radius:30px;padding:20px 14px 24px;flex:1}
+.grp h2{font-size:23px;font-weight:800;display:flex;align-items:center;gap:10px}
+.grp h2 i{font-style:normal;width:34px;height:34px;border-radius:10px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:17px}
+.grp .sub{font-size:14.5px;color:#3B4658;margin:4px 0 16px 44px;max-width:760px;line-height:1.5}
+.pair{display:flex;gap:22px;justify-content:center}
+.col{width:375px}
+.cap{min-height:96px;margin-bottom:14px}
+.cap b{display:block;font-size:16.5px}
+.cap ul{margin:5px 0 0 18px;font-size:13px;color:#3B4658;line-height:1.55}
+.cap .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:6px;vertical-align:2px}
+.now{background:var(--okl);color:var(--ok)}.later{background:#FFF1DC;color:#B26A00}.big{background:var(--redl);color:var(--red)}
+.phone{width:375px;height:812px;border-radius:46px;overflow:hidden;position:relative;background:#fff;box-shadow:0 24px 50px rgba(15,30,60,.2),0 0 0 9px #111;transform:translateZ(0)}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font-weight:600;font-size:14.5px;position:relative;z-index:5}
+.status em{font-style:normal;display:inline-block;width:24px;height:11px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.status em:after{content:"";position:absolute;inset:1.5px;right:7px;background:currentColor;border-radius:1px}
+.badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:10.5px;font-weight:700;flex:none}
+.m{background:#E7F0FE;color:#0A6CF1}.p{background:#F1E8FD;color:#7B3FD6}.e{background:#E3F6EE;color:#14A06B}.c{background:#FFF1DC;color:#C77700}.s{background:#FDECEE;color:#D9443A}.th{background:#FDE9F3;color:#C2357D}
+.btn{background:var(--blue);color:#fff;border-radius:16px;height:52px;display:grid;place-items:center;font-weight:700;font-size:16.5px}
+.btn.dk{background:var(--navy)}
+.chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 11px;border-radius:14px;background:var(--sf);font-size:12.5px;font-weight:600;color:var(--navy)}
+.chip.on{background:var(--navy);color:#fff}
+svg.ic{width:18px;height:18px;flex:none}
+.nav{position:absolute;left:24px;right:24px;bottom:18px;height:62px;border-radius:31px;background:#fff;box-shadow:0 6px 24px rgba(21,35,61,.14);display:flex;padding:6px;z-index:9}
+.nav a{flex:1;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--t2);gap:1px}
+.nav a.on{background:var(--bl);color:var(--blue);font-weight:700}
+.nav svg{width:20px;height:20px}
+
+body{width:1560px}
+h2.sec{font-size:26px;font-weight:800;margin-top:34px}
+p.sec{font-size:14.5px;color:#3B4658;margin-top:4px}
+.eye{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#FFD24A;color:#4A3500;font-size:10px;font-weight:800;font-style:normal;margin-right:4px;vertical-align:1px;flex:none;box-shadow:0 0 0 2px #fff}
+/* swipe storyboards */
+.sbrow{background:rgba(255,255,255,.55);border-radius:26px;padding:18px 20px;margin-top:16px}
+.sbrow h3{font-size:19px;font-weight:800;display:flex;align-items:center;gap:10px}
+.sbrow h3 i{font-style:normal;width:30px;height:30px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:14px}
+.sbrow .d{font-size:13.5px;color:#3B4658;margin:4px 0 0 40px}
+.frames{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:14px}
+.fr{background:#fff;border-radius:20px;padding:14px;box-shadow:0 4px 14px rgba(11,27,77,.06)}
+.fr .fl{font-size:12px;font-weight:800;color:var(--t2);margin-bottom:10px}
+.slot{position:relative;height:86px;border-radius:16px;overflow:hidden}
+.slot .bgL,.slot .bgR{position:absolute;inset:0;display:flex;align-items:center;padding:0 18px;font-weight:800;font-size:14px;color:#fff;gap:8px}
+.slot .bgR{justify-content:flex-start}
+.slot .bgL{justify-content:flex-end}
+.cardx{position:absolute;inset:0;background:#fff;border:1px solid var(--bd);border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 16px rgba(11,27,77,.10)}
+.cardx .t{flex:1;min-width:0}
+.cardx b{font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cardx small{font-size:12px;color:var(--t2)}
+.cardx small.r{color:var(--red);font-weight:600}
+.st{font-size:11px;font-weight:800;border-radius:7px;padding:3px 8px;flex:none}
+.s0{background:var(--sf);color:var(--t2)}.s1{background:#FFF1DC;color:#B26A00}.s2{background:var(--okl);color:var(--ok)}
+.toast{height:86px;border-radius:16px;background:var(--navy);color:#fff;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:13.5px;font-weight:600}
+.toast span{margin-left:auto;color:#8FC0FF;font-weight:800}
+.ghost{height:86px;border-radius:16px;border:2px dashed var(--bd);display:grid;place-items:center;font-size:12.5px;color:var(--t2)}
+.hand{position:absolute;font-size:26px;z-index:3;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.arrow{position:absolute;top:36px;font-size:13px;font-weight:800;color:var(--blue);z-index:3}
+.note{font-size:12px;color:var(--t2);margin-top:8px;line-height:1.5}
+/* card variants */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:16px}
+.cell{background:rgba(255,255,255,.55);border-radius:26px;padding:18px 18px 22px;display:flex;flex-direction:column;align-items:center}
+.cell .cap{width:100%;min-height:118px;margin-bottom:12px}
+.cell .cap h3{font-size:19px;font-weight:800;display:flex;gap:9px;align-items:center}
+.cell .cap h3 i{font-style:normal;width:30px;height:30px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:14px;flex:none}
+.cell .cap p{font-size:13px;color:#3B4658;margin-top:6px;line-height:1.55}
+.cell .cap p b{color:var(--navy);display:inline;font-size:inherit}
+.mini{width:375px;height:720px;border-radius:42px;overflow:hidden;position:relative;background:#fff;box-shadow:0 18px 40px rgba(15,30,60,.18),0 0 0 8px #111;transform:translateZ(0)}
+.mini .status{height:40px}
+.pg{padding:0 14px}
+.pg h4{font-size:22px;font-weight:800;margin-left:2px}
+.dh{font-size:12.5px;font-weight:800;color:var(--t2);margin:12px 2px 6px;display:flex;justify-content:space-between}
+.dh.r{color:var(--red)}
+.donebar{margin-top:12px;background:var(--sf);border-radius:12px;padding:9px 12px;font-size:12.5px;font-weight:700;color:var(--t2);display:flex;justify-content:space-between}
+.hint{position:absolute;left:14px;right:14px;bottom:16px;font-size:11.5px;color:var(--t2);text-align:center;background:var(--sf);border-radius:10px;padding:7px}
+/* A stripe */
+.va{position:relative;background:#fff;border:1px solid var(--bd);border-radius:14px;padding:11px 12px 11px 18px;margin-bottom:8px;overflow:hidden}
+.va:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--c)}
+.va .r1{display:flex;align-items:center;gap:6px}
+.va .sj{font-size:11.5px;font-weight:800;color:var(--c)}
+.va .r1 .st{margin-left:auto}
+.va b{display:block;font-size:15.5px;margin-top:2px}
+.va .mt{font-size:12px;color:var(--t2);margin-top:3px}
+.va .mt em{font-style:normal;color:var(--red);font-weight:700}
+.va.done{opacity:.55}.a.done b{text-decoration:line-through}
+/* B date-first */
+.vb{display:flex;gap:12px;background:#fff;border:1px solid var(--bd);border-radius:16px;padding:10px;margin-bottom:8px;align-items:center}
+.vb .dt{width:56px;height:60px;border-radius:12px;background:var(--sf);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}
+.vb .dt small{font-size:10.5px;font-weight:700;color:var(--t2)}
+.vb .dt b{font-size:22px;font-weight:800;line-height:1.05}
+.vb .dt i{font-style:normal;font-size:10px;font-weight:700;color:var(--t2)}
+.vb .dt.u{background:var(--redl)}.b .dt.u b,.b .dt.u small,.b .dt.u i{color:var(--red)}
+.vb .t{flex:1;min-width:0}
+.vb .t b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vb .t .sj{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 7px;margin-top:3px}
+.vb .t .ex{font-size:11.5px;color:var(--t2);margin-left:4px}
+/* C ring */
+.vc2{display:flex;gap:12px;padding:12px 4px;border-bottom:1px solid var(--bd);align-items:flex-start}
+.ring{width:26px;height:26px;border-radius:50%;border:2.5px solid #C3CCDB;flex:none;margin-top:2px;position:relative}
+.ring.h{border-color:var(--warn);background:conic-gradient(var(--warn) 0 50%,#fff 0)}
+.ring.d{border-color:var(--ok);background:var(--ok)}
+.ring.d:after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:800}
+.vc2 .t{flex:1;min-width:0}
+.vc2 .t b{font-size:16px;display:block;line-height:1.35}
+.vc2 .t .mt{font-size:12px;color:var(--t2);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.vc2 .t .mt .sj{font-weight:800}
+.vc2 .t .mt em{font-style:normal;color:var(--red);font-weight:700}
+.vc2.done b{color:#9AA5B8;text-decoration:line-through;font-weight:500}
+/* D pastel */
+.dcard{border-radius:20px;padding:14px 16px;margin-bottom:10px;position:relative}
+.dcard .top2{display:flex;justify-content:space-between;align-items:center}
+.dcard .sj{font-size:12px;font-weight:800;opacity:.8}
+.dcard b{display:block;font-size:18px;font-weight:800;margin-top:4px;line-height:1.3}
+.dcard .mt{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.dcard .mt span{font-size:11.5px;font-weight:700;background:rgba(255,255,255,.7);border-radius:8px;padding:3px 9px}
+.dcard .mt span.u{background:#fff;color:var(--red)}
+.dots3{display:flex;gap:4px}
+.dots3 i{width:22px;height:6px;border-radius:3px;background:rgba(255,255,255,.75)}
+.dots3 i.on{background:currentColor}
+/* E compact */
+.ve{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--bd)}
+.ve .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.ve b{font-size:14px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ve small{font-size:11.5px;color:var(--t2);flex:none}
+.ve small.r{color:var(--red);font-weight:700}
+.ve .st{font-size:10px;padding:2px 6px}
+/* F lanes */
+.lanes{display:flex;background:var(--sf);border-radius:12px;padding:3px;margin-top:6px}
+.lanes span{flex:1;text-align:center;font-size:12.5px;font-weight:700;padding:7px 0;border-radius:9px;color:var(--t2)}
+.lanes span.on{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.lanes span em{font-style:normal;font-size:11px;background:var(--sf2);border-radius:6px;padding:0 5px;margin-left:3px}
+.f{background:#fff;border:1px solid var(--bd);border-radius:18px;padding:14px;margin-top:10px}
+.f .r1{display:flex;gap:10px;align-items:center}
+.f .r1 .t{flex:1}
+.f b{font-size:16px;display:block}
+.f small{font-size:12px;color:var(--t2)}
+.f small.r{color:var(--red);font-weight:700}
+.f .dtl{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.f .dtl span{font-size:11.5px;font-weight:600;background:var(--sf);border-radius:8px;padding:2px 8px}
+.f .mv{display:flex;justify-content:space-between;margin-top:10px;font-size:11.5px;font-weight:700;color:var(--t2)}
+.f .mv span:last-child{color:var(--ok)}
+.peek{opacity:.5;transform:scale(.96)}
+
+body{width:1560px}
+.cell .cap{min-height:150px}
+.kv{margin-top:8px;font-size:13px;line-height:1.55;color:#3B4658}
+.kv div{display:flex;gap:6px}.kv b{flex:none;width:70px;color:var(--navy)}
+.pc{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.pc span{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:7px}
+.pp{background:var(--okl);color:var(--ok)}.mm{background:var(--redl);color:var(--red)}
+.k{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:11px 12px;margin-bottom:9px;position:relative}
+.k .r1{display:flex;gap:10px;align-items:center}
+.k .r1 .t{flex:1;min-width:0}
+.k .r1 b{font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k .r1 small{font-size:11.5px;color:var(--t2)}
+.k .r1 small.r{color:var(--red);font-weight:700}
+.sg{display:flex;background:var(--sf);border-radius:11px;padding:3px;margin-top:9px}
+.sg span{flex:1;text-align:center;font-size:12.5px;font-weight:700;padding:6px 0;border-radius:8px;color:var(--t2)}
+.sg span.o0{background:var(--navy);color:#fff}.sg span.o1{background:var(--warn);color:#fff}.sg span.o2{background:var(--ok);color:#fff}
+.sg.sm{width:150px;margin:0;flex:none}
+.sg.sm span{font-size:10.5px;padding:4px 0}
+.ic3{display:flex;gap:4px;flex:none}
+.ic3 span{width:30px;height:30px;border-radius:9px;background:var(--sf);display:grid;place-items:center;font-size:14px;color:#A6B0C2}
+.ic3 span.o0{background:var(--navy);color:#fff}.ic3 span.o1{background:var(--warn);color:#fff}.ic3 span.o2{background:var(--ok);color:#fff}
+.step{display:flex;align-items:center;margin-top:10px}
+.step .n{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:700;color:var(--t2);width:64px}
+.step .n i{width:16px;height:16px;border-radius:50%;background:#fff;border:2.5px solid #C3CCDB}
+.step .n.on i{border-color:var(--blue);background:var(--blue)}
+.step .n.on{color:var(--navy)}
+.step .ln{flex:1;height:3px;background:#DDE3EE;margin-bottom:16px}
+.step .ln.on{background:var(--blue)}
+.pill{font-size:12px;font-weight:800;border-radius:20px;padding:6px 12px;flex:none;display:flex;gap:5px;align-items:center}
+.pill.o0{background:var(--sf);color:var(--navy);border:1.5px solid #C9D2E0}.pill.o1{background:#FFF1DC;color:#B26A00}.pill.o2{background:var(--okl);color:var(--ok)}
+.pill em{font-style:normal;font-size:10px;opacity:.7}
+.k.bg1{background:#FFF8EC;border-color:#F7D9A8}.k.bg2{background:#EEF9F3;border-color:#BFE6D1}
+.k .tabs{display:flex;margin:10px -12px -11px;border-top:1px solid var(--bd)}
+.k .tabs span{flex:1;text-align:center;font-size:12px;font-weight:700;padding:8px 0;color:var(--t2)}
+.k .tabs span+span{border-left:1px solid var(--bd)}
+.k .tabs span.o1{color:#B26A00;background:#FFF1DC}.k .tabs span.o0{color:var(--navy);background:var(--sf)}
+.k .tabs span:first-child{border-bottom-left-radius:15px}.k .tabs span:last-child{border-bottom-right-radius:15px}
+.lp{position:absolute;inset:0;background:rgba(15,26,48,.38);z-index:5}
+.pop{position:absolute;left:14px;right:14px;z-index:6;background:#fff;border-radius:18px;padding:10px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.pop .sg{margin-top:0}
+.pop .sg span{padding:11px 0;font-size:13.5px}
+.lifted{position:relative;z-index:6;box-shadow:0 10px 26px rgba(0,0,0,.2)}
+.swp{position:relative;height:auto;border-radius:16px;overflow:hidden;margin-bottom:9px}
+.swp .bgR{position:absolute;inset:0;background:var(--ok);color:#fff;font-weight:800;font-size:13.5px;display:flex;align-items:center;padding-left:16px}
+.swp .k{margin:0;transform:translateX(110px)}
+.bar3{display:flex;gap:4px;margin-top:9px}
+.bar3 i{flex:1;height:7px;border-radius:4px;background:var(--sf2)}
+.bar3 i.o1{background:var(--warn)}.bar3 i.o2{background:var(--ok)}
+.bar3l{display:flex;justify-content:space-between;font-size:10.5px;color:var(--t2);font-weight:700;margin-top:3px}
+
+.cell .cap h3 i{width:auto;padding:0 8px}</style></head><body>
+<div class="top"><div><h1>แบบ 7 (3 สถานะ) — <span>9 วิธีวางบนการ์ด</span></h1>
+<p>ยังไม่เริ่ม · ทำไปบ้าง · เสร็จ — งานชุดเดียวกันทุกจอ (คณิตส่งพรุ่งนี้ · ฟิสิกส์ทำไปบ้าง · สังคม · อังกฤษเสร็จแล้ว) · ทุกแบบปัดการ์ดได้ด้วย · ยังไม่ได้เลือกแทน</p></div></div>
+<div class="grid"><div class="cell"><div class="cap"><h3><i>7.1</i>ปุ่ม 3 ช่องเต็มความกว้าง (แบบ 7 เดิม)</h3><div class="kv"><div><b>เด็กทำ</b><span>แตะช่องที่ต้องการ</span></div><div><b>จุดเด่น</b><span>อ่านง่ายสุด กดง่าย</span></div></div><div class="pc"><span class=pp>+ เห็นทั้ง 3 สถานะตลอด</span><span class=pp>+ ไม่ต้องสอน</span><span class=mm>− การ์ดสูง เห็นงานน้อยลง</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div></div><div class="sg"><span class="o0">ยังไม่เริ่ม</span><span class="">ทำไปบ้าง</span><span class="">เสร็จ</span></div></div><div class="k"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div></div><div class="sg"><span class="">ยังไม่เริ่ม</span><span class="o1">ทำไปบ้าง</span><span class="">เสร็จ</span></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div></div><div class="sg"><span class="o0">ยังไม่เริ่ม</span><span class="">ทำไปบ้าง</span><span class="">เสร็จ</span></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div></div><div class="sg"><span class="">ยังไม่เริ่ม</span><span class="">ทำไปบ้าง</span><span class="o2">เสร็จ</span></div></div></div><div class="hint">แตะช่อง · ปัดขวา = เสร็จ</div></div></div><div class="cell"><div class="cap"><h3><i>7.2</i>ปุ่ม 3 ช่องเล็ก มุมขวาล่าง</h3><div class="kv"><div><b>เด็กทำ</b><span>แตะช่องเล็ก</span></div><div><b>จุดเด่น</b><span>ชื่องานได้ที่เต็มบรรทัด</span></div></div><div class="pc"><span class=pp>+ การ์ดเตี้ยลง</span><span class=pp>+ ยังเห็นทั้ง 3 สถานะ</span><span class=mm>− ปุ่มเล็ก แตะพลาดง่าย</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div></div><div style="display:flex;justify-content:flex-end;margin-top:8px"><div class="sg sm"><span class="o0">ยัง</span><span class="">บ้าง</span><span class="">เสร็จ</span></div></div></div><div class="k"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div></div><div style="display:flex;justify-content:flex-end;margin-top:8px"><div class="sg sm"><span class="">ยัง</span><span class="o1">บ้าง</span><span class="">เสร็จ</span></div></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div></div><div style="display:flex;justify-content:flex-end;margin-top:8px"><div class="sg sm"><span class="o0">ยัง</span><span class="">บ้าง</span><span class="">เสร็จ</span></div></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div></div><div style="display:flex;justify-content:flex-end;margin-top:8px"><div class="sg sm"><span class="">ยัง</span><span class="">บ้าง</span><span class="o2">เสร็จ</span></div></div></div></div><div class="hint">แตะช่อง · ปัดขวา = เสร็จ</div></div></div><div class="cell"><div class="cap"><h3><i>7.3</i>ไอคอน 3 ปุ่มในบรรทัดเดียว</h3><div class="kv"><div><b>เด็กทำ</b><span>แตะไอคอน</span></div><div><b>จุดเด่น</b><span>การ์ดบรรทัดเดียว เห็นงานเยอะ</span></div></div><div class="pc"><span class=pp>+ เตี้ยที่สุดที่ยังเห็นครบ 3</span><span class=mm>− ต้องเรียนรู้ความหมายไอคอนครั้งแรก</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59 · ยังไม่เริ่ม</small></div><div class="ic3"><span class="o0"><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /></svg></span><span class=""><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /><path d="M7 1.5a5.5 5.5 0 010 11z" fill=currentColor /></svg></span><span class="">✓</span></div></div></div><div class="k"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00 · ทำไปบ้าง</small></div><div class="ic3"><span class=""><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /></svg></span><span class="o1"><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /><path d="M7 1.5a5.5 5.5 0 010 11z" fill=currentColor /></svg></span><span class="">✓</span></div></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24 · ยังไม่เริ่ม</small></div><div class="ic3"><span class="o0"><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /></svg></span><span class=""><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /><path d="M7 1.5a5.5 5.5 0 010 11z" fill=currentColor /></svg></span><span class="">✓</span></div></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30 · เสร็จ</small></div><div class="ic3"><span class=""><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /></svg></span><span class=""><svg width=14 height=14 viewBox="0 0 14 14"><circle cx=7 cy=7 r=5.5 fill=none stroke=currentColor stroke-width=2 /><path d="M7 1.5a5.5 5.5 0 010 11z" fill=currentColor /></svg></span><span class="o2">✓</span></div></div></div></div><div class="hint">แตะไอคอน · ปัดขวา = เสร็จ</div></div></div><div class="cell"><div class="cap"><h3><i>7.4</i>เส้นขั้นตอน (stepper)</h3><div class="kv"><div><b>เด็กทำ</b><span>แตะจุดของขั้นที่ถึง</span></div><div><b>จุดเด่น</b><span>รู้สึกว่างานเดินหน้า</span></div></div><div class="pc"><span class=pp>+ เห็นว่าอยู่ขั้นไหนของงาน</span><span class=mm>− การ์ดสูงพอๆ กับแบบ 1</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div></div><div class="step"><div class="n on"><i></i>ยังไม่เริ่ม</div><div class="ln"></div><div class="n"><i></i>ทำไปบ้าง</div><div class="ln"></div><div class="n"><i></i>เสร็จ</div></div></div><div class="k"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div></div><div class="step"><div class="n on"><i></i>ยังไม่เริ่ม</div><div class="ln on"></div><div class="n on"><i></i>ทำไปบ้าง</div><div class="ln"></div><div class="n"><i></i>เสร็จ</div></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div></div><div class="step"><div class="n on"><i></i>ยังไม่เริ่ม</div><div class="ln"></div><div class="n"><i></i>ทำไปบ้าง</div><div class="ln"></div><div class="n"><i></i>เสร็จ</div></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div></div><div class="step"><div class="n on"><i></i>ยังไม่เริ่ม</div><div class="ln on"></div><div class="n on"><i></i>ทำไปบ้าง</div><div class="ln on"></div><div class="n on"><i></i>เสร็จ</div></div></div></div><div class="hint">แตะจุด · ปัดขวา = ขั้นถัดไป</div></div></div><div class="cell"><div class="cap"><h3><i>7.5</i>ป้ายเดียว แตะแล้ววน</h3><div class="kv"><div><b>เด็กทำ</b><span>แตะป้าย 1–2 ครั้ง (วนไปสถานะถัดไป)</span></div><div><b>จุดเด่น</b><span>การ์ดสั้นสุด เรียบสุด</span></div></div><div class="pc"><span class=pp>+ ไม่รก</span><span class=pp>+ ใช้ที่น้อย</span><span class=mm>− ไม่เห็นว่ามีสถานะอะไรบ้าง</span><span class=mm>− แตะเลยต้องวนกลับ</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div><span class="pill o0">ยังไม่เริ่ม<em>↻</em></span></div></div><div class="k"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div><span class="pill o1">ทำไปบ้าง<em>↻</em></span></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div><span class="pill o0">ยังไม่เริ่ม<em>↻</em></span></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div><span class="pill o2">เสร็จ<em>↻</em></span></div></div></div><div class="hint">แตะป้าย = ถัดไป · ปัดขวา = เสร็จ</div></div></div><div class="cell"><div class="cap"><h3><i>7.6</i>กดค้างที่การ์ด → ปุ่ม 3 ช่องโผล่</h3><div class="kv"><div><b>เด็กทำ</b><span>กดค้าง แล้วแตะ</span></div><div><b>จุดเด่น</b><span>หน้าปกติสะอาด ปุ่มโผล่เมื่อต้องการ</span></div></div><div class="pc"><span class=pp>+ การ์ดเรียบ เห็นงานเยอะ</span><span class=pp>+ ปุ่มใหญ่ กดง่าย</span><span class=mm>− คนไม่รู้ว่ากดค้างได้</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div><span class="st s0">ยังไม่เริ่ม</span></div></div><div class="k lifted"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div><span class="st s1">ทำไปบ้าง</span></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div><span class="st s0">ยังไม่เริ่ม</span></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div><span class="st s2">เสร็จ</span></div></div></div><div class="lp"></div><div class="pop" style="top:244px"><div class="sg"><span class="">ยังไม่เริ่ม</span><span class="o1">ทำไปบ้าง</span><span class="">เสร็จ</span></div></div><div class="hint">กดค้าง = เลือกสถานะ · ปัดขวา = เสร็จ</div></div></div><div class="cell"><div class="cap"><h3><i>7.7</i>ปุ่ม 3 ช่อง + สีการ์ดเปลี่ยนตามสถานะ</h3><div class="kv"><div><b>เด็กทำ</b><span>แตะช่อง</span></div><div><b>จุดเด่น</b><span>มองผ่านๆ ก็รู้ว่างานไหนเริ่มแล้ว</span></div></div><div class="pc"><span class=pp>+ ขาว = ยัง · ส้ม = บ้าง · เขียว = เสร็จ</span><span class=mm>− สีเยอะ อาจตีกับสีวิชา</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k bg"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div><span class="st s0">ยังไม่เริ่ม</span></div><div class="sg"><span class="o0">ยังไม่เริ่ม</span><span class="">ทำไปบ้าง</span><span class="">เสร็จ</span></div></div><div class="k bg1"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div><span class="st s1">ทำไปบ้าง</span></div><div class="sg"><span class="">ยังไม่เริ่ม</span><span class="o1">ทำไปบ้าง</span><span class="">เสร็จ</span></div></div><div class="k bg"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div><span class="st s0">ยังไม่เริ่ม</span></div><div class="sg"><span class="o0">ยังไม่เริ่ม</span><span class="">ทำไปบ้าง</span><span class="">เสร็จ</span></div></div><div class="k bg2"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div><span class="st s2">เสร็จ</span></div><div class="sg"><span class="">ยังไม่เริ่ม</span><span class="">ทำไปบ้าง</span><span class="o2">เสร็จ</span></div></div></div><div class="hint">แตะช่อง · ปัดขวา = เสร็จ</div></div></div><div class="cell"><div class="cap"><h3><i>7.8</i>3 ช่องเป็นฐานการ์ด</h3><div class="kv"><div><b>เด็กทำ</b><span>แตะช่องที่ฐาน</span></div><div><b>จุดเด่น</b><span>ปุ่มติดกับการ์ด ดูเป็นชิ้นเดียว</span></div></div><div class="pc"><span class=pp>+ ปุ่มกว้าง กดง่าย</span><span class=pp>+ ดูเป็นระเบียบ</span><span class=mm>− การ์ดสูง</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div></div><div class="tabs"><span class="o0" style="">ยังไม่เริ่ม</span><span class="" style="">ทำไปบ้าง</span><span class="" style="">เสร็จ</span></div></div><div class="k"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div></div><div class="tabs"><span class="" style="">ยังไม่เริ่ม</span><span class="o1" style="">ทำไปบ้าง</span><span class="" style="">เสร็จ</span></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div></div><div class="tabs"><span class="o0" style="">ยังไม่เริ่ม</span><span class="" style="">ทำไปบ้าง</span><span class="" style="">เสร็จ</span></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div></div><div class="tabs"><span class="" style="">ยังไม่เริ่ม</span><span class="" style="">ทำไปบ้าง</span><span class="o2" style="color:var(--ok);background:var(--okl)">เสร็จ</span></div></div></div><div class="hint">แตะช่อง · ปัดขวา = เสร็จ</div></div></div><div class="cell"><div class="cap"><h3><i>7.9</i>ไม่มีปุ่ม ปัดอย่างเดียว + แถบ 3 ขีด</h3><div class="kv"><div><b>เด็กทำ</b><span>ปัดขวา = ขั้นถัดไป · ปัดซ้าย = ถอย</span></div><div><b>จุดเด่น</b><span>แถบบอกสถานะ ปัดเปลี่ยน</span></div></div><div class="pc"><span class=pp>+ การ์ดเรียบ</span><span class=pp>+ ทำได้ด้วยนิ้วเดียวเร็วๆ</span><span class=mm>− ต้องรู้ว่าปัดได้</span><span class=mm>− ปัดพลาดในรายการยาว</span></div></div><div class="mini"><div class="status"><span>20:20</span><em></em></div><div class="pg"><h4>งาน</h4><div style="height:8px"></div><div class="swp"><div class="bgR" style="background:var(--warn)">ทำไปบ้าง →</div><div class="k"><div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r">ส่งพรุ่งนี้ 23:59</small></div></div><div class="bar3"><i class=""></i><i class=""></i><i class=""></i></div><div class="bar3l"><span>ยังไม่เริ่ม</span><span>ปัด →</span></div></div></div><div class="k"><div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 เว้น 9</b><small class="">ศ. 21 · 08:00</small></div></div><div class="bar3"><i class="o1"></i><i class="o1"></i><i class=""></i></div><div class="bar3l"><span>ทำไปบ้าง</span><span>ปัด →</span></div></div><div class="k"><div class="r1"><div class="badge s">สังคม</div><div class="t"><b>อ่านบท 5 ทำสรุป 1 หน้า</b><small class="">จ. 24</small></div></div><div class="bar3"><i class=""></i><i class=""></i><i class=""></i></div><div class="bar3l"><span>ยังไม่เริ่ม</span><span>ปัด →</span></div></div><div class="k"><div class="r1"><div class="badge e">Eng</div><div class="t"><b>Essay: My Dream Job</b><small class="">อา. 30</small></div></div><div class="bar3"><i class="o2"></i><i class="o2"></i><i class="o2"></i></div><div class="bar3l"><span>เสร็จ</span><span>ปัด →</span></div></div></div><div class="hint">ปัดขวา = ขั้นถัดไป · ปัดซ้าย = ถอยกลับ</div></div></div></div></body></html>

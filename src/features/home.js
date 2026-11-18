@@ -229,7 +229,7 @@ function renderHome() {
     h('div.brandrow', h('div.brand', 'SABA', h('span', 'ii'), h('b', '.')), h('a.avatar', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
     h('h1.big', name ? `เพิ่มงานกันเลย ${name}` : 'เพิ่มงานกันเลย'),
     h('div.tiles',
-      tile('speak', 'พูด', 'สั่งด้วยเสียง', () => addTask('voice')),
+      tile('speak', 'พูด', 'พูดเอง หรือฟังครู', () => addTask('voice')),
       tile('attach', 'แนบรูป', 'จากอัลบั้ม/แชท', () => addTask('photo')),
       tile('type', 'พิมพ์', 'พิมพ์สั้นๆ ก็รู้เรื่อง', () => addTask('text')),
       tile('shoot', 'ถ่ายรูป', 'กระดาน · ใบงาน', () => addTask('camera'))),
@@ -239,7 +239,7 @@ function renderHome() {
     list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow',
       h('button.main', { onclick: () => openNotes(t.id) }, badge(subj(t.subject_id)),
         h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),
-          h('small', dueLine(t), t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : ''))),
+          h('small', dueLine(t), t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : t.source === 'teacher' ? h('span.tag.teach', 'ฟังครู') : ''))),
       h('button.go' + (t.status === 'doing' ? '.doing' : i === 0 ? '.dark' : ''), { onclick: () => openNotes(t.id) }, t.status === 'doing' ? 'กำลังทำ' : 'ทำเลย'))))
       : empty ? h('div.empty-note', h('b', 'วันนี้ยังไม่มีงานที่ต้องทำ'), h('p', 'เพิ่มงานด้วยปุ่มด้านบน'),
           h('div.row2', h('button.btn.primary', { onclick: () => addTask('text') }, '+ เพิ่มงานใหม่'),

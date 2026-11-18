@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<title>SABAii หน้าจอ 1 2 4 5</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700;800&family=Mali:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#0A6CF1;--navy:#0B1B4D;--bl:#E7F0FE;--sf:#F1F4FA;--sf2:#E4EAF5;--bd:#E1E7F2;--t2:#5E6B85;--red:#D9443A;--redl:#FDECEE;--ok:#14A06B;--okl:#E3F6EE;--warn:#F4A340}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#D9E1EE;font-family:"Inter","Noto Sans Thai Looped",sans-serif;color:var(--navy);width:2560px;padding:40px 44px 48px;-webkit-font-smoothing:antialiased}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:40px}
+.top h1{font-size:38px;font-weight:800;letter-spacing:-.3px}
+.top h1 span{color:var(--blue)}
+.top p{font-size:17px;color:#3B4658;margin-top:6px;max-width:1300px;line-height:1.55}
+.top .why{background:#fff;border-radius:18px;padding:16px 22px;font-size:15px;line-height:1.6;max-width:860px;box-shadow:0 4px 16px rgba(11,27,77,.06)}
+.top .why b{color:var(--blue)}
+.groups{display:flex;gap:20px;margin-top:30px}
+.grp{background:rgba(255,255,255,.55);border-radius:30px;padding:20px 14px 24px;flex:1}
+.grp h2{font-size:23px;font-weight:800;display:flex;align-items:center;gap:10px}
+.grp h2 i{font-style:normal;width:34px;height:34px;border-radius:10px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:17px}
+.grp .sub{font-size:14.5px;color:#3B4658;margin:4px 0 16px 44px;max-width:760px;line-height:1.5}
+.pair{display:flex;gap:22px;justify-content:center}
+.col{width:375px}
+.cap{min-height:96px;margin-bottom:14px}
+.cap b{display:block;font-size:16.5px}
+.cap ul{margin:5px 0 0 18px;font-size:13px;color:#3B4658;line-height:1.55}
+.cap .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:6px;vertical-align:2px}
+.now{background:var(--okl);color:var(--ok)}.later{background:#FFF1DC;color:#B26A00}.big{background:var(--redl);color:var(--red)}
+.phone{width:375px;height:812px;border-radius:46px;overflow:hidden;position:relative;background:#fff;box-shadow:0 24px 50px rgba(15,30,60,.2),0 0 0 9px #111;transform:translateZ(0)}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font-weight:600;font-size:14.5px;position:relative;z-index:5}
+.status em{font-style:normal;display:inline-block;width:24px;height:11px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.status em:after{content:"";position:absolute;inset:1.5px;right:7px;background:currentColor;border-radius:1px}
+.badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:10.5px;font-weight:700;flex:none}
+.m{background:#E7F0FE;color:#0A6CF1}.p{background:#F1E8FD;color:#7B3FD6}.e{background:#E3F6EE;color:#14A06B}.c{background:#FFF1DC;color:#C77700}.s{background:#FDECEE;color:#D9443A}.th{background:#FDE9F3;color:#C2357D}
+.btn{background:var(--blue);color:#fff;border-radius:16px;height:52px;display:grid;place-items:center;font-weight:700;font-size:16.5px}
+.btn.dk{background:var(--navy)}
+.chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 11px;border-radius:14px;background:var(--sf);font-size:12.5px;font-weight:600;color:var(--navy)}
+.chip.on{background:var(--navy);color:#fff}
+svg.ic{width:18px;height:18px;flex:none}
+.nav{position:absolute;left:24px;right:24px;bottom:18px;height:62px;border-radius:31px;background:#fff;box-shadow:0 6px 24px rgba(21,35,61,.14);display:flex;padding:6px;z-index:9}
+.nav a{flex:1;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--t2);gap:1px}
+.nav a.on{background:var(--bl);color:var(--blue);font-weight:700}
+.nav svg{width:20px;height:20px}
+/* ---- placement board ---- */
+body{width:2240px}
+:root{--cB:#14A06B;--cBl:#E3F6EE;--cC:#7B3FD6;--cCl:#F1E8FD;--cD:#E07B00;--cDl:#FFF1DC}
+.pin{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;color:#fff;font-size:12px;font-weight:800;font-style:normal;flex:none}
+.pB{background:var(--cB)}.pC{background:var(--cC)}.pD{background:var(--cD)}
+
+.map{display:grid;grid-template-columns:330px repeat(4,1fr);gap:14px;margin-top:26px;background:#fff;border-radius:24px;padding:20px 22px;box-shadow:0 4px 16px rgba(11,27,77,.06)}
+.map .rule h3{font-size:19px;font-weight:800;line-height:1.35}
+.map .rule p{font-size:13.5px;color:#3B4658;margin-top:8px;line-height:1.6}
+.map .rule .lg{display:flex;flex-direction:column;gap:7px;margin-top:12px;font-size:13.5px;font-weight:600}
+.map .rule .lg span{display:flex;gap:8px;align-items:center}
+.tab{background:var(--sf);border-radius:18px;padding:14px}
+.tab h4{font-size:16.5px;font-weight:800;display:flex;align-items:center;gap:8px}
+.tab h4 small{font-size:11.5px;font-weight:700;color:var(--blue);background:var(--bl);padding:2px 8px;border-radius:7px}
+.tab .old{font-size:12px;color:var(--t2);margin:4px 0 10px;line-height:1.5}
+.slot{background:#fff;border-radius:12px;padding:9px 11px;margin-top:7px;display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.5}
+.slot b{display:block;font-size:13.5px}
+.slot.B{border-left:4px solid var(--cB)}.slot.C{border-left:4px solid var(--cC)}.slot.D{border-left:4px solid var(--cD)}
+.slot span{color:#3B4658}
+
+.row5{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;margin-top:26px}
+.sc{display:flex;flex-direction:column;align-items:center}
+.sc .cap{width:375px;min-height:118px;margin-bottom:12px}
+.sc .cap li b{display:inline;font-size:inherit}
+.sc .cap>b{font-size:16.5px;display:flex;gap:8px;align-items:center}
+.sc .cap ul{margin:5px 0 0 18px;font-size:13px;color:#3B4658;line-height:1.55}
+.callout{position:absolute;z-index:20;display:flex;gap:6px;align-items:center;font-size:11px;font-weight:800;color:#fff;padding:3px 8px 3px 3px;border-radius:9px;box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.callout i{font-style:normal;width:18px;height:18px;border-radius:6px;background:rgba(255,255,255,.25);display:grid;place-items:center}
+.mk{position:relative;outline:2.5px dashed var(--mc);outline-offset:3px;border-radius:14px}
+.mk>.callout{right:4px;top:-14px;background:var(--mc)}
+.wave{display:flex;gap:3px;justify-content:center;align-items:center}
+.wave i{width:4px;border-radius:2px}
+.timer{text-align:center;font-size:12.5px;font-weight:700;margin-top:6px}
+
+/* home */
+.stage-top{position:absolute;inset:0 0 auto 0;height:120px;background:linear-gradient(#DCE5F3,#EDF1F8)}
+.hsheet{position:absolute;left:0;right:0;top:62px;bottom:0;background:#fff;border-radius:26px 26px 0 0;box-shadow:0 -6px 26px rgba(23,105,210,.10);padding:0 16px}
+.hsheet .pull{text-align:center;font-size:10.5px;color:var(--t2);padding:6px 0 2px}
+.hsheet .pull:before{content:"";display:block;width:40px;height:4px;border-radius:2px;background:#D3DAE6;margin:0 auto 4px}
+.hh{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.hh b{font-size:17px;font-weight:800}.hh b span{color:var(--blue)}
+.hh i{width:30px;height:30px;border-radius:50%;background:var(--bl);color:var(--blue);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700}
+.hsheet h3{font-size:21px;font-weight:800;margin-top:2px}
+.grid4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.tile{background:var(--sf);border-radius:16px;padding:10px 6px;text-align:center;position:relative}
+.tile svg{width:24px;height:24px;color:var(--blue)}
+.tile b{display:block;font-size:14px;font-weight:800;margin-top:2px}
+.tile small{font-size:10.5px;color:var(--t2)}
+.tile.vc{background:var(--cCl)}
+.tile.vc svg{color:var(--cC)}
+.tile.vc .new{position:absolute;right:7px;top:7px;font-size:9.5px;font-weight:800;background:var(--cC);color:#fff;border-radius:6px;padding:1px 6px}
+.srch{margin-top:10px;background:var(--sf);border-radius:14px;height:40px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;color:var(--t2)}
+.srch .chip{margin-left:auto;background:#fff;height:26px}
+.inbox{margin-top:10px;background:var(--cBl);border-radius:14px;padding:9px 12px;display:flex;gap:10px;align-items:center}
+.inbox .g{width:30px;height:30px;border-radius:9px;background:#fff;display:grid;place-items:center;flex:none}
+.inbox .g svg{width:18px;height:18px}
+.inbox b{font-size:13.5px;display:block}
+.inbox small{font-size:11.5px;color:#2F6F52}
+.inbox em{margin-left:auto;font-style:normal;font-size:12px;font-weight:700;color:var(--cB)}
+.rec{font-size:15px;font-weight:800;margin:12px 0 4px;display:flex;justify-content:space-between}
+.rec span{font-size:12px;color:var(--t2);font-weight:500}
+.ti{display:flex;align-items:center;gap:10px;padding:7px 0}
+.ti .t{flex:1;min-width:0}
+.ti .t b{display:block;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti .t small{font-size:11.5px;color:var(--t2)}
+.ti .t small.r{color:var(--red);font-weight:600}
+.ti .t .step{display:inline-block;font-size:10.5px;font-weight:800;color:var(--cD);background:var(--cDl);border-radius:6px;padding:0 6px;margin-right:4px}
+.ti .t .src{display:inline-block;font-size:10.5px;font-weight:800;color:var(--cB);background:var(--cBl);border-radius:6px;padding:0 6px;margin-right:4px}
+.go{background:var(--blue);color:#fff;font-size:12.5px;font-weight:700;border-radius:11px;padding:7px 12px;flex:none}
+.go.dk{background:var(--navy)}
+
+/* listen sheet */
+.dimbg{position:absolute;inset:0;background:linear-gradient(#8C97AE,#6B7792)}
+.lsheet{position:absolute;left:0;right:0;bottom:0;top:118px;background:#fff;border-radius:26px 26px 0 0;padding:10px 16px}
+.mode{display:flex;background:var(--sf);border-radius:12px;padding:3px;margin-top:8px}
+.mode span{flex:1;text-align:center;font-size:13px;font-weight:700;padding:7px 0;border-radius:9px;color:var(--t2)}
+.mode span.on{background:var(--cC);color:#fff}
+.lsheet .wave i{background:var(--cC)}
+.lsheet .timer{color:var(--red)}
+.trl{margin-top:10px;background:var(--sf);border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.7;color:#3B4658}
+.trl mark{background:#F1E8FD;color:var(--cC);font-weight:700;border-radius:4px;padding:0 3px}
+.trl mark.d{background:var(--redl);color:var(--red)}
+.gotl h4{font-size:13px;font-weight:800;margin:12px 0 4px}
+.gr{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd)}
+.gr .t{flex:1}.gr b{font-size:13.5px;display:block}.gr small{font-size:11.5px;color:var(--t2)}.gr small em{font-style:normal;color:var(--red);font-weight:600}
+.toroom{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;margin-top:10px;color:#3B4658}
+.toroom .sw{width:34px;height:20px;border-radius:10px;background:var(--blue);position:relative;flex:none}
+.toroom .sw:after{content:"";position:absolute;right:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff}
+
+/* notes stage + task card */
+.nstage{position:absolute;inset:0;background:#EDF1F8}
+.nback{position:absolute;left:14px;top:50px;display:flex;gap:8px;align-items:center;z-index:3}
+.nback i{width:36px;height:36px;border-radius:50%;background:#fff;display:grid;place-items:center;font-style:normal;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.nback span{background:#fff;border-radius:18px;padding:6px 12px;font-size:12.5px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.npaper{position:absolute;left:48px;right:48px;top:100px;height:250px;background:#fff;border-radius:10px;box-shadow:0 12px 28px rgba(0,0,0,.14);padding:16px 18px}
+.npaper h5{font-size:12px;border-bottom:2px solid #16181d;padding-bottom:5px}
+.npaper p{font-size:11.5px;line-height:2;color:#2b3240;background-image:repeating-linear-gradient(transparent 0 22px,#d6e4f5 22px 23px);margin-top:6px}
+.tcard{position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:26px 26px 0 0;padding:10px 18px 20px;box-shadow:0 -6px 26px rgba(23,105,210,.10)}
+.tcard h3{font-size:19px;font-weight:800;margin-top:6px}
+.tcard .due{font-size:12.5px;color:var(--t2)}
+.sug{margin-top:12px;background:var(--cDl);border-radius:16px;padding:12px 14px}
+.sug b{font-size:14px;display:block;color:#8A4B00}
+.sug p{font-size:12.5px;color:#8A5300;margin-top:2px;line-height:1.5}
+.sug .bb{display:flex;gap:8px;margin-top:10px}
+.sug .bb span{flex:1;text-align:center;font-size:13px;font-weight:700;padding:9px 0;border-radius:11px;background:#fff;color:#8A4B00}
+.sug .bb span.y{background:var(--cD);color:#fff}
+.lbl3{text-align:center;font-size:12px;color:var(--t2);margin:12px 0 6px}
+.nb{display:flex;gap:8px}
+.nb span{flex:1;text-align:center;background:var(--sf);border-radius:12px;padding:9px 0;font-size:13px;font-weight:600}
+.cta{margin-top:12px;background:var(--blue);color:#fff;border-radius:16px;height:50px;display:grid;place-items:center;font-weight:800;font-size:16px}
+
+/* tasks page */
+.tp{padding:2px 16px}
+.tp h3{font-size:24px;font-weight:800}
+.flt{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tk{border:1px solid var(--bd);border-radius:16px;padding:10px 12px;margin-top:9px}
+.tk .r1{display:flex;gap:10px;align-items:center}
+.tk .r1 .t{flex:1;min-width:0}
+.tk .r1 b{font-size:14px;display:block}
+.tk .r1 small{font-size:11.5px;color:var(--t2)}
+.tk .pg{display:flex;gap:3px;margin-top:9px}
+.tk .pg i{flex:1;height:6px;border-radius:3px;background:var(--sf2)}
+.tk .pg i.d{background:var(--cD)}
+.tk .nx{font-size:12px;margin-top:6px;color:#3B4658;display:flex;justify-content:space-between}
+.tk .nx b{color:var(--cD)}
+.subs{margin-top:8px;border-top:1px dashed var(--bd);padding-top:6px}
+.subs div{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:3px 0}
+.subs div i{width:16px;height:16px;border-radius:50%;border:2px solid #C3CCDB;flex:none}
+.subs div i.d{background:var(--cD);border-color:var(--cD)}
+.subs div s{color:#9AA5B8}
+.subs div em{margin-left:auto;font-style:normal;font-size:11px;color:var(--t2)}
+.srcl{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;flex:none}
+.srcl.B{background:var(--cBl);color:var(--cB)}.srcl.C{background:var(--cCl);color:var(--cC)}
+
+/* me page */
+.mp{padding:2px 16px}
+.mp h3{font-size:24px;font-weight:800}
+.meh{display:flex;gap:12px;align-items:center;margin-top:8px}
+.meh i{width:46px;height:46px;border-radius:50%;background:var(--bl);color:var(--blue);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:18px}
+.meh b{font-size:17px}
+.msec{font-size:13px;font-weight:800;color:var(--t2);margin:16px 0 6px}
+.mrow{background:var(--sf);border-radius:14px;padding:11px 12px;display:flex;gap:10px;align-items:center;margin-top:7px}
+.mrow .ico{width:34px;height:34px;border-radius:10px;background:#fff;display:grid;place-items:center;flex:none}
+.mrow .ico svg{width:20px;height:20px}
+.mrow .t{flex:1}
+.mrow b{font-size:14px;display:block}
+.mrow small{font-size:11.5px;color:var(--t2)}
+.mrow .sw{width:36px;height:21px;border-radius:11px;background:var(--blue);position:relative;flex:none}
+.mrow .sw:after{content:"";position:absolute;right:3px;top:3px;width:15px;height:15px;border-radius:50%;background:#fff}
+.mrow .ok{font-size:11.5px;font-weight:800;color:var(--cB);background:#fff;border-radius:8px;padding:3px 8px}
+.mrow.hl{background:var(--cBl);outline:2px solid var(--cB)}
+.mrow .chev{color:var(--t2);font-size:16px}
+
+.bot2{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:26px}
+.box{background:#fff;border-radius:24px;padding:20px 24px;box-shadow:0 4px 16px rgba(11,27,77,.06)}
+.box h3{font-size:19px;font-weight:800;margin-bottom:8px}
+.box table{width:100%;border-collapse:collapse;font-size:13.5px}
+.box th{text-align:left;font-size:12.5px;color:var(--t2);padding:6px 8px;border-bottom:2px solid var(--bd)}
+.box td{padding:8px;border-bottom:1px solid var(--bd);vertical-align:top;line-height:1.5}
+.box ul{margin-left:20px;font-size:14px;line-height:1.65}
+.box li{margin-bottom:5px}
+.box li b{color:var(--navy)}
+
+.srcC{display:inline-block;font-size:10.5px;font-weight:800;color:var(--cC);background:var(--cCl);border-radius:6px;padding:0 6px;margin-right:4px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:26px}
+.miss{margin-top:10px;background:#FFF6E5;border-radius:14px;padding:9px 12px;display:flex;gap:10px;align-items:center;font-size:12px;color:#8A5300;line-height:1.45}
+.miss b{font-size:13px}
+.miss em{margin-left:auto;font-style:normal;font-weight:800;background:#fff;border-radius:9px;padding:5px 10px;color:#B26A00}
+.dh{font-size:12.5px;font-weight:800;color:var(--t2);margin:12px 0 0;display:flex;justify-content:space-between}
+.dh span{color:var(--blue)} .dh span.r{color:var(--red)}
+.tk2{border:1px solid var(--bd);border-radius:16px;padding:9px 11px;margin-top:6px}
+.tk2 .r1{display:flex;gap:9px;align-items:center}
+.tk2 .r1 .t{flex:1;min-width:0}
+.tk2 .r1 b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk2 .badge{width:30px;height:30px;font-size:9.5px;border-radius:9px}
+.dt{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.d1{font-size:11.5px;font-weight:600;background:var(--sf);border-radius:8px;padding:2px 8px;color:#2A3756}
+.d1 u{text-decoration:none;color:var(--red);font-weight:800}
+.d1.red{color:var(--red);background:var(--redl)}
+.d1.warn{color:#B26A00;background:#FFF1DC}
+.quote{margin-top:7px;font-size:11.5px;color:var(--cC);background:var(--cCl);border-radius:10px;padding:6px 9px;line-height:1.45}
+.cnt{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--t2)}
+.cnt .bar{flex:1;height:6px;border-radius:3px;background:var(--sf2);overflow:hidden}
+.cnt .bar i{display:block;height:100%;background:var(--ok)}
+.cnt b{background:var(--bl);color:var(--blue);border-radius:8px;padding:2px 9px;font-size:12px}
+.tk2.ex{border-color:#F6C9C5;background:#FFFBFA}
+.tk2.inc{border:1.5px dashed #F4C27A}
+.cd{font-size:11px;font-weight:800;color:var(--red);background:var(--redl);border-radius:7px;padding:2px 8px;flex:none}
+.side{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;margin-top:26px}
+
+body{width:1840px}
+</style></head><body>
+<div class="top">
+  <div>
+    <h1>SABAii — หน้าจอ ①②④⑤ <span>สำหรับทุกคน</span></h1>
+    <p>ตัด ③ (แตกงานกลุ่ม) ออก · ④ เปลี่ยนจาก "แผนงานกลุ่ม" เป็น <b>"จดครบ ไม่ตกหล่น"</b> ใช้ได้กับทุกงาน ทุกคน<br>
+    หลักคิด: งานที่จดดี = รู้ <b>ทำอะไร · ส่งเมื่อไหร่ · ส่งที่ไหน/ยังไง</b> ครบ และเชื่อได้ว่าแอปจับถูก</p>
+  </div>
+  <div class="why">เด็กโดนหักคะแนนบ่อยเพราะ <b>รายละเอียดเล็กๆ</b> ไม่ใช่เพราะลืมทั้งงาน:<br>
+  เว้นข้อไหน · ส่งกระดาษหรือ Classroom · ก่อนกี่โมง · ต้องเอาอะไรไป<br>
+  ④ ใหม่จึงเน้นเก็บสิ่งเหล่านี้ให้ครบ</div>
+</div>
+<div class="row4">
+<!-- 1 home -->
+<div class="sc">
+  <div class="cap"><b>① หน้าหลัก — เห็นทั้ง 3 อย่างในจอเดียว</b>
+    <ul><li><b>C</b> ปุ่มพูดเดิม เปลี่ยนคำใต้ปุ่มเป็น "พูดเอง หรือฟังครู"</li>
+    <li><b>B</b> แถบเข้ามาใหม่ใต้ค้นหา · งานแนะนำมีป้ายที่มา + นับข้อ</li></ul></div>
+  <div class="phone">
+    <div class="stage-top"></div>
+    <div class="status"><span>12:05</span><em></em></div>
+    <div class="hsheet">
+      <div class="pull">ดึงลงเพื่อดูโน้ตหน้างาน</div>
+      <div class="hh"><b>SABAii<span>.</span></b><i>ม</i></div>
+      <h3>เพิ่มงานกันเลย มายด์</h3>
+      <div class="grid4">
+        <div class="tile vc mk" style="--mc:var(--cC)"><div class="callout"><i>C</i>ปุ่มเดิม</div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg><b>พูด</b><small>พูดเอง หรือฟังครู</small></div>
+        <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><b>แนบรูป</b><small>จากอัลบั้ม/แชท</small></div>
+        <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M8 14h8"/></svg><b>พิมพ์</b><small>พิมพ์สั้นๆ ก็รู้เรื่อง</small></div>
+        <div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><b>ถ่ายรูป</b><small>กระดาน · ใบงาน</small></div>
+      </div>
+      <div class="srch"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>ค้นหางาน...<span class="chip">ทั้งหมด</span></div>
+      <div class="inbox mk" style="--mc:var(--cB)"><div class="callout"><i>B</i>เข้ามาเอง</div><div class="g"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3" fill="#1E8E3E"/><circle cx="12" cy="11" r="2.6" fill="#fff"/><path d="M7.5 17a4.5 4.5 0 019 0" fill="#fff"/></svg></div><div><b>เข้ามาใหม่ 3 งาน</b><small>Classroom 2 · ห้อง ม.5/2 1</small></div><em>ดู ›</em></div>
+      <div class="rec">งานแนะนำวันนี้ <span>3 งาน</span></div>
+      <div class="ti"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b><small class="r"><span class="src">Classroom</span>ส่งพรุ่งนี้ 23:59</small></div><span class="go dk">ทำเลย</span></div>
+      <div class="ti"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 (เว้น 9)</b><small><span class="srcC">ฟังครู</span>ศ. 08:00 · ทำแล้ว 6/14</small></div><span class="go">ทำเลย</span></div>
+      <div class="ti"><div class="badge s">สอบ</div><div class="t"><b>สอบย่อยฟิสิกส์บท 4</b><small><span class="srcC">ฟังครู</span>อ. 25 · อีก 7 วัน</small></div><span class="go">ทำเลย</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 listen -->
+<div class="sc">
+  <div class="cap"><b><i class="pin pC">C</i>② แตะ "พูด" → ฟังทันที</b>
+    <ul><li>ไม่ต้องเลือกโหมดก่อน — เริ่มฟังเลย แอปดูเองว่าพูดสั้นหรือครูพูดยาว</li>
+    <li>งานโผล่ระหว่างฟัง · ส่งเข้าห้องได้ในที่เดียว</li></ul></div>
+  <div class="phone">
+    <div class="dimbg"></div>
+    <div class="status" style="color:#fff"><span>11:48</span><em></em></div>
+    <div class="lsheet">
+      <div class="grip"></div>
+      <div class="mode"><span>ฉันพูดเอง</span><span class="on">ครูกำลังสั่งงาน</span></div>
+      <div class="wave" style="height:58px;margin-top:10px">
+        <i style="height:12px"></i><i style="height:26px"></i><i style="height:40px"></i><i style="height:20px"></i><i style="height:50px"></i><i style="height:32px"></i><i style="height:54px"></i><i style="height:28px"></i><i style="height:44px"></i><i style="height:16px"></i><i style="height:36px"></i><i style="height:50px"></i><i style="height:22px"></i><i style="height:40px"></i><i style="height:12px"></i><i style="height:30px"></i><i style="height:46px"></i><i style="height:18px"></i><i style="height:34px"></i><i style="height:10px"></i>
+      </div>
+      <div class="timer">กำลังฟัง 01:42 · ฟิสิกส์ (ตามตารางคาบ 4)</div>
+      <div class="trl">…การบ้านนะ <mark>แบบฝึกหัด 4.3 ข้อ 1 ถึง 15</mark> ไม่ต้องทำข้อ 9 ส่ง<mark class="d">วันศุกร์ก่อนแปดโมง</mark> แล้วก็อาทิตย์หน้า<mark>สอบย่อยบทที่ 4</mark> <mark class="d">วันอังคาร</mark>…</div>
+      <div class="gotl"><h4>ได้ 2 งานแล้ว</h4>
+        <div class="gr"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3 ข้อ 1–15 (เว้นข้อ 9)</b><small><em>ศ. 21 พ.ย. 08:00</em></small></div></div>
+        <div class="gr"><div class="badge s">สอบ</div><div class="t"><b>สอบย่อยบท 4 · 10 คะแนน</b><small>อ. 25 พ.ย.</small></div></div>
+      </div>
+      <div class="toroom"><span class="sw"></span>ส่งเข้าห้อง ม.5/2 ด้วย (32 คน)</div>
+      <div class="btn" style="margin-top:12px;background:var(--cC)">หยุด · บันทึก 2 งาน</div>
+      <p style="text-align:center;font-size:11px;color:var(--t2);margin-top:6px">ไม่เก็บไฟล์เสียง</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- 4 tasks page (universal) -->
+<div class="sc">
+  <div class="cap"><b><i class="pin pC">C</i><i class="pin pB">B</i>④ หน้างาน — จดครบ ไม่ตกหล่น</b>
+    <ul><li>ทุกงานมี <b>ทำอะไร · ส่งที่ไหน · ส่งยังไง</b> แยกเป็นป้าย ไม่ต้องอ่านทั้งประโยค</li>
+    <li>งานจากเสียงครู เก็บ <b>คำที่ครูพูดจริง</b> ไว้ให้เช็กว่าแอปจับถูก · นับข้อที่ทำแล้วได้</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>20:20</span><em></em></div>
+    <div class="tp">
+      <h3>งาน</h3>
+      <div class="flt"><span class="chip on">ทั้งหมด 12</span><span class="chip">ใกล้ส่ง 3</span><span class="chip">สอบ 2</span><span class="chip" style="background:#FFF1DC;color:#B26A00">ยังไม่ครบ 2</span></div>
+      <div class="miss">⚠️ <span><b>2 งานข้อมูลไม่ครบ</b><br>ไม่รู้วันส่ง 1 · ไม่รู้ส่งที่ไหน 1</span><em>เติม</em></div>
+
+      <div class="dh">พรุ่งนี้ · พ. 19 <span class="r">1</span></div>
+      <div class="tk2">
+        <div class="r1"><div class="badge m">คณิต</div><div class="t"><b>ใบงาน 9 อนุกรมเรขาคณิต</b></div><span class="srcl B">Classroom</span></div>
+        <div class="dt"><span class="d1 red">⏰ 23:59</span><span class="d1">📤 ส่งใน Classroom</span><span class="d1">📎 PDF 1</span></div>
+        <div class="cnt"><div class="bar"><i style="width:40%"></i></div><span>4/10 ข้อ</span><b>+1</b></div>
+      </div>
+
+      <div class="dh">ศ. 21 <span>1</span></div>
+      <div class="tk2">
+        <div class="r1"><div class="badge p">ฟิส</div><div class="t"><b>แบบฝึก 4.3</b></div><span class="srcl C">ฟังครู</span></div>
+        <div class="dt"><span class="d1">📝 ข้อ 1–15 <u>เว้นข้อ 9</u></span><span class="d1 red">⏰ ก่อน 08:00</span><span class="d1">✋ ส่งกระดาษ</span></div>
+        <div class="quote">🎙 ครูพูด 18 พ.ย. 11:48 — "…ไม่ต้องทำข้อ 9 นะ ส่งวันศุกร์ก่อนแปดโมง"</div>
+        <div class="cnt"><div class="bar"><i style="width:43%"></i></div><span>6/14 ข้อ</span><b>+1</b></div>
+      </div>
+
+      <div class="dh">อ. 25 · สอบ <span>1</span></div>
+      <div class="tk2 ex">
+        <div class="r1"><div class="badge s">สอบ</div><div class="t"><b>สอบย่อยฟิสิกส์บท 4 · 10 คะแนน</b></div><span class="cd">อีก 7 วัน</span></div>
+        <div class="dt"><span class="d1">📚 โพรเจกไทล์ + วงกลม</span><span class="d1">✏️ เอาเครื่องคิดเลข</span></div>
+      </div>
+
+      </div>
+    <div class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>หน้าหลัก</a><a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>งาน</a><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 19a7 7 0 0113 0"/></svg>ฉัน</a></div>
+  </div>
+</div>
+<!-- 5 me -->
+<div class="sc">
+  <div class="cap"><b><i class="pin pB">B</i>⑤ ฉัน → ดึงงานอัตโนมัติ</b>
+    <ul><li>ตั้งครั้งเดียว แล้วไม่ต้องกลับมาอีก · ถามตอนเปิดแอปครั้งแรกด้วย</li>
+    <li>ห้องเรียนเข้า/ออกจากตรงนี้ · ตั้งค่าการฟังครูอยู่หมวดเดียวกัน</li></ul></div>
+  <div class="phone">
+    <div class="status"><span>20:25</span><em></em></div>
+    <div class="mp">
+      <h3>ฉัน</h3>
+      <div class="meh"><i>ม</i><div><b>มายด์</b><br><small style="color:var(--t2);font-size:12.5px">ม.5/2 · วิทย์-คณิต</small></div></div>
+      <div class="msec">ดึงงานอัตโนมัติ</div>
+      <div class="mrow hl"><div class="ico"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="3" fill="#1E8E3E"/><circle cx="12" cy="11" r="2.6" fill="#fff"/><path d="M7.5 17a4.5 4.5 0 019 0" fill="#fff"/></svg></div><div class="t"><b>Google Classroom</b><small>6 วิชา · เช็กล่าสุด 5 นาทีก่อน</small></div><span class="ok">เชื่อมแล้ว</span></div>
+      <div class="mrow"><div class="ico" style="font-size:18px">👥</div><div class="t"><b>ห้อง ม.5/2</b><small>งานจากเพื่อนในห้องเข้ามาเอง</small></div><span class="ok">เข้าแล้ว</span></div>
+      <div class="mrow"><div class="ico" style="font-size:18px">＋</div><div class="t"><b>เชื่อมที่อื่น</b><small>มหาลัย: Moodle / ระบบของคณะ (ทีหลัง)</small></div><span class="chev">›</span></div>
+      <div class="msec">ผู้ช่วยจดงาน</div>
+      <div class="mrow"><div class="ico" style="background:var(--cCl);font-size:16px">🎙️</div><div class="t"><b>ฟังครู: ส่งเข้าห้องอัตโนมัติ</b><small>ไม่เก็บไฟล์เสียงเสมอ</small></div><span class="sw"></span></div>
+      
+      <div class="msec">อื่นๆ</div>
+      <div class="mrow"><div class="ico">📚</div><div class="t"><b>วิชาของฉัน</b><small>8 วิชา</small></div><span class="chev">›</span></div>
+      <div class="mrow"><div class="ico">💾</div><div class="t"><b>สำรอง / กู้คืนข้อมูล</b></div><span class="chev">›</span></div>
+    </div>
+    <div class="nav"><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>หน้าหลัก</a><a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>งาน</a><a class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="3.5"/><path d="M5.5 19a7 7 0 0113 0"/></svg>ฉัน</a></div>
+  </div>
+</div>
+
+</div>
+<div class="side">
+  <div class="box"><h3>④ เปลี่ยนอะไร</h3><ul>
+    <li><b>ตัดแผนงานกลุ่ม</b> (ใครทำขั้นไหน) — ใช้แค่งานกลุ่ม/มหาลัย ไว้ทีหลังในแท็บห้อง</li>
+    <li><b>ป้ายรายละเอียด</b> ข้อ · เวลา · ส่งที่ไหน · ต้องเอาอะไรไป — ตัวแกะข้อความ/AI แยกให้ ไม่ต้องกรอกฟอร์ม</li>
+    <li><b>นับข้อที่ทำแล้ว</b> (+1) แทนการแตกขั้น — ใช้ได้กับแบบฝึก ใบงาน อ่านหน้า ทุกวิชา</li>
+    <li><b>"ยังไม่ครบ"</b> — งานที่ไม่มีวันส่ง/ไม่รู้ส่งที่ไหน ถูกรวมไว้ให้เติม ไม่หายเงียบ</li>
+  </ul></div>
+  <div class="box"><h3>ทำไมดีกับ C (ฟังครู)</h3><ul>
+    <li>AI จับผิดได้ — เก็บ <b>คำที่ครูพูดจริง</b> ไว้ใต้งาน แตะดูได้ เด็กเชื่อแอปมากขึ้น</li>
+    <li>รายละเอียดที่ครูพูด ("เว้นข้อ 9" "ก่อนแปดโมง") ไปเป็นป้ายเอง ไม่ต้องจำ</li>
+    <li>ไม่เก็บไฟล์เสียง เก็บแค่ข้อความช่วงที่เป็นงาน</li>
+  </ul></div>
+  <div class="box"><h3>ทำในเครื่องได้เลย vs ต้องมีเซิร์ฟเวอร์</h3><ul>
+    <li><b>ได้เลย:</b> ป้ายรายละเอียด (ต่อยอดตัวแกะไทยเดิม) · นับข้อ +1 · "ยังไม่ครบ" · ป้ายที่มาของงาน · ปุ่มพูดฟังยาวด้วยเสียงของเครื่อง</li>
+    <li><b>ต้องมีเซิร์ฟเวอร์:</b> AI แยกงานจากเสียงครูยาวๆ ให้แม่น · เชื่อม Classroom · ห้อง</li>
+    <li>เสียงของเครื่อง (Web Speech) ฟังยาวในห้องเรียนได้แค่ไหน <b>ยังไม่ได้ลองจริง</b></li>
+  </ul></div>
+</div>
+</body></html>

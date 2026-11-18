@@ -7,7 +7,7 @@ import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/
 import { tasksView, subjectView } from './features/tasks.js';
 import { meView, applyTheme } from './features/me.js';
 
-globalThis.SABAII_VERSION = '0.4.1-local';
+globalThis.SABAII_VERSION = '0.4.2-local';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', me: 'ฉัน', subject: 'วิชา' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
