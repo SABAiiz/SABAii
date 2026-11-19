@@ -36,16 +36,18 @@
   const sizeRot = () => { const pad = parseFloat(getComputedStyle(rot).paddingLeft) * 2; rot.style.width = widthOf(WORDS[wi][0]) + pad + 'px'; };
   rot.style.setProperty('--rc', WORDS[0][1]);
   document.fonts?.ready.then(sizeRot); sizeRot();
-  if (!reduce) setInterval(() => {
-    if (document.hidden) return;
+  const word = (d = 1) => {
     rot.classList.add('out');
     setTimeout(() => {
-      wi = (wi + 1) % WORDS.length;
+      wi = (wi + d + WORDS.length) % WORDS.length;
       rw.textContent = WORDS[wi][0]; rot.style.setProperty('--rc', WORDS[wi][1]); sizeRot();
       rot.classList.remove('out'); rot.classList.add('pre');
       requestAnimationFrame(() => requestAnimationFrame(() => rot.classList.remove('pre')));
     }, 320);
-  }, 2600);
+  };
+  let wordTimer = 0;
+  const autoWord = () => { clearInterval(wordTimer); if (!reduce) wordTimer = setInterval(() => { if (!document.hidden) word(1); }, 2600); };
+  autoWord();
 
   /* นาฬิกาจับเวลาบนการ์ด */
   for (const el of $$('[data-clock]')) {
@@ -88,7 +90,7 @@
   const ph = { ry: -8, rx: 5, q: 0 };
   const cam = { rx: 0, ry: 0, s: 1, ty: 0, o: 1 };
   let H = { top: 0, h: 1 }, S = { top: 0, h: 1 }, F = { top: 0, h: 1 }, N = { top: 0, h: 1 }, vh = innerHeight, vw = innerWidth;
-  let mx = 0, my = 0, tmx = 0, tmy = 0;
+  let mx = 0, my = 0, tmx = 0, tmy = 0, handOn = false;
 
   const pos = el => ({ top: el.getBoundingClientRect().top + scrollY, h: el.offsetHeight || 1 });
   function measure() {
@@ -181,16 +183,69 @@
   addEventListener('scroll', () => { solid(); reduce ? reducedTick() : kick(); }, { passive: true });
   addEventListener('resize', () => { measure(); reduce ? reducedTick() : kick(); });
   if (!reduce) {
-    if (fine) addEventListener('pointermove', e => { tmx = e.clientX / vw - .5; tmy = e.clientY / vh - .5; kick(); }, { passive: true });
+    if (fine) addEventListener('pointermove', e => { if (handOn) return; tmx = e.clientX / vw - .5; tmy = e.clientY / vh - .5; kick(); }, { passive: true });
     // เอียงเครื่อง (Android · iOS ต้องขออนุญาตก่อน เลยไม่ใช้) — มุมแรกที่ถือ = จุดกลาง
     else if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== 'function') {
       let b0 = null;
       addEventListener('deviceorientation', e => {
-        if (e.gamma == null) return;
+        if (e.gamma == null || handOn) return;
         if (b0 == null) b0 = e.beta;
         tmx = clamp(e.gamma / 50, -.5, .5); tmy = clamp((e.beta - b0) / 50, -.5, .5); kick();
       }, { passive: true });
     }
+  }
+
+
+  /* โหมดโบกมือ: กล้องหน้า → ฉากหมุนตามมือ · ปัดขึ้น/ลง = เลื่อนไปส่วนถัดไป/ก่อนหน้า · ปัดซ้าย/ขวา = เปลี่ยนคำในหัวเรื่อง
+     ภาพไม่ออกจากเครื่อง · โหลดตัวตามมือเฉพาะตอนกด */
+  const handBtn = $('.handbtn');
+  let hand = null;
+  async function handStart() {
+    const video = document.createElement('video');
+    const st = document.createElement('span'); st.className = 'hb-st'; st.textContent = 'กำลังเปิดกล้อง…';
+    const cam = document.createElement('div'); cam.className = 'hb-cam'; cam.append(video);
+    const box = document.createElement('div'); box.className = 'hb'; box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite'); box.append(cam, st);
+    const dot = document.createElement('div'); dot.className = 'hb-dot';
+    document.body.append(box, dot);
+    const me = hand = { box, dot, s: null };
+    handBtn.setAttribute('aria-pressed', 'true');
+    const say = { loading: 'กำลังเตรียม…', ready: 'โบกมือได้เลย', denied: 'ยังไม่ได้อนุญาตกล้อง', unsupported: 'เครื่องนี้ยังใช้ไม่ได้' };
+    let mod;
+    // ที่อยู่ของตัวตามมืออิงหน้าเว็บ (import ในสคริปต์ธรรมดาจะอิงที่อยู่ของไฟล์สคริปต์)
+    try { mod = await import(new URL($('meta[name="sabaii-hand"]').content, location.href).href); } catch { st.textContent = say.unsupported; setTimeout(handStop, 2600); return; }
+    const s = await mod.startHands({
+      video,
+      onState: k => { if (hand !== me) return; box.dataset.state = k; st.textContent = say[k] || ''; if (k === 'ready') { handOn = true; clearInterval(wordTimer); } if (k === 'denied' || k === 'unsupported') setTimeout(() => hand === me && handStop(), 2600); },
+      onPoint: p => {
+        if (hand !== me) return;
+        dot.classList.toggle('on', !!p);
+        if (!p) return;
+        dot.style.transform = `translate3d(${(p.x * vw).toFixed(0)}px,${(p.y * vh).toFixed(0)}px,0)`;
+        tmx = (p.x - .5) * 1.2; tmy = (p.y - .5) * 1.2; kick();
+      },
+      onSwipe: d => {
+        if (hand !== me) return;
+        if (d === 'up') scrollBy({ top: vh * .85, behavior: 'smooth' });
+        else if (d === 'down') scrollBy({ top: -vh * .85, behavior: 'smooth' });
+        else word(d === 'left' ? 1 : -1);
+        dot.classList.remove('hit'); void dot.offsetWidth; dot.classList.add('hit');
+        if (navigator.vibrate) navigator.vibrate(8);
+      },
+    });
+    if (hand !== me) { s?.stop(); return; }
+    me.s = s;
+  }
+  function handStop() {
+    if (!hand) return;
+    const h = hand; hand = null; handOn = false;
+    h.s?.stop(); h.dot.remove(); h.box.classList.add('out'); setTimeout(() => h.box.remove(), 250);
+    handBtn.setAttribute('aria-pressed', 'false');
+    tmx = tmy = 0; kick(); autoWord();
+  }
+  if (handBtn) {
+    if (!navigator.mediaDevices?.getUserMedia) handBtn.hidden = true;
+    handBtn.addEventListener('click', () => (hand ? handStop() : handStart()));
+    addEventListener('pagehide', handStop);
   }
 
   /* สปอตไลต์ตามเคอร์เซอร์บนกล่องจุดเด่น (คอม) */
@@ -208,7 +263,7 @@
     portal.className = 'portal';
     portal.style.setProperty('--cx', (r.left + r.width / 2).toFixed(0) + 'px'); portal.style.setProperty('--cy', (r.top + r.height / 2).toFixed(0) + 'px');
     document.body.append(portal);
-    root.classList.add('leaving');
+    root.classList.add('leaving'); handStop();
     requestAnimationFrame(() => requestAnimationFrame(() => portal.classList.add('go')));
     setTimeout(() => { location.href = a.href; }, 640);
   });

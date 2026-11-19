@@ -8,6 +8,7 @@
 <meta name="description" content="SABAii จดงานจากเสียงครู รูปกระดาน หรือพิมพ์สั้น ๆ แล้วบอกว่าวันนี้ต้องทำอะไรก่อน">
 <meta name="theme-color" content="#F5F7FC">
 <meta name="sabaii-app" content="index.html?from=landing">
+<meta name="sabaii-hand" content="src/gesture/hand.js">
 <script>/* เปิดจากไอคอนแอปบนหน้าจอโฮม (ติดตั้งไว้ตั้งแต่รุ่นก่อน) → เข้าแอปเลย ไม่ต้องผ่านหน้าแนะนำ */
 if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) location.replace(document.querySelector('meta[name="sabaii-app"]').content.split('?')[0] + location.hash);</script>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -192,6 +193,8 @@ if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) lo
   </div>
 </section>
 </main>
+
+<button class="handbtn" type="button" aria-pressed="false" aria-label="ลองโบกมือ (เปิดกล้องหน้า ภาพไม่ออกจากเครื่อง)"><svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 00-4 0v5M14 10V4a2 2 0 00-4 0v6M10 10.5V6a2 2 0 00-4 0v8"/><path d="M18 8a2 2 0 114 0v6a8 8 0 01-8 8h-2c-2.8 0-4.5-.9-6-2.4l-3.6-3.6a2 2 0 012.8-2.8L7 15"/></svg><span>โบกมือ</span></button>
 
 <footer class="foot"><span>SABAii.com · รุ่นทดลอง 0.5</span><span>งานทั้งหมดเก็บในเครื่องของคุณ</span></footer>
 

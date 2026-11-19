@@ -7,6 +7,7 @@ import { daysBetween } from '../domain/dates.js';
 import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
 import { addTask, addNote, editTask, noteEl } from './add.js';
 import { notePane } from './notestyle.js';
+import { initHandsfree, stopHandsfree } from './handsfree.js';
 
 let sheet, paneHome, paneNote, stage;
 const LOW = 300;
@@ -48,7 +49,7 @@ function setVis(v) {
     document.body.classList.toggle('note-mode', nm);
     app.updateNav?.();
     if (nm) { if (!targeted) goPage(0, false); else syncNote(); if (!history.state?.note) pushBack({ note: 1 }); }
-    else if (extra) { extra = null; renderStage(); } // ออกจากโหมดโน้ต = เอางานที่เปิดชั่วคราวออก
+    else { stopHandsfree(); if (extra) { extra = null; renderStage(); } } // ออกจากโหมดโน้ต = ปิดกล้อง + เอางานที่เปิดชั่วคราวออก
     targeted = false;
   }
 }
@@ -175,7 +176,9 @@ function initStage() {
   stage.addEventListener('scroll', depth, { capture: true, passive: true }); // capture = ได้ทั้งเลื่อนขึ้นลงของชั้นและปัดซ้ายขวาในแถว
   addEventListener('resize', depth);
   let t;
-  stage.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => { const i = Math.round(stage.scrollTop / innerHeight); if (i !== cur) { cur = i; syncNote(); } }, 60); });
+  // จดว่าอยู่หน้าไหนเมื่อเลื่อนหยุดตรงหน้าแล้วเท่านั้น (ถ้าเครื่องยุ่ง ตัวจับเวลาอาจมาก่อนเลื่อนเสร็จ — ยังไม่ตรงหน้าให้รอต่อ)
+  const settle = () => { const r = stage.scrollTop / innerHeight, i = Math.round(r); if (Math.abs(r - i) > .02) { t = setTimeout(settle, 60); return; } if (i !== cur) { cur = i; syncNote(); } };
+  stage.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(settle, 60); });
   // เมาส์ลากได้เหมือนนิ้ว (นิ้วใช้การเลื่อนของเบราว์เซอร์)
   let d = null;
   stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse' || e.button || e.target.closest('button')) return; const row = e.target.closest('.nrow'); d = { y: e.clientY, x: e.clientX, top: stage.scrollTop, row, left: row?.scrollLeft }; });
@@ -204,6 +207,10 @@ function initNoteUi() {
   $('#note-back').onclick = () => setSnap(2);
   $('#note-add').onclick = () => pages[cur] && addNote(pages[cur], 'pick');
   $('#note-peek').onclick = () => goPage(cur + 1 < pages.length ? cur + 1 : 0);
+  initHandsfree({
+    note: d => { const row = stage.children[cur]?.querySelector('.nrow'), it = row?.querySelector('.nitem'); if (it) row.scrollBy({ left: d * (it.offsetWidth + 14), behavior: 'smooth' }); },
+    task: d => goPage(cur + d),
+  });
 }
 let tick;
 function syncNote() {
