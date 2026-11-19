@@ -144,8 +144,36 @@ export function goPage(i, smooth = true) {
   cur = Math.max(0, Math.min(pages.length - 1, i));
   stage.scrollTo({ top: cur * innerHeight, behavior: smooth ? 'smooth' : 'instant' });
   syncNote();
+  depth();
+}
+/* ความลึกของชั้นโน้ต (ทำงานเฉพาะตอนดูโน้ต · ปิดเมื่อเครื่องตั้งลดการเคลื่อนไหว)
+   ปัดซ้ายขวา: การ์ดข้าง ๆ หมุนเข้าหากลางและถอยลึกเล็กน้อย · ปัดขึ้นลง: แถวการ์ดของหน้าถัดไปเลื่อนช้ากว่าหน้า (parallax) แล้วขยายเข้าที่
+   คำนวณใน requestAnimationFrame ครั้งเดียวต่อเฟรม ใช้แค่ transform/opacity */
+const calm = matchMedia('(prefers-reduced-motion: reduce)');
+let depthRaf = 0;
+function depth() { if (!depthRaf && !calm.matches) depthRaf = requestAnimationFrame(depthFrame); }
+function depthFrame() {
+  depthRaf = 0;
+  if (!isNoteMode()) return;
+  const vh = innerHeight, top = stage.scrollTop;
+  for (const pg of stage.children) {
+    const off = (pg.offsetTop - top) / vh;
+    if (Math.abs(off) > 1.2) continue;
+    const row = pg.querySelector('.nrow'); if (!row) continue;
+    const a = Math.min(1, Math.abs(off));
+    row.style.transform = a > .002 ? `translate3d(0,${(off * -12).toFixed(2)}vh,0) scale(${(1 - a * .07).toFixed(4)})` : '';
+    const mid = row.scrollLeft + row.clientWidth / 2;
+    for (const it of row.children) {
+      const o = Math.max(-1, Math.min(1, (it.offsetLeft + it.offsetWidth / 2 - mid) / (it.offsetWidth + 14)));
+      const k = Math.abs(o);
+      it.style.transform = k > .002 ? `perspective(900px) rotateY(${(o * -9).toFixed(2)}deg) scale(${(1 - k * .08).toFixed(4)})` : '';
+      it.style.opacity = k > .002 ? (1 - k * .3).toFixed(3) : '';
+    }
+  }
 }
 function initStage() {
+  stage.addEventListener('scroll', depth, { capture: true, passive: true }); // capture = ได้ทั้งเลื่อนขึ้นลงของชั้นและปัดซ้ายขวาในแถว
+  addEventListener('resize', depth);
   let t;
   stage.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(() => { const i = Math.round(stage.scrollTop / innerHeight); if (i !== cur) { cur = i; syncNote(); } }, 60); });
   // เมาส์ลากได้เหมือนนิ้ว (นิ้วใช้การเลื่อนของเบราว์เซอร์)

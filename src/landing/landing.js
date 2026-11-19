@@ -10,7 +10,6 @@
   const fine = matchMedia('(pointer: fine)').matches;
   if (!reduce && 'IntersectionObserver' in window) root.classList.add('anim');
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
-  const lerp = (a, b, t) => a + (b - a) * t;
 
   /* ลิงก์เข้าแอป (รุ่นลิงก์ทดลองชี้ไปหน้าแอปอีกหน้า) */
   const APP = document.querySelector('meta[name="sabaii-app"]')?.content;
@@ -70,23 +69,32 @@
     if ('IntersectionObserver' in window) { const o = new IntersectionObserver(es => { if (es[0].isIntersecting) { o.disconnect(); run(); } }, { threshold: .4 }); o.observe(typer); } else run();
   }
 
-  /* ---------------- Parallax ---------------- */
-  const hero = $('.hero'), heroText = $('[data-hero-text]');
-  const heroCards = $$('.hero .fc').map(el => ({ el, d: +el.dataset.depth || 1, dir: +el.dataset.dir || 1, x: 0, y: 0, s: 1, o: 1 }));
+  /* ---------------- เครื่องยนต์ความลึก ----------------
+     ฉากแรกเป็นพื้นที่ 3 มิติจริง: การ์ดแต่ละใบอยู่ห่างจากผู้ดูไม่เท่ากัน (data-depth → translateZ)
+     เลื่อนลง = กล้องพุ่งทะลุฝูงการ์ด (การ์ดเข้าหาผู้ดูแล้วกระจายออกเองตามมุมมอง) · หัวเรื่องถอยลึก
+     เมาส์/เอียงเครื่อง (Android) = หมุนฉากทั้งฉาก การ์ดใกล้ขยับมากกว่าการ์ดไกล + แสงสะท้อนจากทิศเดียวกัน */
+  const hero = $('.hero'), heroText = $('[data-hero-text]'), scene = $('.hero .cards');
+  const heroCards = $$('.hero .fc').map(el => {
+    const d = +el.dataset.depth || 1;
+    el.style.setProperty('--d', d.toFixed(2));
+    return { el, d, z0: (d - 1) * 150, z: 0, y: 0, o: 1 };
+  });
   const story = $('.story'), pin = $('.pin'), phone = $('.phone'), sbar = $('.sbar i');
   const chips = $$('[data-sdepth]').map(el => ({ el, d: +el.dataset.sdepth, y: 0 }));
-  const belts = $$('[data-belt]').map(el => ({ el, dir: +el.dataset.belt, x: null, top: 0, h: 0, shift: 0 }));
+  const notesSec = $('.notes');
+  const belts = $$('[data-belt]').map(el => ({ el, dir: +el.dataset.belt, x: null, rx: 0, top: 0, h: 0, shift: 0 }));
   const fin = $('.final');
   const conv = $$('.cv').map(el => { const [fx, fy] = el.dataset.from.split(',').map(Number); return { el, fx, fy, p: 0 }; });
-  const ph = { ry: -8, rx: 5 };
-  let H = { top: 0, h: 1 }, S = { top: 0, h: 1 }, F = { top: 0, h: 1 }, vh = innerHeight, vw = innerWidth;
-  let mx = 0, my = 0, tmx = 0, tmy = 0, hx = 0, hy = 0, ho = 1;
+  const ph = { ry: -8, rx: 5, q: 0 };
+  const cam = { rx: 0, ry: 0, s: 1, ty: 0, o: 1 };
+  let H = { top: 0, h: 1 }, S = { top: 0, h: 1 }, F = { top: 0, h: 1 }, N = { top: 0, h: 1 }, vh = innerHeight, vw = innerWidth;
+  let mx = 0, my = 0, tmx = 0, tmy = 0;
 
   const pos = el => ({ top: el.getBoundingClientRect().top + scrollY, h: el.offsetHeight || 1 });
   function measure() {
     vh = innerHeight; vw = innerWidth;
-    H = pos(hero); S = pos(story); F = pos(fin);
-    for (const b of belts) { const r = pos(b.el); b.top = r.top; b.h = r.h; b.shift = Math.max(160, b.el.scrollWidth - vw + 40); }
+    H = pos(hero); S = pos(story); F = pos(fin); N = pos(notesSec);
+    for (const b of belts) { const t = b.el.style.transform; b.el.style.transform = 'none'; const r = pos(b.el); b.el.style.transform = t; b.top = r.top; b.h = r.h; b.shift = Math.max(160, b.el.scrollWidth - vw + 40); }
     sizeRot();
   }
 
@@ -100,52 +108,64 @@
   function frame() {
     const y = scrollY;
     let moving = false;
-    const go = (cur, target, t = .12) => { const v = lerp(cur, target, t); if (Math.abs(v - target) > .05) moving = true; return Math.abs(v - target) > .05 ? v : target; };
-    mx = go(mx * 100, tmx * 100, .07) / 100; my = go(my * 100, tmy * 100, .07) / 100;
+    // ค่าเข้าหาเป้าแบบนุ่ม · k = ความไว (ยิ่งน้อยยิ่งหนืด) · eps = ถือว่าถึงแล้ว
+    const go = (cur, target, k = .14, eps = .02) => { const v = cur + (target - cur) * k; if (Math.abs(v - target) > eps) { moving = true; return v; } return target; };
+    mx = go(mx, tmx, .07, .0005); my = go(my, tmy, .07, .0005);
 
-    // 1 · Hero: การ์ดลอยออกด้านข้างและขึ้นด้วยความเร็วต่างกัน + จางหาย · หัวเรื่องเลื่อนช้ากว่า
-    if (y < H.h * 1.2) {
-      const p = clamp(y / H.h);
+    // 1 · ฉากแรก: กล้องพุ่งทะลุการ์ด
+    if (y < H.h * 1.15) {
+      const p = clamp(y / (H.h * .85));
+      cam.rx = go(cam.rx, my * -7, .1, .005); cam.ry = go(cam.ry, mx * 9, .1, .005);
+      scene.style.transform = `rotateX(${cam.rx.toFixed(3)}deg) rotateY(${cam.ry.toFixed(3)}deg)`;
+      scene.style.setProperty('--lx', (50 + cam.ry * 5).toFixed(1) + '%');
+      scene.style.setProperty('--ly', (8 - cam.rx * 5).toFixed(1) + '%');
       for (const c of heroCards) {
-        c.x = go(c.x, c.dir * p * 180 * c.d - mx * 26 * c.d);
-        c.y = go(c.y, -y * .32 * c.d - my * 20 * c.d);
-        c.s = go(c.s * 100, (1 - p * .07 * c.d) * 100) / 100;
-        c.o = go(c.o * 100, clamp(1 - p * 1.25) * 100) / 100;
-        c.el.style.transform = `translate3d(${c.x.toFixed(1)}px,${c.y.toFixed(1)}px,0) scale(${c.s.toFixed(3)})`;
+        c.z = go(c.z, c.z0 + Math.min(620, p * 760 * c.d), .16, .1);
+        c.y = go(c.y, -y * .12 * c.d, .16, .1);
+        c.o = go(c.o, clamp(1 - (p - .3) * 2.4), .2, .003);
+        c.el.style.transform = `translate3d(0,${c.y.toFixed(1)}px,${c.z.toFixed(1)}px)`;
         c.el.style.opacity = c.o.toFixed(3);
       }
-      hy = go(hy, y * .22); hx = go(hx, -mx * 8); ho = go(ho * 100, clamp(1 - p * 1.5) * 100) / 100;
-      heroText.style.transform = `translate3d(${hx.toFixed(1)}px,${hy.toFixed(1)}px,0)`;
-      heroText.style.opacity = ho.toFixed(3);
+      cam.s = go(cam.s, 1 - p * .16, .14, .0005); cam.ty = go(cam.ty, p * 70, .14, .1); cam.o = go(cam.o, clamp(1 - p * 1.6), .18, .003);
+      heroText.style.transform = `translate3d(0,${cam.ty.toFixed(1)}px,0) scale(${cam.s.toFixed(4)})`;
+      heroText.style.opacity = cam.o.toFixed(3);
     }
 
-    // 2 · Story: ขั้นตอนเปลี่ยนตามระยะเลื่อน · มือถือเอียงตาม · ชิปรอบ ๆ ลอยสวนกัน
+    // 2 · มือถือโผล่ขึ้นมาจากฉาก แล้วเอียงตามการเลื่อน · ขั้นตอนเปลี่ยนตามระยะ
     if (y + vh > S.top && y < S.top + S.h) {
       const sp = clamp((y - S.top) / (S.h - vh));
+      const q = clamp((y + vh - S.top) / vh);
       setStep(sp);
       sbar.style.transform = `scaleX(${sp.toFixed(3)})`;
-      ph.ry = go(ph.ry, (sp - .5) * -16 + mx * 10, .08); ph.rx = go(ph.rx, 6 - sp * 8 - my * 6, .08);
-      phone.style.transform = `perspective(1400px) rotateY(${ph.ry.toFixed(2)}deg) rotateX(${ph.rx.toFixed(2)}deg)`;
-      for (const c of chips) { c.y = go(c.y, (sp - .5) * -150 * c.d); c.el.style.transform = `translate3d(0,${c.y.toFixed(1)}px,0)`; }
+      ph.q = go(ph.q, q, .12, .001);
+      ph.ry = go(ph.ry, (sp - .5) * -16 + mx * 10, .08, .01); ph.rx = go(ph.rx, 6 - sp * 8 - my * 6, .08, .01);
+      const e = 1 - ph.q;
+      phone.style.transform = `perspective(1400px) translate3d(0,${(e * 200).toFixed(1)}px,0) rotateX(${(ph.rx + e * 26).toFixed(2)}deg) rotateY(${ph.ry.toFixed(2)}deg) scale(${(.84 + ph.q * .16).toFixed(4)})`;
+      for (const c of chips) { c.y = go(c.y, (sp - .5) * -150 * c.d, .14, .1); c.el.style.transform = `translate3d(0,${c.y.toFixed(1)}px,0)`; }
     }
 
-    // 3 · สายพานโน้ต: แถวบนไหลซ้าย แถวล่างไหลขวา ตามการเลื่อน
-    for (const b of belts) {
-      if (y + vh < b.top - 200 || y > b.top + b.h + 200) continue;
-      const p = clamp((y + vh - b.top) / (vh + b.h));
-      const target = b.dir < 0 ? -p * b.shift : -(1 - p) * b.shift;
-      b.x = b.x == null ? target : go(b.x, target, .1);
-      b.el.style.transform = `translate3d(${b.x.toFixed(1)}px,0,0)`;
+    // 3 · สายพานโน้ตวางบนระนาบเอียง → ราบลงเมื่อถึงกลางจอ · สองแถวไหลสวนกัน
+    if (y + vh > N.top - 100 && y < N.top + N.h + 100) {
+      for (const b of belts) {
+        const p = clamp((y + vh - b.top) / (vh + b.h));
+        const rel = clamp((b.top + b.h / 2 - y - vh / 2) / vh, -1, 1);
+        const target = b.dir < 0 ? -p * b.shift : -(1 - p) * b.shift;
+        b.x = b.x == null ? target : go(b.x, target, .1, .1);
+        b.rx = go(b.rx, rel * 16, .12, .01);
+        b.el.style.transformOrigin = `${(vw / 2 - b.x).toFixed(0)}px 50%`;
+        b.el.style.transform = `perspective(1100px) rotateX(${b.rx.toFixed(2)}deg) translate3d(${b.x.toFixed(1)}px,0,0)`;
+      }
     }
 
-    // 5 · CTA: การ์ดจากมุมจอลอยเข้ามารวมรอบหัวเรื่อง
+    // 5 · การ์ดบินเข้ามาจากด้านหน้าผู้ดู แล้วไปเกาะรอบหัวเรื่อง
     if (y + vh > F.top - 100) {
       const p = clamp((y + vh - F.top) / (vh * .85));
       const dx = Math.min(300, vw * .3), dy = Math.min(200, vh * .22);
       for (const c of conv) {
-        c.p = go(c.p * 100, p * 100, .1) / 100;
-        c.el.style.transform = `translate3d(${((1 - c.p) * c.fx * dx).toFixed(1)}px,${((1 - c.p) * c.fy * dy).toFixed(1)}px,0) scale(${(.8 + c.p * .2).toFixed(3)})`;
-        c.el.style.opacity = clamp(c.p * 1.2).toFixed(3);
+        c.p = go(c.p, p, .1, .001);
+        const e = 1 - c.p;
+        c.el.style.transform = `translate3d(${(e * c.fx * dx).toFixed(1)}px,${(e * c.fy * dy).toFixed(1)}px,0) scale(${(1 + e * .5).toFixed(3)})`;
+        c.el.style.opacity = clamp(c.p * 1.3).toFixed(3);
       }
     }
 
@@ -153,14 +173,47 @@
   }
   const kick = () => { if (!running) { running = true; requestAnimationFrame(frame); } };
 
-  function reducedTick() { // ไม่มี parallax — แค่เปลี่ยนขั้นตอนของมือถือตามการเลื่อน
+  function reducedTick() { // ไม่มีการเคลื่อนไหว — แค่เปลี่ยนขั้นตอนของมือถือตามการเลื่อน
     const sp = clamp((scrollY - S.top) / (S.h - vh));
     setStep(sp); sbar.style.transform = `scaleX(${sp.toFixed(3)})`;
   }
 
   addEventListener('scroll', () => { solid(); reduce ? reducedTick() : kick(); }, { passive: true });
   addEventListener('resize', () => { measure(); reduce ? reducedTick() : kick(); });
-  if (fine && !reduce) addEventListener('pointermove', e => { tmx = e.clientX / vw - .5; tmy = e.clientY / vh - .5; kick(); }, { passive: true });
+  if (!reduce) {
+    if (fine) addEventListener('pointermove', e => { tmx = e.clientX / vw - .5; tmy = e.clientY / vh - .5; kick(); }, { passive: true });
+    // เอียงเครื่อง (Android · iOS ต้องขออนุญาตก่อน เลยไม่ใช้) — มุมแรกที่ถือ = จุดกลาง
+    else if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== 'function') {
+      let b0 = null;
+      addEventListener('deviceorientation', e => {
+        if (e.gamma == null) return;
+        if (b0 == null) b0 = e.beta;
+        tmx = clamp(e.gamma / 50, -.5, .5); tmy = clamp((e.beta - b0) / 50, -.5, .5); kick();
+      }, { passive: true });
+    }
+  }
+
+  /* สปอตไลต์ตามเคอร์เซอร์บนกล่องจุดเด่น (คอม) */
+  if (fine && !reduce) for (const bx of $$('.bx')) bx.addEventListener('pointermove', e => {
+    const r = bx.getBoundingClientRect();
+    bx.style.setProperty('--sx', (e.clientX - r.left).toFixed(0) + 'px'); bx.style.setProperty('--sy', (e.clientY - r.top).toFixed(0) + 'px');
+  }, { passive: true });
+
+  /* เข้าแอป: วงขาวขยายจากปุ่มจนเต็มจอ แล้วแบบสอบถามค่อย ๆ โผล่ (แท็บเดิม) */
+  for (const a of $$('.app-link')) a.addEventListener('click', e => {
+    if (reduce || a.target === '_blank' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+    e.preventDefault();
+    const r = a.getBoundingClientRect();
+    const portal = document.createElement('div');
+    portal.className = 'portal';
+    portal.style.setProperty('--cx', (r.left + r.width / 2).toFixed(0) + 'px'); portal.style.setProperty('--cy', (r.top + r.height / 2).toFixed(0) + 'px');
+    document.body.append(portal);
+    root.classList.add('leaving');
+    requestAnimationFrame(() => requestAnimationFrame(() => portal.classList.add('go')));
+    setTimeout(() => { location.href = a.href; }, 640);
+  });
+  addEventListener('pageshow', e => { if (e.persisted) { root.classList.remove('leaving'); $$('.portal').forEach(p => p.remove()); } });
+
   addEventListener('load', () => { measure(); reduce ? reducedTick() : kick(); });
   document.fonts?.ready.then(() => { measure(); kick(); });
   measure(); solid(); reduce ? reducedTick() : kick();
