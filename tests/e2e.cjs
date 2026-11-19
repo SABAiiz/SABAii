@@ -159,8 +159,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   // E: หน้างาน + ปฏิทิน
   await page.locator('#nav a[data-r="tasks"]').click();
   await page.waitForSelector('.cal');
-  check('E ปฏิทินย่อ = 2 สัปดาห์ (14 วัน)', (await page.locator('.day').count()) === 14);
-  check('การ์ดโปรเจกต์ต่อวิชา (5 วิชา)', (await page.locator('.proj:not(.new)').count()) === 5);
+  check('E ปฏิทินย่อ = สัปดาห์เดียว (7 วัน)', (await page.locator('.day').count()) === 7);
+  check('การ์ดวิชา (5 วิชา) + งานเรียงตามวัน', (await page.locator('.proj:not(.new)').count()) === 5 && (await page.locator('.tl .ti').count()) >= 5);
   await shot('05-tasks');
   await page.locator('.monthchip').click();
   const nDays = await page.locator('.day').count();
@@ -287,7 +287,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   // 0.4.2: หน้าฉัน — ดึงงานอัตโนมัติ (ยังไม่เปิด) + ปุ่มพูดเริ่มที่โหมดไหน
   await page.keyboard.press('Escape'); await wait(300);
   await page.evaluate(() => { location.hash = '#/me'; }); await wait(500);
-  check('ฉัน: มีหมวด "ดึงงานอัตโนมัติ" (Classroom · ห้องเรียน ยังไม่เปิด)', await page.getByText('ดึงงานอัตโนมัติ').isVisible()
+  check('ฉัน: Classroom · ห้องเรียน อยู่ในหมวด "เร็ว ๆ นี้" (ยังไม่เปิด)', await page.getByText('เร็ว ๆ นี้').isVisible()
     && (await page.locator('.list-btn', { hasText: 'Google Classroom' }).textContent()).includes('ยังไม่เปิด')
     && (await page.locator('.list-btn', { hasText: 'ห้องเรียน' }).textContent()).includes('ยังไม่เปิด'));
   await page.locator('.list-btn', { hasText: 'Google Classroom' }).click(); await wait(300);
