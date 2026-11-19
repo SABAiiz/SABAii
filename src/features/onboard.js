@@ -5,7 +5,7 @@
 //   4 หน้าตาหน้าโน้ตงาน     → prefs.note_style     (6 แบบ ดู features/notestyle.js)
 //   5 งานตัวอย่าง           → store.addSamples()   (ติดป้าย "ตัวอย่าง" ลบได้ทีเดียว)
 // ข้ามได้ทุกเมื่อ (ค่าเดิมไม่เปลี่ยน) · ทำใหม่ได้จากหน้าฉัน
-import { h, ic, ART, toast } from '../ui/kit.js';
+import { h, ic, toast } from '../ui/kit.js';
 import { app, S } from './shared.js';
 import { MODES } from './listen.js';
 import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
@@ -15,6 +15,29 @@ const QUESTIONS = 5;
 const STEPS = ['welcome', 'name', 'subjects', 'listen', 'style', 'samples', 'done'];
 
 let root = null;
+
+/** หน้าต้อนรับ: โลโก้กลาง + การ์ด UI ของแอปลอยรอบ ๆ (เข้าฉากทีละใบ · ลอยเบา ๆ · ขยับตามเมาส์บนคอม) */
+function welcomeHero() {
+  const card = (cls, depth, i, ...kids) => h('div.obf.' + cls, { style: { '--i': i }, 'data-depth': depth }, h('div.obf-fl', h('div.obf-c', ...kids)));
+  const bdg = (t, c) => h('span.obf-b', { style: { '--c': c } }, t);
+  const hero = h('div.ob-hero', { 'aria-hidden': 'true' },
+    card('o-photo', 1.2, 0, h('img', { src: 'assets/landing/note-photo.jpg', alt: '' }), h('span.obf-tag', 'วิทย์ · 08:54')),
+    card('o-task', .8, 1, bdg('ฟิส', '#8B5CF6'), h('span.obf-tt', h('b', 'แบบฝึกหัด 4.3'), h('small', 'ส่งศุกร์ 08:00')), h('span.obf-go', 'ทำเลย')),
+    card('o-sticky', 1.5, 2, 'ทำแค่ข้อคี่', h('br'), 'ส่งในห้องนะ'),
+    card('o-listen', 1, 3, h('span.obf-mic', { html: ic('mic') }), h('span.obf-wave', Array.from({ length: 9 }, () => h('i')))),
+    card('o-timer', 1.8, 4, h('i.obf-dot'), 'กำลังทำ ', h('b', '12:40')),
+    card('o-exam', .9, 5, h('small', 'สอบย่อย'), h('b', '3'), h('small', 'วัน')),
+    h('img.ob-logo', { src: 'icon.svg', alt: '', width: 84, height: 84 }));
+  if (matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const items = [...hero.querySelectorAll('.obf')];
+    let raf = 0, tx = 0, ty = 0, x = 0, y = 0;
+    const tick = () => { x += (tx - x) * .08; y += (ty - y) * .08;
+      for (const el of items) { const d = +el.dataset.depth; el.style.transform = `translate3d(${(x * d * -18).toFixed(1)}px,${(y * d * -14).toFixed(1)}px,0)`; }
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > .002 ? requestAnimationFrame(tick) : 0; };
+    hero.addEventListener('pointermove', e => { const r = hero.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width - .5; ty = (e.clientY - r.top) / r.height - .5; if (!raf) raf = requestAnimationFrame(tick); });
+  }
+  return hero;
+}
 
 export function openOnboarding({ redo = false } = {}) {
   if (root) return;
@@ -91,8 +114,7 @@ export function openOnboarding({ redo = false } = {}) {
 
     if (name === 'welcome') {
       view.append(
-        h('div.ob-hero', h('img', { src: 'icon.svg', alt: '', width: 76, height: 76 }),
-          h('div.ob-arts', { 'aria-hidden': 'true' }, ['speak', 'attach', 'type', 'shoot'].map(a => h('span', { html: ART[a] })))),
+        welcomeHero(),
         ...head(0, redo ? 'ตั้งค่า SABAii ใหม่' : ['จดงานครบ', h('br'), 'ไม่พลาดกำหนดส่ง'],
           `ตอบ ${QUESTIONS} ข้อสั้น ๆ ให้แอปตั้งค่าตามที่คุณใช้จริง ใช้เวลาไม่ถึง 1 นาที`),
         why('ทุกคำตอบเก็บในเครื่องนี้เท่านั้น ไม่ส่งไปที่ไหน แก้ได้ทุกเมื่อที่หน้า "ฉัน"'));

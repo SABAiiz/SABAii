@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SABAii.com</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="SABAii จดงานจากเสียงครู รูปกระดาน หรือพิมพ์สั้น ๆ แล้วบอกว่าวันนี้ต้องทำอะไรก่อน">
+<meta name="theme-color" content="#F5F7FC">
+<meta name="sabaii-app" content="index.html">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700;800&family=Mali:wght@600&display=swap">
+<link rel="stylesheet" href="src/landing/landing.css">
+</head>
+<body>
+<!-- หน้าแนะนำ SABAii (ก่อนเข้าแอป) — การ์ดลอย · Parallax · เผยทีละชิ้นตามการเลื่อน · ไม่ล็อกการเลื่อนของผู้ใช้ -->
+
+<header class="top" id="top">
+  <a class="logo" href="#hero" aria-label="SABAii หน้าแรก"><img src="icon.svg" alt="" width="30" height="30"><span>SABA<b>ii</b></span></a>
+  <a class="btn sm dark app-link" href="index.html">เปิดแอป</a>
+</header>
+
+<main>
+<!-- ================= 1 · HERO: หัวเรื่องกลาง + การ์ด UI ลอยรอบ ๆ ================= -->
+<section class="hero" id="hero">
+  <div class="glow" aria-hidden="true"></div>
+  <div class="cards" aria-hidden="true">
+    <div class="fc c-photo" data-depth="1.1" data-dir="-1" style="--i:0"><div class="fl">
+      <div class="card photo"><img src="assets/landing/note-photo.jpg" alt=""><div class="cap"><span class="bdg" style="--c:#F4A340">วิทย์</span><div><b>Mind mapping</b><small class="red">ส่งวันนี้</small></div></div></div>
+    </div></div>
+    <div class="fc c-task" data-depth=".7" data-dir="1" style="--i:1"><div class="fl">
+      <div class="card task"><span class="bdg" style="--c:#8B5CF6">ฟิส</span><div class="tt"><b>แบบฝึกหัด 4.3 ข้อ 1–15</b><small><em>ส่งศุกร์ 08:00</em> · ~40 นาที</small></div><span class="go">ทำเลย</span></div>
+    </div></div>
+    <div class="fc c-sticky" data-depth="1.4" data-dir="-1" style="--i:2"><div class="fl">
+      <div class="card sticky">ทำแค่ข้อคี่<br>ส่งในห้องนะ</div>
+    </div></div>
+    <div class="fc c-timer" data-depth="1.8" data-dir="1" style="--i:3"><div class="fl">
+      <div class="card pill"><i class="pulse"></i>กำลังทำ <b class="mono" data-clock="760">12:40</b></div>
+    </div></div>
+    <div class="fc c-listen" data-depth=".9" data-dir="1" style="--i:4"><div class="fl">
+      <div class="card listen"><div class="lh"><span class="mic"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span><div><b>ครูกำลังสั่งงาน</b><small>ฟังต่อจนกดหยุด</small></div></div>
+        <div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="lf">แยกได้ <b>2 งาน</b></div></div>
+    </div></div>
+    <div class="fc c-exam" data-depth="1.25" data-dir="-1" style="--i:5"><div class="fl">
+      <div class="card exam"><small>สอบย่อยไฟฟ้า</small><b>3</b><small>วันถึงสอบ · ห้อง 412</small></div>
+    </div></div>
+    <div class="fc c-subj" data-depth=".55" data-dir="1" style="--i:6"><div class="fl">
+      <div class="card chips"><span style="--c:#1769D2">คณิต</span><span style="--c:#E45465">ไทย</span><span style="--c:#16B76A">อังกฤษ</span><span style="--c:#F4A340">วิทย์</span></div>
+    </div></div>
+    <div class="fc c-week" data-depth=".8" data-dir="-1" style="--i:7"><div class="fl">
+      <div class="card week"><div class="wk"><b>ทำเสร็จ 7 วันนี้</b><small>12 งาน</small></div><div class="bars"><i style="--h:30%"></i><i style="--h:55%"></i><i style="--h:40%"></i><i style="--h:80%"></i><i style="--h:45%"></i><i style="--h:65%"></i><i class="on" style="--h:95%"></i></div></div>
+    </div></div>
+  </div>
+
+  <div class="hero-in" data-hero-text>
+    <p class="kick"><span>ใหม่</span>ฟังครูสั่งงาน แยกเป็นหลายงานให้เอง</p>
+    <h1><span class="ln"><span>เรียนหนักพอแล้ว</span></span><span class="ln"><span>อย่าให้ <span class="rot" aria-live="polite"><span class="rot-w">การบ้าน</span></span> หลุด</span></span></h1>
+    <p class="lead">SABAii จดงานจากเสียงครู รูปกระดาน หรือพิมพ์สั้น ๆ แล้วบอกว่าวันนี้ต้องทำอะไรก่อน</p>
+    <div class="ctas"><a class="btn dark app-link" href="index.html">ลองใช้เลย <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><a class="btn ghost" href="#story">ดูว่าทำงานยังไง</a></div>
+    <ul class="ticks"><li>ใช้บนมือถือได้ทันที</li><li>ไม่ต้องสมัคร</li><li>ข้อมูลอยู่ในเครื่องคุณ</li></ul>
+  </div>
+  <a class="scroll" href="#story" aria-label="เลื่อนลง">เลื่อนลง<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></a>
+</section>
+
+<!-- ================= 2 · STORY: มือถือติดกลางจอ เปลี่ยนจอตามการเลื่อน ================= -->
+<section class="story" id="story">
+  <div class="pin" data-step="0">
+    <div class="steps">
+      <p class="eyebrow rv">ครูพูดครั้งเดียว ได้งานครบ</p>
+      <ol>
+        <li data-s="0"><b>ครูพูด แอปฟัง</b><span>กด "ฟังครู" ครั้งเดียว แอปฟังยาวจนกดหยุด ไม่ต้องรีบจดให้ทัน และไม่เก็บไฟล์เสียง</span></li>
+        <li data-s="1"><b>แยกเป็นงานให้เอง</b><span>ประโยคเดียวได้หลายงาน วันส่ง เวลา และสิ่งที่ครูย้ำ ถูกแยกออกมาครบ แตะเอาออกได้ถ้าไม่ใช่</span></li>
+        <li data-s="2"><b>รู้ว่าทำอะไรก่อน</b><span>หน้าแรกโชว์แค่ 3 งานที่ควรทำตอนนี้ กด "ทำเลย" แล้วแอปจับเวลาให้</span></li>
+      </ol>
+      <div class="sbar" aria-hidden="true"><i></i></div>
+    </div>
+
+    <div class="stage">
+      <div class="float-chip fcp1" data-sdepth="1.2"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>ไม่เก็บไฟล์เสียง</div>
+      <div class="float-chip fcp2" data-sdepth="-.9"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>ศ. 20 พ.ย. · 08:00</div>
+      <div class="float-chip fcp3" data-sdepth="1.5"><span class="q">“</span>ไม่ต้องทำข้อ 9 นะ</div>
+      <div class="float-chip fcp4" data-sdepth="-1.3"><i class="pulse"></i>กำลังทำ 00:12</div>
+      <div class="phone">
+        <div class="scr s0">
+          <div class="seg"><span>ฉันพูดเอง</span><span class="on">ครูกำลังสั่งงาน</span></div>
+          <div class="micbig"><i></i><i></i><span><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg></span></div>
+          <p class="lstat"><i class="pulse"></i>กำลังฟัง · 00:42</p>
+          <p class="quote">“…โอเค การบ้านนะ <mark>แบบฝึกหัด 4.3 ข้อ 1 ถึง 15</mark> ไม่ต้องทำข้อ 9 ส่ง<mark>วันศุกร์ก่อนแปดโมง</mark> แล้วก็อาทิตย์หน้า<mark>สอบย่อยบทที่ 4</mark> วันอังคาร…”</p>
+          <div class="pbtn dark">หยุดฟัง</div>
+        </div>
+        <div class="scr s1">
+          <p class="ph-h">ได้ 2 งาน</p>
+          <p class="ph-sub">วิชาของคาบนี้</p>
+          <div class="qchips"><span class="on">ฟิสิกส์</span><span>คณิต</span><span>เคมี</span></div>
+          <div class="prow"><div><b>แบบฝึกหัด 4.3 ข้อ 1–15</b><small>ส่ง ศ. 20 พ.ย. · 08:00</small><em>“ไม่ต้องทำข้อ 9 นะ”</em></div><span class="ok">✓</span></div>
+          <div class="prow"><div><b>สอบย่อยบทที่ 4</b><small class="r">สอบ อ. 24 พ.ย.</small><em>“ออกเรื่องโพรเจกไทล์กับวงกลม”</em></div><span class="ok">✓</span></div>
+          <div class="pbtn">บันทึก 2 งาน</div>
+        </div>
+        <div class="scr s2">
+          <div class="ph-brand"><b>SABA<i>ii</i></b><span class="av">ม</span></div>
+          <p class="ph-h big">วันนี้ทำ 3 งานนี้ก่อน</p>
+          <div class="trow"><span class="bdg" style="--c:#8B5CF6">ฟิส</span><div><b>แบบฝึกหัด 4.3 ข้อ 1–15</b><small><em>ส่งพรุ่งนี้ 08:00</em></small></div><span class="go doing">00:12</span></div>
+          <div class="trow"><span class="bdg" style="--c:#F4A340">วิทย์</span><div><b>Mind mapping</b><small><em>ส่งวันนี้</em></small></div><span class="go">ทำเลย</span></div>
+          <div class="trow"><span class="bdg" style="--c:#8B5CF6">ฟิส</span><div><b>สอบย่อยบทที่ 4</b><small>สอบอังคารหน้า</small></div><span class="go">ทำเลย</span></div>
+          <div class="ph-nav"><span class="on">หน้าหลัก</span><span>งาน</span><span>ฉัน</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3 · NOTES: การ์ดโน้ตไหลสวนกันตามการเลื่อน ================= -->
+<section class="notes" id="notes">
+  <div class="wrap head">
+    <p class="eyebrow rv">โน้ตอยู่กับงาน</p>
+    <h2 class="rv" style="--i:1">ดึงหน้าแรกลง<br>เห็นโน้ตของทุกงาน</h2>
+    <p class="sub rv" style="--i:2">รูปกระดาน ใบงาน และสิ่งที่ครูย้ำ อยู่กับงานนั้นเลย ไม่ต้องไล่หาในแกลเลอรี่</p>
+  </div>
+  <div class="belt" data-belt="-1" aria-hidden="true">
+    <div class="nc photo"><img src="assets/landing/note-photo.jpg" alt="" loading="lazy"><span class="ntag">วิทย์ · ถ่ายเมื่อ 08:54</span></div>
+    <div class="nc board">บทที่ 4 โพรเจกไทล์<br>v = u + at<br><em>สอบ อ.หน้า · 10 คะแนน</em><span class="ntag">ฟิสิกส์ · จดเมื่อ 10:20</span></div>
+    <div class="nc sticky">ครูบอกทำแค่ข้อคี่<br>ส่งในห้อง<span class="ntag">ฟิสิกส์</span></div>
+    <div class="nc sheet"><b>ใบงานลำดับเลขคณิต</b><span class="ln2">a<sub>n</sub> = a<sub>1</sub> + (n−1)d</span><span class="ln2"><mark>ข้อ 1–10</mark> ส่งพุธ</span><span class="ln2">แสดงวิธีทำทุกข้อ</span><span class="ntag">คณิต · จดเมื่อ 13:05</span></div>
+    <div class="nc photo"><img src="assets/landing/note-photo.jpg" alt="" loading="lazy" style="object-position:30% 20%"><span class="ntag">วิทย์ · ถ่ายเมื่อ 08:55</span></div>
+    <div class="nc sticky blue">ท่องศัพท์ Unit 5<br>20 คำ<span class="ntag">อังกฤษ</span></div>
+    <div class="nc board">ขุนช้างขุนแผน<br>สรุป 1 หน้า<br><em>ส่ง อ. หน้า</em><span class="ntag">ไทย · จดเมื่อ 14:40</span></div>
+  </div>
+  <div class="wrap head2">
+    <h3 class="rv">หน้าตาแบบไหนก็ได้ เลือกเองตอนเริ่มใช้</h3>
+  </div>
+  <div class="belt styles" data-belt="1" aria-hidden="true">
+    <figure><img src="assets/note-styles/ns-1.jpg" alt="" loading="lazy"><figcaption>เรียบหรู</figcaption></figure>
+    <figure><img src="assets/note-styles/ns-2.jpg" alt="" loading="lazy"><figcaption>ภาพเต็มจอ</figcaption></figure>
+    <figure><img src="assets/note-styles/ns-3.jpg" alt="" loading="lazy"><figcaption>ใบงาน</figcaption></figure>
+    <figure><img src="assets/note-styles/ns-4.jpg" alt="" loading="lazy"><figcaption>สมุดกราฟ</figcaption></figure>
+    <figure><img src="assets/note-styles/ns-5.jpg" alt="" loading="lazy"><figcaption>สีวิชาเต็มหัว</figcaption></figure>
+    <figure><img src="assets/note-styles/ns-6.jpg" alt="" loading="lazy"><figcaption>การ์ดลอย</figcaption></figure>
+  </div>
+</section>
+
+<!-- ================= 4 · BENTO: เผยทีละกล่อง ================= -->
+<section class="bento-sec" id="why">
+  <div class="wrap">
+    <p class="eyebrow rv">ทำมาเพื่อนักเรียน</p>
+    <h2 class="rv" style="--i:1">เขียนแบบที่ครูพูด<br>แอปก็เข้าใจ</h2>
+    <div class="bento">
+      <article class="bx wide rv" style="--i:0">
+        <div class="bx-t"><b>พิมพ์ภาษาครูได้เลย</b><span>"พน." "ส่งศ." "จ.หน้า" แอปอ่านออก แล้วเลือกวิชากับวันให้ทันที</span></div>
+        <div class="typer" aria-label="ตัวอย่าง: พิมพ์ คณิต ทำแบบฝึกหัดหน้า 20 ส่งศ. แล้วได้ชิปวิชาและวัน">
+          <div class="tin"><span class="ttext" data-type="คณิต ทำแบบฝึกหัดหน้า 20 ส่งศ."></span><i class="caret"></i></div>
+          <div class="tout"><span class="tc" style="--c:#1769D2">คณิตศาสตร์</span><span class="tc dark">ศ. 20 พ.ย.</span><span class="tc ghost">ไม่เดาเวลา</span></div>
+        </div>
+      </article>
+      <article class="bx rv" style="--i:1">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 16.5a5 5 0 017 0M5 12.5a10 10 0 015-2.7M19 12.5a10 10 0 00-2.6-1.8M2 8.8a15 15 0 014.6-2.9M22 8.8A15 15 0 0011 5"/><circle cx="12" cy="20" r="1"/></svg></div>
+        <b>ใช้ได้แม้ไม่มีเน็ต</b><span>เพิ่ม แก้ ติ๊กเสร็จได้ตอนออฟไลน์ งานอยู่ในเครื่อง</span>
+      </article>
+      <article class="bx rv" style="--i:2">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></svg></div>
+        <b>ไม่ต้องสมัคร</b><span>เปิดแล้วตอบ 5 ข้อ แอปก็ตั้งค่าตามที่คุณเรียนจริง</span>
+      </article>
+      <article class="bx rv tall" style="--i:3">
+        <div class="ico"><svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 4 4H6l4-4z"/><path d="M12 13v8"/></svg></div>
+        <b>งานแนะนำไม่เกิน 3 งาน</b><span>ไม่ท่วมจนไม่รู้จะเริ่มตรงไหน ปักหมุดก่อน แล้วเรียงตามวันส่ง</span>
+        <div class="mini3"><i style="--c:#8B5CF6"></i><i style="--c:#F4A340"></i><i style="--c:#1769D2"></i></div>
+      </article>
+      <article class="bx rv" style="--i:4">
+        <div class="ico"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+        <b>ข้อมูลเป็นของคุณ</b><span>ไม่ส่งขึ้นเซิร์ฟเวอร์ สำรองเป็นไฟล์เก็บเองได้</span>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5 · CTA: การ์ดลอยเข้ามารวมกัน ================= -->
+<section class="final" id="start">
+  <div class="conv" aria-hidden="true">
+    <div class="cv" data-from="-1,-1"><div class="card pill"><i class="pulse"></i>กำลังทำ <b class="mono">12:40</b></div></div>
+    <div class="cv" data-from="1,-1"><div class="card chips"><span style="--c:#F4A340">วิทย์</span><span style="--c:#8B5CF6">ฟิสิกส์</span></div></div>
+    <div class="cv" data-from="-1,1"><div class="card sticky small">ทำแค่ข้อคี่</div></div>
+    <div class="cv" data-from="1,1"><div class="card exam small"><small>สอบย่อย</small><b>3</b><small>วัน</small></div></div>
+  </div>
+  <div class="wrap fin">
+    <h2 class="rv">คาบหน้า<br>ไม่ต้องกลัวลืมอะไร</h2>
+    <p class="sub rv" style="--i:1">ตอบ 5 ข้อ ใช้เวลาไม่ถึง 1 นาที แล้วเริ่มจดงานแรกได้เลย</p>
+    <a class="btn dark lg rv app-link" style="--i:2" href="index.html">เปิด SABAii <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+</section>
+</main>
+
+<footer class="foot"><span>SABAii.com · รุ่นทดลอง 0.5</span><span>งานทั้งหมดเก็บในเครื่องของคุณ</span></footer>
+
+<script src="src/landing/landing.js"></script>
+</body>
+</html>
