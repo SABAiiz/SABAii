@@ -10,6 +10,7 @@ const SHELL = [
   './src/features/voice.js', './src/features/listen.js', './src/features/images.js',
   './src/features/notestyle.js', './src/features/onboard.js', './src/features/handsfree.js', './src/gesture/hand.js',
   ...[1, 2, 3, 4, 5, 6].map(i => `./assets/note-styles/ns-${i}.jpg`), './assets/landing/note-photo.jpg',
+  ...['board', 'chalk', 'notes', 'sticky'].map(n => `./assets/landing/photos/${n}.jpg`),
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
