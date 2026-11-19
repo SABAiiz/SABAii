@@ -24,7 +24,9 @@ function welcomeHero() {
     card('o-photo', 1.2, 0, h('img', { src: 'assets/landing/note-photo.jpg', alt: '' }), h('span.obf-tag', 'วิทย์ · 08:54')),
     card('o-task', .8, 1, bdg('ฟิส', '#8B5CF6'), h('span.obf-tt', h('b', 'แบบฝึกหัด 4.3'), h('small', 'ส่งศุกร์ 08:00')), h('span.obf-go', 'ทำเลย')),
     card('o-sticky', 1.5, 2, 'ทำแค่ข้อคี่', h('br'), 'ส่งในห้องนะ'),
-    card('o-timer', 1.8, 3, h('i.obf-dot'), 'กำลังทำ ', h('b', '12:40')),
+    card('o-listen', 1, 3, h('span.obf-mic', { html: ic('mic') }), h('span.obf-wave', Array.from({ length: 9 }, () => h('i')))),
+    card('o-timer', 1.8, 4, h('i.obf-dot'), 'กำลังทำ ', h('b', '12:40')),
+    card('o-exam', .9, 5, h('small', 'สอบย่อย'), h('b', '3'), h('small', 'วัน')),
     h('img.ob-logo', { src: 'icon.svg', alt: '', width: 84, height: 84 }));
   if (matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const items = [...hero.querySelectorAll('.obf')];
@@ -114,8 +116,8 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       view.append(
         welcomeHero(),
         ...head(0, redo ? 'ตั้งค่า SABAii ใหม่' : ['จดงานครบ', h('br'), 'ไม่พลาดกำหนดส่ง'],
-          `ตอบ ${QUESTIONS} ข้อ ไม่ถึง 1 นาที`),
-        h('p.ob-note', h('span', { html: ic('lock') }), 'คำตอบอยู่ในเครื่องคุณเท่านั้น'));
+          `ตอบ ${QUESTIONS} ข้อสั้น ๆ ให้แอปตั้งค่าตามที่คุณใช้จริง ใช้เวลาไม่ถึง 1 นาที`),
+        why('ทุกคำตอบเก็บในเครื่องนี้เท่านั้น ไม่ส่งไปที่ไหน แก้ได้ทุกเมื่อที่หน้า "ฉัน"'));
       next.textContent = 'เริ่มเลย';
     }
 
@@ -123,7 +125,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const inp = h('input.field.ob-input', { id: 'ob-name', value: ans.name, maxlength: 40, placeholder: 'ชื่อเล่น', autocomplete: 'nickname', 'aria-label': 'ชื่อเล่น',
         oninput: e => { ans.name = e.target.value; label(); }, onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); onNext(); } } });
       const label = () => { next.textContent = ans.name.trim() ? 'ต่อไป' : 'ข้ามข้อนี้'; };
-      view.append(...head(1, 'ให้เราเรียกคุณว่าอะไรดี?', 'ชื่อเล่นก็พอ'), inp);
+      view.append(...head(1, 'ให้เราเรียกคุณว่าอะไรดี?', 'ชื่อเล่นก็พอ ไม่ต้องใส่ชื่อจริงหรือชื่อโรงเรียน'), inp, why('ใช้ทักทายและแสดงที่หน้า "ฉัน"'));
       label();
       setTimeout(() => inp.focus({ preventScroll: true }), 320);
     }
@@ -140,9 +142,9 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const add = h('input.field', { id: 'ob-newsubj', placeholder: 'วิชาอื่น เช่น ประวัติศาสตร์', maxlength: 40, 'aria-label': 'เพิ่มวิชาอื่น',
         onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); addSubj(); } } });
       const addSubj = async () => { const v = add.value.trim(); if (!v) return; const sj = await app.store.ensureSubject(v); ans.subj.add(sj.id); add.value = ''; paint(); };
-      view.append(...head(2, 'เทอมนี้เรียนวิชาอะไรบ้าง?', 'แตะเลือกให้ครบ'), grid,
+      view.append(...head(2, 'เทอมนี้เรียนวิชาอะไรบ้าง?', 'แตะเลือกให้ครบ แตะซ้ำเพื่อเอาออก'), grid,
         h('div.ob-addrow', add, h('button.btn.ghost.auto', { onclick: addSubj }, 'เพิ่ม')), count,
-        why('วิชาที่ไม่เลือกแค่ซ่อนไว้'));
+        why('ใช้เป็นชิปวิชาตอนเพิ่มงาน การ์ดวิชาในหน้างาน และเดาวิชาจากคำที่พิมพ์หรือพูด · วิชาที่ไม่เลือกแค่ซ่อนไว้ ไม่หาย'));
       next.textContent = 'ต่อไป';
       paint();
     }
@@ -151,11 +153,12 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const box = h('div.ob-opts');
       const paint = () => {
         box.replaceChildren(
-          option(ans.listen === 'teacher', 'users', 'ครูพูดสั่งในห้อง', 'แอปฟังครู แล้วแยกงานให้', () => { ans.listen = 'teacher'; paint(); }),
-          option(ans.listen === 'self', 'text', 'ครูเขียนกระดาน หรือโพสต์กลุ่ม', 'คุณพูดหรือถ่ายรูปเอง', () => { ans.listen = 'self'; paint(); }));
+          option(ans.listen === 'teacher', 'users', 'ครูพูดสั่งปากเปล่าในห้อง', 'กดพูดแล้วแอปฟังครูยาว ๆ จนกดหยุด แยกเป็นหลายงานให้เอง', () => { ans.listen = 'teacher'; paint(); }),
+          option(ans.listen === 'self', 'text', 'ครูเขียนบนกระดาน หรือโพสต์ในกลุ่ม', 'กดพูดแล้วคุณพูดเองสั้น ๆ ทีละงาน หรือถ่ายรูปกระดานเก็บไว้', () => { ans.listen = 'self'; paint(); }));
         next.disabled = !ans.listen;
       };
-      view.append(...head(3, 'ส่วนใหญ่ครูสั่งงานแบบไหน?'), box);
+      view.append(...head(3, 'ส่วนใหญ่ครูสั่งงานแบบไหน?', 'เลือกแบบที่เจอบ่อยที่สุด'), box,
+        why(`ปุ่มพูดจะเริ่มที่โหมด "${MODES.teacher}" หรือ "${MODES.self}" ตามคำตอบ · สลับได้ทุกครั้งที่กดพูด · ไม่เก็บไฟล์เสียง`));
       next.textContent = 'ต่อไป';
       paint();
     }
@@ -164,7 +167,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const strip = h('div.ob-styles', { role: 'radiogroup', 'aria-label': 'หน้าตาหน้าโน้ตงาน' });
       const cards = NOTE_STYLES.map(st => h('button.ob-style', { role: 'radio', 'data-id': st.id, onclick: () => pick(st.id, true) },
         h('span.ob-shot', h('img', { src: stylePreview(st.id), alt: `ตัวอย่างแบบ ${st.name}`, loading: 'lazy' }), h('span.ob-ck', { html: ic('check') })),
-        h('b', st.name)));
+        h('b', `${st.id} · ${st.name}`), h('small', st.desc)));
       strip.append(...cards);
       const dots = h('div.ob-dots', { 'aria-hidden': 'true' }, NOTE_STYLES.map(() => h('i')));
       const pick = (id, scroll) => {
@@ -179,7 +182,8 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
         let best = cards[0]; for (const c of cards) if (Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - mid)) best = c;
         if (+best.dataset.id !== ans.style) pick(+best.dataset.id, false);
       }, 90); }, { passive: true });
-      view.append(...head(4, 'ชอบหน้าโน้ตแบบไหน?', 'ปัดดู แล้วแตะเลือก'), strip, dots);
+      view.append(...head(4, 'ชอบหน้าโน้ตงานแบบไหน?', 'ปัดดูทั้ง 6 แบบ แล้วเลือกแบบที่ชอบ ทุกแบบใช้งานเหมือนกัน'), strip, dots,
+        why('หน้านี้คือรูปและโน้ตของงาน (ดึงหน้าแรกลงเพื่อดู) · เปลี่ยนแบบได้ที่หน้า "ฉัน"'));
       pick(ans.style, false);
       requestAnimationFrame(() => { const c = cards[ans.style - 1]; strip.scrollLeft = c.offsetLeft + c.offsetWidth / 2 - strip.clientWidth / 2; });
     }
@@ -188,11 +192,12 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const had = S().tasks.some(t => t.source === 'sample'), box = h('div.ob-opts');
       const paint = () => {
         box.replaceChildren(
-          option(ans.samples === true, 'spark', had ? 'เก็บงานตัวอย่างไว้' : 'ใส่งานตัวอย่าง 6 งาน', 'ลบทิ้งได้ทีเดียว', () => { ans.samples = true; paint(); }),
-          option(ans.samples === false, 'plus', had ? 'ลบงานตัวอย่างออก' : 'ไม่ต้อง เริ่มจากว่าง', 'จดงานแรกเองเลย', () => { ans.samples = false; paint(); }));
+          option(ans.samples === true, 'spark', had ? 'เก็บงานตัวอย่างไว้' : 'ใส่งานตัวอย่าง 6 งาน', 'ลองเลื่อน ลองปัด ลองกดทำเลยได้เลย ทุกงานติดป้าย "ตัวอย่าง"', () => { ans.samples = true; paint(); }),
+          option(ans.samples === false, 'plus', had ? 'ลบงานตัวอย่างออก' : 'ไม่ต้อง เริ่มจากว่าง', 'เพิ่มงานแรกเองจากหน้าแรก', () => { ans.samples = false; paint(); }));
         next.disabled = ans.samples == null;
       };
-      view.append(...head(5, 'ลองกับงานตัวอย่างก่อนไหม?'), box);
+      view.append(...head(5, 'อยากลองกับงานตัวอย่างก่อนไหม?', 'เหมาะถ้ายังไม่มีงานจะจดตอนนี้'), box,
+        why('งานตัวอย่างลบออกได้ทีเดียวที่หน้า "ฉัน" งานของคุณเองไม่หาย'));
       next.textContent = 'ต่อไป';
       paint();
     }
@@ -202,7 +207,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const row = (k, v, extra) => h('div.ob-sum', h('span', k), h('b', v), extra || '');
       view.append(
         h('div.ob-done', { html: ic('check') }),
-        ...head(0, ans.name.trim() ? `พร้อมแล้ว ${ans.name.trim()}!` : 'พร้อมแล้ว!', 'แก้ได้ทุกอย่างที่หน้า "ฉัน"'),
+        ...head(0, ans.name.trim() ? `พร้อมแล้ว ${ans.name.trim()}!` : 'พร้อมแล้ว!', 'ตั้งค่าตามนี้ แก้ได้ทุกอย่างที่หน้า "ฉัน"'),
         h('div.ob-sums',
           row('ชื่อ', ans.name.trim() || 'ไม่ได้ตั้ง'),
           row('วิชา', `${names.length} วิชา`, h('small', names.slice(0, 6).join(' · ') + (names.length > 6 ? ' …' : ''))),
