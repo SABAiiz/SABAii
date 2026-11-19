@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>SABAii หน้าแรกแบบ Bolt</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Inter:wght@500;600;700;800&family=Mali:wght@500;600&display=swap">
+<style>
+/* หน้าแรกแนว Bolt: ช่องเดียว "จดงานอะไร?" เด่นสุด แตะแล้วพิมพ์ได้ทันที · ทางลัดแตะเดียว · โน้ตของงานแรกอยู่ด้านหลังเหมือนแผนที่
+   โครงเดิมของแอปยังอยู่: ชั้นหลัง = โน้ต · แผ่นล่าง 3 ระดับ · เมนูล่าง — เปลี่ยนแค่ของในแผ่น */
+:root { --ink: #0B1B4D; --sub: #5E6B85; --mute: #A3ACBF; --blue: #0A6CF1; --red: #E2453A; --line: #EEF1F6; --surf: #F2F4F8; --d: "Anuphan", sans-serif; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #EEF1F6; color: var(--ink); font-family: var(--d); -webkit-font-smoothing: antialiased; width: 1600px; }
+.top { padding: 60px 60px 6px; }
+.top h1 { font: 600 46px/1.15 var(--d); letter-spacing: -.03em; }
+.top p { font: 400 19px/1.6 var(--d); color: var(--sub); margin-top: 10px; max-width: 60em; }
+.row { display: flex; gap: 34px; padding: 40px 60px 30px; align-items: flex-start; }
+.col { width: 330px; flex: none; }
+.lab { font: 600 15px var(--d); color: var(--sub); text-align: center; margin-bottom: 14px; }
+.lab b { color: var(--ink); font-weight: 600; }
+.shot, .ph { width: 330px; height: 714px; border-radius: 40px; overflow: hidden; box-shadow: 0 0 0 7px #1A1F2C, 0 40px 60px -30px rgba(11,27,77,.55); background: #fff; position: relative; }
+.shot img { width: 100%; height: 100%; object-fit: cover; }
+.cap { margin-top: 18px; font: 400 15px/1.55 var(--d); color: #33405E; padding: 0 6px; }
+.cap b { font-weight: 600; color: var(--ink); }
+.taps { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; height: 28px; padding: 0 12px; border-radius: 14px; font: 600 13px var(--d); background: #fff; box-shadow: inset 0 0 0 1.5px #DCE2EC; }
+.taps.good { background: var(--ink); color: #fff; box-shadow: none; }
+.notes { flex: 1; padding-top: 40px; }
+.notes h2 { font: 600 30px/1.2 var(--d); letter-spacing: -.02em; margin-bottom: 18px; }
+.notes ol { list-style: none; counter-reset: n; display: flex; flex-direction: column; gap: 14px; }
+.notes li { counter-increment: n; position: relative; padding-left: 40px; font: 400 16.5px/1.55 var(--d); color: #33405E; }
+.notes li::before { content: counter(n); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font: 600 13px/26px var(--d); text-align: center; }
+.notes li b { color: var(--ink); font-weight: 600; }
+.tbl { margin-top: 22px; width: 100%; border-collapse: collapse; font: 400 15px var(--d); }
+.tbl th, .tbl td { text-align: left; padding: 10px 8px; vertical-align: top; border-bottom: 1px solid #DCE2EC; }
+.tbl th { font-weight: 600; color: var(--sub); font-size: 13.5px; }
+.tbl td b { font-weight: 600; }
+.tbl .g { color: #0E8A55; font-weight: 600; }
+.tbl td:first-child { white-space: nowrap; font-weight: 600; }
+
+/* ---------- จอ 390×844 ย่อเป็น 330 ---------- */
+.in { position: absolute; left: 0; top: 0; width: 390px; height: 844px; transform: scale(.8462); transform-origin: 0 0; overflow: hidden; background: #fff; }
+.ico { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.sb { position: absolute; z-index: 5; left: 0; right: 0; top: 0; height: 50px; display: flex; justify-content: space-between; align-items: center; padding: 6px 30px 0 34px; font: 600 15px Inter; color: #fff; }
+.sb.dk { color: var(--ink); }
+/* ชั้นหลัง = โน้ตของงานแรก (เหมือนแผนที่ของ Bolt) */
+.stage { position: absolute; inset: 0 0 auto; height: 330px; background: linear-gradient(180deg, #E9DDFF, #F4EEFF); overflow: hidden; }
+.stage .pol { position: absolute; left: 60%; top: 62px; width: 196px; transform: translateX(-50%) rotate(-3deg); background: #fff; padding: 8px 8px 0; border-radius: 10px; box-shadow: 0 24px 40px -20px rgba(11,27,77,.55); }
+.stage .pol img { width: 100%; height: 170px; object-fit: cover; border-radius: 6px; display: block; }
+.stage .pol p { font: 500 12px/2.3 "Mali"; color: var(--sub); text-align: center; }
+.stage .tag { position: absolute; left: 16px; top: 58px; height: 34px; padding: 0 14px 0 6px; border-radius: 17px; background: rgba(255,255,255,.92); display: flex; align-items: center; gap: 8px; font: 600 13px var(--d); }
+.stage .tag i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 700 8px var(--d); font-style: normal; color: #7C4DFF; background: #EFE8FF; }
+/* แผ่นล่าง */
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 280px; background: #fff; border-radius: 28px 28px 0 0; box-shadow: 0 -12px 30px -10px rgba(11,27,77,.25); padding: 10px 18px 0; }
+.sheet.full { top: 46px; }
+.grab { width: 40px; height: 5px; border-radius: 3px; background: #DCE2EC; margin: 0 auto 14px; }
+.hi { font: 500 15px var(--d); color: var(--sub); margin: 0 2px 8px; }
+/* ช่องเดียว "จดงานอะไร?" — เหมือน "Where to?" */
+.ask { height: 60px; border-radius: 20px; background: var(--surf); display: flex; align-items: center; gap: 10px; padding: 0 8px 0 18px; }
+.ask .q { flex: 1; font: 600 19px var(--d); color: var(--ink); letter-spacing: -.01em; }
+.ask .q.pq { color: #8F99AD; font-weight: 500; }
+.ask .mic { width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; }
+.ask.on { background: #fff; box-shadow: inset 0 0 0 2px var(--ink); }
+.caret { display: inline-block; width: 2px; height: 22px; background: var(--blue); vertical-align: -4px; margin-left: 1px; }
+.short { display: flex; gap: 8px; margin-top: 12px; }
+.short span { flex: 1; height: 44px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1.5px #E6EAF1; display: flex; align-items: center; justify-content: center; gap: 7px; font: 600 14px var(--d); }
+.short .ico { width: 19px; height: 19px; }
+/* ล่าสุด = แตะเดียวเติมวิชาให้ (เหมือนที่อยู่ล่าสุดของ Bolt) */
+.rec { margin-top: 6px; }
+.rr { display: flex; align-items: center; gap: 12px; padding: 11px 2px; border-bottom: 1px solid var(--line); }
+.rr .ci { width: 36px; height: 36px; border-radius: 50%; background: var(--surf); display: grid; place-items: center; color: var(--sub); flex: none; }
+.rr .ci .ico { width: 18px; height: 18px; }
+.rr b { display: block; font: 600 15.5px var(--d); } .rr small { font: 400 13px var(--d); color: var(--sub); }
+.sec { font: 600 14px var(--d); color: var(--sub); margin: 16px 2px 4px; }
+.tr { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.tr .b { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; font: 700 11px var(--d); color: var(--c); background: color-mix(in srgb, var(--c) 14%, #fff); flex: none; }
+.tr .tx { flex: 1; min-width: 0; } .tr b { display: block; font: 600 15.5px var(--d); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr small { font: 400 13px var(--d); color: var(--sub); } .tr small em { font-style: normal; color: var(--red); font-weight: 600; }
+.go { height: 38px; padding: 0 16px; border-radius: 19px; background: var(--ink); color: #fff; font: 600 14px var(--d); display: grid; place-items: center; }
+.pl { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #DCE2EC; display: grid; place-items: center; }
+.pl::before { content: ""; border-left: 9px solid var(--ink); border-top: 6px solid transparent; border-bottom: 6px solid transparent; margin-left: 3px; }
+.nav { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); height: 56px; padding: 6px; border-radius: 28px; background: rgba(11,27,77,.94); display: flex; gap: 4px; box-shadow: 0 18px 30px -14px rgba(11,27,77,.7); }
+.nav a { white-space: nowrap; height: 44px; padding: 0 15px; border-radius: 22px; display: flex; align-items: center; gap: 7px; color: rgba(255,255,255,.6); font: 600 14px var(--d); }
+.nav a.on { background: #fff; color: var(--ink); } .nav .ico { width: 20px; height: 20px; }
+/* ตอนพิมพ์ */
+.res { margin-top: 14px; border-radius: 20px; box-shadow: inset 0 0 0 1.5px #E6EAF1; padding: 14px; }
+.res .t { display: flex; gap: 12px; align-items: center; }
+.res b { display: block; font: 600 17px var(--d); } .res small { font: 400 13.5px var(--d); color: var(--sub); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.chips span { height: 32px; padding: 0 12px; border-radius: 16px; font: 600 13px/32px var(--d); background: #fff; box-shadow: inset 0 0 0 1.5px #E3E8F0; color: var(--sub); }
+.chips .on { background: var(--c, var(--ink)); color: #fff; box-shadow: none; }
+.save { margin-top: 14px; height: 54px; border-radius: 27px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; gap: 10px; font: 600 16.5px var(--d); }
+.save small { font: 500 12px var(--d); opacity: .6; }
+.hint { font: 400 13px var(--d); color: var(--mute); margin-top: 10px; text-align: center; }
+.kb { position: absolute; left: 0; right: 0; bottom: 0; height: 300px; background: #D3D7DE; padding: 10px 4px 0; }
+.kb div { display: flex; gap: 6px; justify-content: center; margin-bottom: 11px; }
+.kb i { height: 44px; width: 32px; border-radius: 6px; background: #fff; box-shadow: 0 1px 0 #898A8D; }
+.kb i.w { width: 180px; } .kb i.m { width: 46px; background: #ABB0BA; } .kb i.rt { width: 88px; background: var(--blue); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></symbol>
+  <symbol id="cam" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="img" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></symbol>
+  <symbol id="ear" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1112 0c0 4-4 4-4 8a3 3 0 01-6 0"/><path d="M9 10a3 3 0 016 0"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></symbol>
+  <symbol id="list" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h4"/></symbol>
+  <symbol id="me" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></symbol>
+</svg>
+
+<header class="top">
+  <h1>หน้าแรกแนว Bolt: เพิ่มงานให้เร็วที่สุด</h1>
+  <p>Bolt เปิดมาเห็นช่องเดียว "จะไปไหน?" แตะแล้วพิมพ์ได้เลย ที่ไปบ่อยแตะครั้งเดียว แผนที่อยู่ด้านหลัง → SABAii: ช่องเดียว "จดงานอะไร?" · ทางลัดแตะเดียว · โน้ตของงานแรกอยู่ด้านหลังแทนแผนที่ โครงเดิมของแอป (ชั้นโน้ตด้านหลัง + แผ่นล่าง 3 ระดับ + เมนูล่าง) ยังอยู่ครบ เปลี่ยนแค่ของในแผ่น</p>
+</header>
+
+<section class="row">
+  <div class="col">
+    <p class="lab">ตอนนี้</p>
+    <div class="shot"><img src="compare/before-home.jpg" alt=""></div>
+    <p class="cap">ปุ่ม 4 กล่องใหญ่เท่ากัน ต้องอ่านก่อนว่าจะกดอันไหน กด "พิมพ์" แล้วเปิดอีกหน้าต่างถึงจะพิมพ์ได้</p>
+    <span class="taps">พิมพ์งาน: แตะ 3 ครั้ง + พิมพ์</span>
+  </div>
+
+  <div class="col">
+    <p class="lab"><b>แบบ Bolt · เปิดแอป</b></p>
+    <div class="ph"><div class="in">
+      <div class="stage">
+        <div class="sb"><span>09:41</span><span>▮▮▮</span></div>
+        <div class="tag"><i>ฟิส</i>โน้ตงานแรก</div>
+        <div class="pol"><img src="../assets/landing/photos/board.jpg" alt=""><p>ถ่ายเมื่อ 08:54</p></div>
+      </div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <p class="hi">มิ้นท์ วันนี้มี 3 งาน</p>
+        <div class="ask"><span class="q pq">จดงานอะไร?</span><span class="mic"><svg class="ico"><use href="#mic"/></svg></span></div>
+        <div class="short"><span><svg class="ico"><use href="#cam"/></svg>ถ่ายกระดาน</span><span><svg class="ico"><use href="#img"/></svg>รูปจากแชต</span><span><svg class="ico"><use href="#ear"/></svg>ฟังครู</span></div>
+        <div class="rec">
+          <div class="rr"><span class="ci"><svg class="ico"><use href="#clock"/></svg></span><div><b>ฟิสิกส์ · แบบฝึกหัด…</b><small>จดล่าสุด เมื่อวาน</small></div></div>
+        </div>
+        <p class="sec">ทำ 3 งานนี้ก่อน</p>
+        <div class="tr"><span class="b" style="--c:#7C4DFF">ฟิส</span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small><em>ส่งพรุ่งนี้ 08:00</em></small></div><span class="go">ทำเลย</span></div>
+        <div class="tr"><span class="b" style="--c:#14A06A">Eng</span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>ส่งเสาร์</small></div><span class="pl"></span></div>
+      </div>
+      <nav class="nav"><a class="on"><svg class="ico"><use href="#home"/></svg>หน้าหลัก</a><a><svg class="ico"><use href="#list"/></svg>งาน</a><a><svg class="ico"><use href="#me"/></svg>ฉัน</a></nav>
+    </div></div>
+    <p class="cap"><b>ช่องเดียวเด่นสุด</b> แตะแล้วคีย์บอร์ดขึ้นทันที · ไมค์อยู่ในช่อง · ถ่าย/แนบ/ฟังครู แตะเดียว · "จดล่าสุด" แตะแล้วเติมวิชาให้</p>
+    <span class="taps good">พิมพ์งาน: แตะ 1 ครั้ง + พิมพ์ + ↵</span>
+  </div>
+
+  <div class="col">
+    <p class="lab"><b>แบบ Bolt · แตะช่องแล้วพิมพ์</b></p>
+    <div class="ph"><div class="in" style="background:#F4EEFF">
+      <div class="sb dk"><span>09:41</span><span>▮▮▮</span></div>
+      <div class="sheet full">
+        <div class="grab"></div>
+        <div class="ask on"><span class="q">คณิต ใบงาน 7 ส่งพน.<span class="caret"></span></span><span class="mic"><svg class="ico"><use href="#mic"/></svg></span></div>
+        <div class="res">
+          <div class="t"><span class="tr" style="border:0;padding:0"><span class="b" style="--c:#1769D2">คณิต</span></span><div><b>ใบงาน 7</b><small>คณิตศาสตร์ · ส่งพรุ่งนี้</small></div></div>
+          <div class="chips"><span class="on" style="--c:#1769D2">คณิต</span><span>ฟิสิกส์</span><span>ไทย</span><span>อังกฤษ</span></div>
+          <div class="chips"><span>วันนี้</span><span class="on">พรุ่งนี้</span><span>ส. 21</span><span>อา. 22</span><span>วันอื่น</span></div>
+        </div>
+        <div class="save">บันทึก <small>หรือกด ↵</small></div>
+        <p class="hint">พิมพ์หลายงานในบรรทัดเดียวได้ แยกให้เอง</p>
+      </div>
+      <div class="kb"><div><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div><i class="m"></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="m"></i></div><div><i class="m"></i><i class="w"></i><i class="rt"></i></div></div>
+    </div></div>
+    <p class="cap"><b>ไม่มีหน้าต่างใหม่</b> แผ่นยืดขึ้นเต็มจอ ผลที่แอปเข้าใจขึ้นทันทีขณะพิมพ์ แตะชิปแก้วิชา/วัน · ↵ บนคีย์บอร์ด = บันทึก แล้วแผ่นกลับลงพร้อมงานใหม่ในรายการ</p>
+  </div>
+
+  <div class="notes">
+    <h2>เร็วขึ้นตรงไหน</h2>
+    <table class="tbl">
+      <tr><th>อยากจด</th><th>ตอนนี้</th><th>แบบ Bolt</th></tr>
+      <tr><td>พิมพ์</td><td>แตะ "พิมพ์" → หน้าต่างเปิด → พิมพ์ → แตะบันทึก</td><td class="g">แตะช่อง → พิมพ์ → ↵</td></tr>
+      <tr><td>พูด</td><td>แตะ "พูด"</td><td class="g">แตะไมค์ในช่อง (เท่าเดิม)</td></tr>
+      <tr><td>ถ่ายกระดาน</td><td>แตะ "ถ่ายรูป"</td><td class="g">แตะ "ถ่ายกระดาน" (เท่าเดิม)</td></tr>
+      <tr><td>วิชาเดิมซ้ำ</td><td>พิมพ์ชื่อวิชาเองทุกครั้ง</td><td class="g">แตะ "จดล่าสุด" → เติมวิชาให้</td></tr>
+    </table>
+    <ol style="margin-top:26px">
+      <li><b>โครงแอปไม่ต้องรื้อ</b> ชั้นโน้ตด้านหลัง แผ่นล่าง 3 ระดับ และเมนูล่างเหมือนเดิม เปลี่ยนแค่ปุ่ม 4 กล่อง → ช่องเดียว + ทางลัด 3 อัน</li>
+      <li><b>หน้าต่าง "พิมพ์งาน" หายไป</b> พิมพ์ในแผ่นเลย ใช้ตัวแยกงาน ชิปวิชา และชิปวันชุดเดิมที่มีอยู่แล้ว</li>
+      <li><b>ด้านหลังเห็นโน้ตของงานแรก</b> เหมือนแผนที่ใน Bolt ดึงแผ่นลงก็ดูเต็มจอ (ทำได้อยู่แล้ว)</li>
+      <li><b>ค้นหา</b> ย้ายไปหน้างาน (มีปุ่มค้นหาอยู่แล้ว)</li>
+    </ol>
+  </div>
+</section>
+</body>
+</html>
