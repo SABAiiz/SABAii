@@ -6,8 +6,10 @@ import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { tasksView, subjectView } from './features/tasks.js';
 import { meView, applyTheme } from './features/me.js';
+import { applyNoteStyle } from './features/notestyle.js';
+import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.4.2-local';
+globalThis.SABAII_VERSION = '0.5.1-local';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', me: 'ฉัน', subject: 'วิชา' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -51,11 +53,16 @@ async function boot() {
     last = key;
     app.updateNav();
   }
-  app.refresh = () => { renderHomeAll(); renderPage(); };
+  app.refresh = () => { applyNoteStyle(); renderHomeAll(); renderPage(); };
+  applyNoteStyle();
   initHome();
   store.subscribe(() => { gcUrls(); app.refresh(); });
   addEventListener('hashchange', renderPage);
   app.refresh();
+  // ครั้งแรก: แบบสอบถามก่อนเข้าแอป · กดมาจากหน้าแนะนำ (?from=landing) ข้ามหน้าต้อนรับไปข้อ 1 เลย
+  const fromLanding = new URLSearchParams(location.search).get('from') === 'landing';
+  if (location.search) history.replaceState(history.state, '', location.pathname + location.hash);
+  if (needsOnboarding()) openOnboarding({ start: fromLanding ? 1 : 0 });
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
   addEventListener('offline', () => toast('ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง'));

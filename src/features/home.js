@@ -4,12 +4,20 @@
 //                        แผ่นเหลือการ์ดงาน: เพิ่มโน้ต รูป/ข้อความ/เสียง + ทำเลย (จับเวลา) → เสร็จแล้ว
 import { h, ic, ART, toast, badge, shortOf, tintOf, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
 import { daysBetween } from '../domain/dates.js';
-import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf } from './shared.js';
+import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
 import { addTask, addNote, editTask, noteEl } from './add.js';
+import { notePane } from './notestyle.js';
 
 let sheet, paneHome, paneNote, stage;
 const LOW = 300;
-const snapPx = () => [LOW, Math.round(innerHeight * .58), innerHeight]; // บนสุด = ชิดขอบจอบน
+// มือถือที่มีแถบโฮมด้านล่าง: ยกแผ่นตอนดูโน้ตขึ้นเท่าแถบ ปุ่มจะไม่จมใต้แถบ
+let safeB = 0;
+function measureSafe() {
+  const p = h('div', { style: { position: 'fixed', bottom: '0', height: '0', paddingBottom: 'env(safe-area-inset-bottom, 0px)', visibility: 'hidden' } });
+  document.body.append(p); safeB = Math.round(p.getBoundingClientRect().height) || 0; p.remove();
+  document.documentElement.style.setProperty('--low', LOW + safeB + 'px');
+}
+const snapPx = () => [LOW + safeB, Math.round(innerHeight * .58), innerHeight]; // บนสุด = ชิดขอบจอบน
 let snapIdx = 2, vis = 0;
 let pages = [], cur = 0, targeted = false; // targeted = เปิดโน้ตของงานที่เลือกไว้ (ไม่ต้องกลับไปงานอันดับ 1)
 const hs = { q: '', when: 'all' };
@@ -20,7 +28,7 @@ export const homeState = () => ({ snapIdx, cur, pages: [...pages], noteMode: doc
 
 export function initHome() {
   sheet = $('#sheet'); paneHome = $('#pane-home'); paneNote = $('#pane-note'); stage = $('#stage');
-  initSheetDrag(); initStage(); initNoteUi();
+  measureSafe(); initSheetDrag(); initStage(); initNoteUi();
   onBack(() => { if (!isNoteMode() || modalOpen()) return false; setSnap(2, true); return true; });
   addEventListener('resize', () => setSnap(snapIdx));
   app.openNotes = openNotes;
@@ -125,7 +133,9 @@ function renderStage() {
     const row = h('div.nrow', notes.length ? notes.map(noteEl) : h('div.nitem.empty',
       h('div', h('b', 'ยังไม่มีโน้ตของงานนี้'), h('p.muted', 'ถ่ายกระดาน ใบงาน หรือจดสิ่งที่ครูบอกไว้ตรงนี้'),
         h('button.go', { onclick: () => addNote(id, 'camera') }, '+ ถ่ายรูป'))));
-    return h('section.npage', { 'data-id': id }, h('div.wash', { style: { background: `linear-gradient(180deg, ${tintOf(s)}, transparent 70%)` } }), row);
+    const img = notes.find(a => a.kind === 'image' && a.blob);
+    return h('section.npage', { 'data-id': id, style: { '--tint': tintOf(s), '--sc': s.color || '#69778F', ...(img ? { '--ph': `url("${urlOf(img)}")` } : {}) } },
+      h('div.wash'), h('div.wm', { 'aria-hidden': 'true' }, s.id ? shortOf(s) : ''), row);
   }));
   if (!pages.length) stage.append(h('section.npage', h('div.nrow', h('div.nitem.empty', h('div', h('b', 'ยังไม่มีงาน'), h('p.muted', 'เพิ่มงานแล้วรูปกระดาน ใบงาน และโน้ตจะมาอยู่ตรงนี้'))))));
   goPage(Math.max(0, pages.indexOf(keep)), false);
@@ -185,19 +195,9 @@ function syncNote() {
   const timer = h('span.timer');
   const upd = () => { const sec = Math.max(0, Math.floor((Date.now() - Date.parse(t.started_at || t.updated_at)) / 1000)); timer.textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`; };
   if (t.status === 'doing') { upd(); tick = setInterval(upd, 1000); }
-  paneNote.replaceChildren(
-    h('div.ntitle', h('div', h('h2', fullTitle(t)), h('div.meta', dueLine(t), t.place ? ` · ${t.place}` : '', t.status === 'doing' ? timer : '')),
-      h('button.iconbtn', { 'aria-label': 'แก้ไขงาน', onclick: () => editTask(t.id), html: ic('edit') })),
-    h('hr'),
-    h('div.lbl', 'เพิ่มโน้ตให้งานนี้'),
-    h('div.pills',
-      h('button.pill', { onclick: () => addNote(t.id, 'camera'), html: ic('camera') + 'รูป' }),
-      h('button.pill', { onclick: () => addNote(t.id, 'text'), html: ic('text') + 'ข้อความ' }),
-      h('button.pill', { onclick: () => addNote(t.id, 'voice'), html: ic('mic') + 'เสียง' })),
-    t.status === 'doing'
-      ? h('button.cta.doing', { onclick: () => finish(t.id), html: ic('check') + 'ทำเสร็จแล้ว' })
-      : h('button.cta', { onclick: () => start(t.id) }, 'ทำเลย'),
-  );
+  paneNote.style.setProperty('--sc', s.color || '#69778F');
+  paneNote.replaceChildren(...notePane(t, s, notesOf(t.id), timer, {
+    edit: () => editTask(t.id), add: kind => addNote(t.id, kind), start: () => start(t.id), finish: () => finish(t.id) }));
 }
 async function start(id) { await app.store.patchTask(id, { status: 'doing', started_at: new Date().toISOString() }); toast('เริ่มจับเวลาแล้ว · สู้ ๆ'); }
 export async function finish(id) {
