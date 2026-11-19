@@ -348,17 +348,18 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     await nextBtn.click(); await wait(350);
     await op.fill('#ob-name', 'มิ้นท์'); await op.press('#ob-name', 'Enter'); await wait(350);
     await op.locator('.ob-chip', { hasText: 'เคมี' }).click();
-    await op.fill('#ob-newsubj', 'ประวัติศาสตร์'); await op.press('#ob-newsubj', 'Enter'); await wait(200);
-    check('แบบสอบถาม: เพิ่มวิชาเองได้ · เลือกแล้ว 8 วิชา', (await op.locator('.ob-count').textContent()) === 'เลือกแล้ว 8 วิชา');
+    await op.locator('.ob-addbtn').click(); await op.fill('#ob-newsubj', 'ประวัติศาสตร์'); await op.press('#ob-newsubj', 'Enter'); await wait(200);
+    check('แบบสอบถาม: เพิ่มวิชาเองได้ · เลือกแล้ว 8 วิชา', (await op.locator('.ob-chip[aria-pressed="true"]').count()) === 8 && (await nextBtn.textContent()) === 'ต่อไป · 8 วิชา');
     await nextBtn.click(); await wait(350);
     check('แบบสอบถาม: ต้องเลือกก่อนถึงไปต่อได้', await nextBtn.isDisabled());
-    await op.locator('.ob-opt', { hasText: 'ครูพูดสั่ง' }).click(); await nextBtn.click(); await wait(450);
+    await op.locator('.ob-opt', { hasText: 'ครูพูดในห้อง' }).click(); await nextBtn.click(); await wait(450);
     await op.locator('.ob-style').nth(4).click(); await wait(700);
     check('แบบสอบถาม: เลือกหน้าโน้ตจากภาพตัวอย่าง 6 แบบ', (await op.locator('.ob-style').count()) === 6 && (await nextBtn.textContent()) === 'ใช้แบบ "สีวิชาเต็มหัว"'
       && await op.locator('.ob-style img').first().evaluate(i => i.complete && i.naturalWidth > 0));
     await nextBtn.click(); await wait(350);
     await op.locator('.ob-opt', { hasText: 'ใส่งานตัวอย่าง' }).click(); await nextBtn.click(); await wait(350);
-    check('แบบสอบถาม: หน้าสรุปก่อนเข้าแอป', /พร้อมแล้ว มิ้นท์/.test(await op.locator('.ob-q').textContent()) && (await op.locator('.ob-sum').count()) === 5);
+    check('แบบสอบถาม: หน้าสรุปก่อนเข้าแอป (ภาพหน้าโน้ตที่เลือก + วิชา)', /พร้อมแล้ว มิ้นท์/.test(await op.locator('.ob-q').textContent()) && (await op.locator('.ob-fchip').count()) === 6
+      && /ns-5\.jpg$/.test(await op.locator('.ob-phone img').getAttribute('src')));
     await nextBtn.click(); await wait(700);
     const got = await op.evaluate(() => { const s = window.__sabaii.state; return { p: s.prefs, hidden: s.subjects.filter(x => x.hidden).map(x => x.name), extra: s.subjects.some(x => x.name === 'ประวัติศาสตร์' && !x.hidden), samples: s.tasks.filter(t => t.source === 'sample').length, ns5: document.body.classList.contains('ns-5') }; });
     check('แบบสอบถาม: คำตอบลงข้อมูลจริง (ชื่อ · ซ่อนวิชา · ปุ่มพูด · หน้าโน้ต · งานตัวอย่าง)', got.p.display_name === 'มิ้นท์' && got.hidden.join() === 'เคมี' && got.extra

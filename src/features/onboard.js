@@ -7,7 +7,6 @@
 // ข้ามได้ทุกเมื่อ (ค่าเดิมไม่เปลี่ยน) · ทำใหม่ได้จากหน้าฉัน
 import { h, ic, toast } from '../ui/kit.js';
 import { app, S } from './shared.js';
-import { MODES } from './listen.js';
 import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
 
 export const needsOnboarding = () => !S().prefs.onboarded;
@@ -116,11 +115,18 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
     toast(ans.name.trim() ? `ยินดีต้อนรับ ${ans.name.trim()}` : 'พร้อมแล้ว เพิ่มงานแรกได้เลย');
   }
 
-  const head = (k, q, sub) => [
-    k ? h('div.ob-k', `ข้อ ${k} จาก ${QUESTIONS}`) : '',
-    h('h1.ob-q', { tabindex: '-1' }, q), sub ? h('p.ob-sub', sub) : ''];
-  const option = (on, icon, title, desc, pick) => h('button.ob-opt', { 'aria-pressed': String(on), onclick: pick },
-    h('span.ob-oi', { html: ic(icon) }), h('span.ob-ot', h('b', title), h('small', desc)), h('span.ob-ck', { html: ic('check') }));
+  // หัวข้อ: คำถามสั้นบรรทัดเดียว คำโผล่ทีละคำ (เบลอ → ชัด) · ไม่มีคำอธิบายรอง
+  const head = q => {
+    const el = h('h1.ob-q', { tabindex: '-1' });
+    let n = 0;
+    for (const part of [].concat(q)) {
+      if (typeof part !== 'string') { el.append(part); continue; }
+      part.split(/(\s+)/).forEach(w => { if (!w) return; el.append(/^\s+$/.test(w) ? w : h('span.ob-w', { style: { '--k': n++ } }, w)); });
+    }
+    return el;
+  };
+  const tick = () => h('span.ob-ck', { html: ic('check') });
+  const grapheme = t => { try { return [...new Intl.Segmenter('th', { granularity: 'grapheme' }).segment(t.trim())][0]?.segment || ''; } catch { return t.trim()[0] || ''; } };
 
   function render() {
     const name = STEPS[step];
@@ -132,60 +138,68 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
     next.disabled = false;
     onNext = () => go(step + 1);
     const view = h('div.ob-view' + (back < 0 ? '.rev' : ''));
+    const stage = h('div.ob-stage');
 
     if (name === 'welcome') {
-      view.append(
-        welcomeHero(),
-        ...head(0, redo ? 'ตั้งค่า SABAii ใหม่' : ['จดงานครบ', h('br'), h('span.ob-ln', 'ไม่ให้', morphWord(), 'หลุด')],
-          `ตอบ ${QUESTIONS} ข้อสั้น ๆ ให้แอปตั้งค่าตามที่คุณใช้จริง ใช้เวลาไม่ถึง 1 นาที`));
-      next.textContent = 'เริ่มเลย';
+      view.append(welcomeHero(),
+        head(redo ? 'ตั้งค่า SABAii ใหม่' : ['จดงานครบ', h('br'), h('span.ob-ln', 'ไม่ให้', morphWord(), 'หลุด')]));
+      next.textContent = redo ? 'เริ่ม' : 'เริ่มเลย';
     }
 
+    // 1 · ชื่อ: พิมพ์ลงในประโยคทักทายตัวใหญ่ วงกลมตัวอักษรแรกเปลี่ยนตาม
     if (name === 'name') {
-      const inp = h('input.field.ob-input', { id: 'ob-name', value: ans.name, maxlength: 40, placeholder: 'ชื่อเล่น', autocomplete: 'nickname', 'aria-label': 'ชื่อเล่น',
-        oninput: e => { ans.name = e.target.value; label(); }, onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); onNext(); } } });
-      const label = () => { next.textContent = ans.name.trim() ? 'ต่อไป' : 'ข้ามข้อนี้'; };
-      view.append(...head(1, 'ให้เราเรียกคุณว่าอะไรดี?', 'ชื่อเล่นก็พอ ไม่ต้องใส่ชื่อจริงหรือชื่อโรงเรียน'), inp);
-      label();
-      setTimeout(() => inp.focus({ preventScroll: true }), 320);
+      const av = h('span.ob-av');
+      const inp = h('input.ob-input', { id: 'ob-name', value: ans.name, maxlength: 40, placeholder: 'ชื่อเล่น', autocomplete: 'nickname', 'aria-label': 'ชื่อเล่น', enterkeyhint: 'next',
+        oninput: e => { ans.name = e.target.value; paint(); }, onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); onNext(); } } });
+      const paint = () => { const g = grapheme(ans.name); av.textContent = g; av.classList.toggle('on', !!g); next.textContent = ans.name.trim() ? 'ต่อไป' : 'ข้ามข้อนี้'; };
+      stage.append(h('div.ob-hello', av, h('span.ob-hi', 'สวัสดี'), h('label.ob-namebox', inp)));
+      view.append(head('เรียกคุณว่าอะไรดี?'), stage);
+      paint();
+      setTimeout(() => inp.focus({ preventScroll: true }), 420);
     }
 
+    // 2 · วิชา: ไทล์สีของแต่ละวิชา แตะเลือก/เอาออก · ไทล์สุดท้ายเพิ่มวิชาเอง
     if (name === 'subjects') {
-      const grid = h('div.ob-chips'), count = h('span.ob-count');
+      const grid = h('div.ob-tiles');
+      const add = h('input.ob-addin', { id: 'ob-newsubj', placeholder: 'ชื่อวิชา', maxlength: 40, 'aria-label': 'เพิ่มวิชาอื่น', enterkeyhint: 'done',
+        onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); addSubj(); } }, onblur: () => { if (!add.value.trim()) addTile.classList.remove('typing'); } });
+      const addTile = h('div.ob-tile.add', h('button.ob-addbtn', { type: 'button', 'aria-label': 'เพิ่มวิชาอื่น', html: ic('plus') + '<span>วิชาอื่น</span>',
+        onclick: () => { addTile.classList.add('typing'); add.focus(); } }), add);
+      const addSubj = async () => { const v = add.value.trim(); if (!v) return; const sj = await app.store.ensureSubject(v); ans.subj.add(sj.id); add.value = ''; paint(); };
       const paint = () => {
         const list = [...S().subjects].sort((a, b) => a.order - b.order);
-        grid.replaceChildren(...list.map(sj => h('button.ob-chip', { 'aria-pressed': String(ans.subj.has(sj.id)), style: { '--c': sj.color },
-          onclick: () => { ans.subj.has(sj.id) ? ans.subj.delete(sj.id) : ans.subj.add(sj.id); paint(); } }, h('i'), sj.name)));
-        count.textContent = `เลือกแล้ว ${ans.subj.size} วิชา`;
+        grid.replaceChildren(...list.map((sj, k) => h('button.ob-chip.ob-tile', { 'aria-pressed': String(ans.subj.has(sj.id)), style: { '--c': sj.color, '--k': k },
+          onclick: () => { ans.subj.has(sj.id) ? ans.subj.delete(sj.id) : ans.subj.add(sj.id); paint(); } }, h('i', { html: ic('check') }), h('span', sj.name))), addTile);
         next.disabled = ans.subj.size === 0;
+        next.textContent = ans.subj.size ? `ต่อไป · ${ans.subj.size} วิชา` : 'เลือกอย่างน้อย 1 วิชา';
       };
-      const add = h('input.field', { id: 'ob-newsubj', placeholder: 'วิชาอื่น เช่น ประวัติศาสตร์', maxlength: 40, 'aria-label': 'เพิ่มวิชาอื่น',
-        onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); addSubj(); } } });
-      const addSubj = async () => { const v = add.value.trim(); if (!v) return; const sj = await app.store.ensureSubject(v); ans.subj.add(sj.id); add.value = ''; paint(); };
-      view.append(...head(2, 'เทอมนี้เรียนวิชาอะไรบ้าง?', 'แตะเลือกให้ครบ แตะซ้ำเพื่อเอาออก'), grid,
-        h('div.ob-addrow', add, h('button.btn.ghost.auto', { onclick: addSubj }, 'เพิ่ม')), count);
-      next.textContent = 'ต่อไป';
+      stage.append(grid);
+      view.append(head('เรียนวิชาอะไรบ้าง?'), stage);
       paint();
     }
 
+    // 3 · ครูสั่งงานแบบไหน: การ์ดภาพใหญ่ 2 ใบ
     if (name === 'listen') {
-      const box = h('div.ob-opts');
-      const paint = () => {
-        box.replaceChildren(
-          option(ans.listen === 'teacher', 'users', 'ครูพูดสั่งปากเปล่าในห้อง', 'กดพูดแล้วแอปฟังครูยาว ๆ จนกดหยุด แยกเป็นหลายงานให้เอง', () => { ans.listen = 'teacher'; paint(); }),
-          option(ans.listen === 'self', 'text', 'ครูเขียนบนกระดาน หรือโพสต์ในกลุ่ม', 'กดพูดแล้วคุณพูดเองสั้น ๆ ทีละงาน หรือถ่ายรูปกระดานเก็บไว้', () => { ans.listen = 'self'; paint(); }));
-        next.disabled = !ans.listen;
-      };
-      view.append(...head(3, 'ส่วนใหญ่ครูสั่งงานแบบไหน?', 'เลือกแบบที่เจอบ่อยที่สุด'), box);
-      next.textContent = 'ต่อไป';
+      const box = h('div.ob-pair');
+      const paint = () => box.replaceChildren(
+        h('button.ob-opt.ob-big.dark', { 'aria-pressed': String(ans.listen === 'teacher'), onclick: () => { ans.listen = 'teacher'; paint(); next.disabled = false; } },
+          h('span.ob-art.talk', h('span.ob-mic', { html: ic('mic') }), h('span.ob-bars', Array.from({ length: 14 }, (_, k) => h('i', { style: { '--k': k } })))),
+          h('span.ob-ot', h('b', 'ครูพูดในห้อง')), tick()),
+        h('button.ob-opt.ob-big', { 'aria-pressed': String(ans.listen === 'self'), onclick: () => { ans.listen = 'self'; paint(); next.disabled = false; } },
+          h('span.ob-art.board', h('span', 'การบ้าน'), h('span', 'แบบฝึกหัด หน้า 20'), h('span.r', 'ส่ง ศ.!')),
+          h('span.ob-ot', h('b', 'เขียนกระดาน / โพสต์กลุ่ม')), tick()));
       paint();
+      next.disabled = !ans.listen;
+      stage.append(box);
+      view.append(head('ครูสั่งงานยังไง?'), stage);
+      next.textContent = 'ต่อไป';
     }
 
+    // 4 · หน้าโน้ต: ปัดดูภาพจอ 6 แบบ ภาพใหญ่ ชื่ออยู่ใต้ภาพ
     if (name === 'style') {
       const strip = h('div.ob-styles', { role: 'radiogroup', 'aria-label': 'หน้าตาหน้าโน้ตงาน' });
       const cards = NOTE_STYLES.map(st => h('button.ob-style', { role: 'radio', 'data-id': st.id, onclick: () => pick(st.id, true) },
-        h('span.ob-shot', h('img', { src: stylePreview(st.id), alt: `ตัวอย่างแบบ ${st.name}`, loading: 'lazy' }), h('span.ob-ck', { html: ic('check') })),
-        h('b', `${st.id} · ${st.name}`), h('small', st.desc)));
+        h('span.ob-shot', h('img', { src: stylePreview(st.id), alt: `ตัวอย่างแบบ ${st.name}`, loading: 'lazy' }), tick()), h('b', st.name)));
       strip.append(...cards);
       const dots = h('div.ob-dots', { 'aria-hidden': 'true' }, NOTE_STYLES.map(() => h('i')));
       const pick = (id, scroll) => {
@@ -200,36 +214,38 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
         let best = cards[0]; for (const c of cards) if (Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - mid)) best = c;
         if (+best.dataset.id !== ans.style) pick(+best.dataset.id, false);
       }, 90); }, { passive: true });
-      view.append(...head(4, 'ชอบหน้าโน้ตงานแบบไหน?', 'ปัดดูทั้ง 6 แบบ แล้วเลือกแบบที่ชอบ ทุกแบบใช้งานเหมือนกัน'), strip, dots);
+      stage.append(strip, dots);
+      view.append(head('ชอบหน้าโน้ตแบบไหน?'), stage);
       pick(ans.style, false);
       requestAnimationFrame(() => { const c = cards[ans.style - 1]; strip.scrollLeft = c.offsetLeft + c.offsetWidth / 2 - strip.clientWidth / 2; });
     }
 
+    // 5 · งานตัวอย่าง: การ์ดภาพ 2 ใบ (กองงาน / หน้าว่าง)
     if (name === 'samples') {
-      const had = S().tasks.some(t => t.source === 'sample'), box = h('div.ob-opts');
-      const paint = () => {
-        box.replaceChildren(
-          option(ans.samples === true, 'spark', had ? 'เก็บงานตัวอย่างไว้' : 'ใส่งานตัวอย่าง 6 งาน', 'ลองเลื่อน ลองปัด ลองกดทำเลยได้เลย ทุกงานติดป้าย "ตัวอย่าง"', () => { ans.samples = true; paint(); }),
-          option(ans.samples === false, 'plus', had ? 'ลบงานตัวอย่างออก' : 'ไม่ต้อง เริ่มจากว่าง', 'เพิ่มงานแรกเองจากหน้าแรก', () => { ans.samples = false; paint(); }));
-        next.disabled = ans.samples == null;
-      };
-      view.append(...head(5, 'อยากลองกับงานตัวอย่างก่อนไหม?', 'เหมาะถ้ายังไม่มีงานจะจดตอนนี้'), box);
-      next.textContent = 'ต่อไป';
+      const had = S().tasks.some(t => t.source === 'sample'), box = h('div.ob-pair.side');
+      const row = (c, w) => h('i', { style: { '--c': c, '--w': w } });
+      const paint = () => box.replaceChildren(
+        h('button.ob-opt.ob-big', { 'aria-pressed': String(ans.samples === true), onclick: () => { ans.samples = true; paint(); next.disabled = false; } },
+          h('span.ob-art.stack', row('#7C4DFF', '70%'), row('#F08A24', '52%'), row('#1769D2', '62%')),
+          h('span.ob-ot', h('b', had ? 'เก็บงานตัวอย่างไว้' : 'ใส่งานตัวอย่าง')), tick()),
+        h('button.ob-opt.ob-big', { 'aria-pressed': String(ans.samples === false), onclick: () => { ans.samples = false; paint(); next.disabled = false; } },
+          h('span.ob-art.empty', { html: ic('plus') }),
+          h('span.ob-ot', h('b', had ? 'ลบงานตัวอย่าง' : 'เริ่มจากว่าง')), tick()));
       paint();
+      next.disabled = ans.samples == null;
+      stage.append(box);
+      view.append(head('ลองกับงานตัวอย่างก่อนไหม?'), stage);
+      next.textContent = 'ต่อไป';
     }
 
+    // เสร็จ: ภาพจอหน้าโน้ตที่เลือก + ชิปวิชาลอยรอบ ๆ
     if (name === 'done') {
-      const names = [...S().subjects].filter(x => ans.subj.has(x.id)).sort((a, b) => a.order - b.order).map(x => x.name.replace(/^ภาษา/, ''));
-      const row = (k, v, extra) => h('div.ob-sum', h('span', k), h('b', v), extra || '');
-      view.append(
-        h('div.ob-done', { html: ic('check') }),
-        ...head(0, ans.name.trim() ? `พร้อมแล้ว ${ans.name.trim()}!` : 'พร้อมแล้ว!', 'ตั้งค่าตามนี้ แก้ได้ทุกอย่างที่หน้า "ฉัน"'),
-        h('div.ob-sums',
-          row('ชื่อ', ans.name.trim() || 'ไม่ได้ตั้ง'),
-          row('วิชา', `${names.length} วิชา`, h('small', names.slice(0, 6).join(' · ') + (names.length > 6 ? ' …' : ''))),
-          row('ปุ่มพูดเริ่มที่', MODES[ans.listen || 'self']),
-          row('หน้าโน้ต', styleName(ans.style), h('img', { src: stylePreview(ans.style), alt: '' })),
-          row('งานตัวอย่าง', ans.samples ? 'ใส่ 6 งาน' : 'ไม่ใส่')));
+      const subs = [...S().subjects].filter(x => ans.subj.has(x.id)).sort((a, b) => a.order - b.order);
+      const pos = [[8, 'l'], [4, 'r'], [40, 'l'], [36, 'r'], [72, 'l'], [68, 'r']];
+      stage.append(h('div.ob-final',
+        h('span.ob-phone', h('img', { src: stylePreview(ans.style), alt: `หน้าโน้ตแบบ ${styleName(ans.style)}` })),
+        ...subs.slice(0, 6).map((sj, k) => h('span.ob-fchip.' + pos[k][1], { style: { '--c': sj.color, '--y': pos[k][0] + '%', '--k': k } }, h('i'), sj.name.replace(/^ภาษา/, '')))));
+      view.append(head(ans.name.trim() ? `พร้อมแล้ว ${ans.name.trim()}!` : 'พร้อมแล้ว!'), stage);
       next.textContent = 'เข้าแอป';
       onNext = finish;
     }
