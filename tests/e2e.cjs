@@ -31,6 +31,10 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.goto(BASE + '#/home');
   await page.waitForSelector('.tiles');
   await wait(400);
+  // 0.5: ครั้งแรกมีแบบสอบถามก่อนเข้าแอป — ข้ามได้ (เทสต์ส่วนใหญ่ใช้ค่าตั้งต้น · ทดสอบแบบสอบถามเต็มท้ายไฟล์)
+  check('0.5 ครั้งแรก: มีแบบสอบถามก่อนเข้าแอป + ปุ่มข้าม', await page.locator('#onboard').isVisible() && await page.locator('#ob-skip').isVisible());
+  await page.locator('#ob-skip').click(); await wait(400);
+  check('0.5 ข้ามแล้ว: เข้าแอปได้ · หน้าโน้ตใช้แบบ 1', (await page.locator('#onboard').count()) === 0 && await page.evaluate(() => window.__sabaii.state.prefs.onboarded === true && document.body.classList.contains('ns-1')));
   const shot = async n => { if (!SHOTS) return; await page.evaluate(() => document.getElementById('toast')?.classList.remove('show')); await wait(300); await page.screenshot({ path: `${SHOTS}/${n}.png` }); };
   const tasks = () => page.evaluate(() => window.__sabaii.state.tasks.filter(t => !t.deleted_at));
   const ui = () => page.evaluate(() => window.__ui.homeState());
@@ -207,6 +211,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.reload(); await page.waitForSelector('.pane-home .trow');
   const n = (await tasks()).length;
   check('D เพิ่มตอนออฟไลน์ → เปิดใหม่งานยังอยู่ (6 งาน)', n === 6, String(n));
+  check('0.5 เปิดใหม่ไม่ถามแบบสอบถามซ้ำ', (await page.locator('#onboard').count()) === 0);
   check('D รูปยังอยู่หลังเปิดใหม่', (await page.evaluate(() => window.__sabaii.state.attachments.filter(a => a.kind === 'image' && a.blob).length)) === 1);
 
   // G: หลายขนาดจอ ไม่มีเลื่อนแนวนอน + ไม่มีคำ null/undefined หลุด
@@ -240,6 +245,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     const tp = await tctx.newPage();
     tp.on('pageerror', e => errors.push('touch: ' + e.message));
     await tp.goto(BASE + '#/home'); await tp.waitForSelector('.tiles');
+    await tp.locator('#ob-skip').click(); await wait(300);
     await tp.evaluate(() => window.__sabaii.addSamples()); await wait(500);
     check('งานแนะนำไม่เกิน 3 งาน (มี 6 งาน) · ใต้รายการเว้นว่าง', (await tp.locator('.pane-home .trow').count()) === 3 && (await tp.locator('.pane-home a.more, .pane-home p.muted.center').count()) === 0);
     check('ชั้นโน้ตมีแค่ 3 งานเดียวกัน', (await tp.evaluate(() => window.__ui.homeState().pages.length)) === 3);
@@ -329,6 +335,70 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.fill('#home-q', 'แบบฝึกหัด 4.3'); await wait(300);
   check('หน้าแรก: งานจากฟังครูมีป้าย "ฟังครู"', (await page.locator('.pane-home .trow .tag.teach').count()) >= 1);
   await page.fill('#home-q', ''); await wait(200);
+
+  // 0.5: แบบสอบถามเต็ม (เครื่องใหม่) → ค่าที่ตอบลงข้อมูลจริงของแอป · หน้าโน้ต 6 แบบ
+  {
+    const octx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block' });
+    await octx.clock.setFixedTime(new Date('2026-11-16T09:40:00Z'));
+    if (!REAL) await octx.route('http://sabaii.test/**', r => { let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html'; if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); });
+    const op = await octx.newPage();
+    op.on('pageerror', e => errors.push('onboard: ' + e.message));
+    await op.goto(BASE + '#/home'); await op.waitForSelector('#onboard'); await wait(400);
+    const nextBtn = op.locator('#ob-next');
+    await nextBtn.click(); await wait(350);
+    await op.fill('#ob-name', 'มิ้นท์'); await op.press('#ob-name', 'Enter'); await wait(350);
+    await op.locator('.ob-chip', { hasText: 'เคมี' }).click();
+    await op.fill('#ob-newsubj', 'ประวัติศาสตร์'); await op.press('#ob-newsubj', 'Enter'); await wait(200);
+    check('แบบสอบถาม: เพิ่มวิชาเองได้ · เลือกแล้ว 8 วิชา', (await op.locator('.ob-count').textContent()) === 'เลือกแล้ว 8 วิชา');
+    await nextBtn.click(); await wait(350);
+    check('แบบสอบถาม: ต้องเลือกก่อนถึงไปต่อได้', await nextBtn.isDisabled());
+    await op.locator('.ob-opt', { hasText: 'ครูพูดสั่ง' }).click(); await nextBtn.click(); await wait(450);
+    await op.locator('.ob-style').nth(4).click(); await wait(700);
+    check('แบบสอบถาม: เลือกหน้าโน้ตจากภาพตัวอย่าง 6 แบบ', (await op.locator('.ob-style').count()) === 6 && (await nextBtn.textContent()) === 'ใช้แบบ "สีวิชาเต็มหัว"'
+      && await op.locator('.ob-style img').first().evaluate(i => i.complete && i.naturalWidth > 0));
+    await nextBtn.click(); await wait(350);
+    await op.locator('.ob-opt', { hasText: 'ใส่งานตัวอย่าง' }).click(); await nextBtn.click(); await wait(350);
+    check('แบบสอบถาม: หน้าสรุปก่อนเข้าแอป', /พร้อมแล้ว มิ้นท์/.test(await op.locator('.ob-q').textContent()) && (await op.locator('.ob-sum').count()) === 5);
+    await nextBtn.click(); await wait(700);
+    const got = await op.evaluate(() => { const s = window.__sabaii.state; return { p: s.prefs, hidden: s.subjects.filter(x => x.hidden).map(x => x.name), extra: s.subjects.some(x => x.name === 'ประวัติศาสตร์' && !x.hidden), samples: s.tasks.filter(t => t.source === 'sample').length, ns5: document.body.classList.contains('ns-5') }; });
+    check('แบบสอบถาม: คำตอบลงข้อมูลจริง (ชื่อ · ซ่อนวิชา · ปุ่มพูด · หน้าโน้ต · งานตัวอย่าง)', got.p.display_name === 'มิ้นท์' && got.hidden.join() === 'เคมี' && got.extra
+      && got.p.listen_mode === 'teacher' && got.p.note_style === 5 && got.ns5 && got.samples === 6 && got.p.onboarded === true, JSON.stringify(got));
+    // แบบ 5: แตะปุ่มปัดเฉย ๆ ไม่เริ่ม · ปัดขวาจึงเริ่ม
+    await op.evaluate(() => window.__ui.setSnap(0)); await wait(700);
+    const doing = () => op.evaluate(() => window.__sabaii.state.tasks.filter(t => t.status === 'doing').length);
+    await op.locator('.pane-note .cta.slide').click(); await wait(300);
+    const tapDoing = await doing();
+    const th = await op.locator('.cta.slide .th').boundingBox();
+    await op.mouse.move(th.x + 20, th.y + 20); await op.mouse.down();
+    for (let i = 1; i <= 10; i++) { await op.mouse.move(th.x + 20 + i * 32, th.y + 20); await wait(16); }
+    await op.mouse.up(); await wait(600);
+    check('แบบ 5: แตะเฉย ๆ ไม่เริ่ม (กันกดพลาด) · ปัดขวาแล้วเริ่มจับเวลา', tapDoing === 0 && (await doing()) === 1 && await op.locator('.pane-note .timer').isVisible());
+    // ทุกแบบ: ชื่องาน + ปุ่มอยู่ในแผ่นล่างครบ ไม่ล้น (จอ 320 และ 390)
+    const bad = [];
+    for (const w of [320, 390]) {
+      await op.setViewportSize({ width: w, height: w === 320 ? 640 : 844 }); await wait(200);
+      for (let v = 1; v <= 6; v++) {
+        await op.evaluate(v => window.__sabaii.setPref('note_style', v), v); await op.evaluate(() => window.__ui.setSnap(0)); await wait(450);
+        const r = await op.evaluate(() => { const sh = document.getElementById('sheet').getBoundingClientRect(), pn = document.getElementById('pane-note');
+          const out = [...pn.querySelectorAll('button, h2')].filter(el => { const b = el.getBoundingClientRect(); return b.width && (b.bottom > sh.bottom - 2 || b.right > sh.right + 1 || b.left < sh.left - 1); }).length;
+          return { out, h2: pn.querySelector('h2')?.textContent || '', over: document.documentElement.scrollWidth - innerWidth }; });
+        if (r.out || !r.h2 || r.over > 0) bad.push(`${w}px แบบ ${v}: ${JSON.stringify(r)}`);
+      }
+    }
+    check('หน้าโน้ต 6 แบบ: ชื่องานและปุ่มอยู่ในแผ่นครบทุกแบบ (จอ 320 และ 390)', bad.length === 0, bad.join(' | '));
+    await op.setViewportSize({ width: 390, height: 844 });
+    // หน้าฉัน: เปลี่ยนหน้าโน้ตได้ · ทำแบบสอบถามใหม่ได้ (ค่าเดิมเติมไว้ให้)
+    await op.evaluate(() => window.__ui.setSnap(2)); await wait(500);
+    await op.evaluate(() => { location.hash = '#/me'; }); await wait(500);
+    await op.locator('.list-btn', { hasText: 'หน้าโน้ตงาน' }).click(); await wait(400);
+    await op.locator('.stylepick', { hasText: 'การ์ดลอย' }).click(); await wait(400);
+    check('ฉัน: เปลี่ยนหน้าโน้ตเป็น "การ์ดลอย"', await op.evaluate(() => window.__sabaii.state.prefs.note_style === 6 && document.body.classList.contains('ns-6')));
+    await op.locator('.list-btn', { hasText: 'ตอบแบบสอบถามเริ่มต้นใหม่' }).click(); await wait(400);
+    await op.locator('#ob-next').click(); await wait(350);
+    check('ฉัน: ทำแบบสอบถามใหม่ → ชื่อเดิมเติมไว้ · ข้าม = ไม่เปลี่ยนอะไร', (await op.inputValue('#ob-name')) === 'มิ้นท์'
+      && await op.locator('#ob-skip').click().then(() => wait(400)).then(() => op.evaluate(() => !document.getElementById('onboard') && window.__sabaii.state.prefs.note_style === 6)));
+    await octx.close();
+  }
 
   check('ไม่มี error ใน console', errors.length === 0, errors.slice(0, 3).join(' | '));
   await browser.close();

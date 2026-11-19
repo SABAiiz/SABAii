@@ -1,6 +1,6 @@
 // แคชไฟล์ของแอปไว้ให้เปิดได้ตอนออฟไลน์ · ข้อมูลผู้ใช้อยู่ใน IndexedDB ไม่ได้อยู่ที่นี่
 // เปลี่ยนไฟล์ในแอปเมื่อไหร่ ต้องขึ้นเลข CACHE ทุกครั้ง
-const CACHE = 'sabaii-v0.4.2-2';
+const CACHE = 'sabaii-v0.5.0-1';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './src/styles/app.css', './src/main.js', './src/ui/kit.js',
@@ -8,6 +8,8 @@ const SHELL = [
   './src/domain/dates.js', './src/domain/tasks.js', './src/domain/parse.js', './src/domain/thai-parse.js', './src/domain/speech.js',
   './src/features/shared.js', './src/features/home.js', './src/features/add.js', './src/features/tasks.js', './src/features/me.js',
   './src/features/voice.js', './src/features/listen.js', './src/features/images.js',
+  './src/features/notestyle.js', './src/features/onboard.js',
+  ...[1, 2, 3, 4, 5, 6].map(i => `./assets/note-styles/ns-${i}.jpg`),
 ];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));

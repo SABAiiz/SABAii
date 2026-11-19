@@ -5,6 +5,8 @@ import { summary, isLive, nextExam } from '../domain/tasks.js';
 import { SUBJECT_COLORS } from '../data/store.js';
 import { app, S, subj, today } from './shared.js';
 import { MODES, listenMode } from './listen.js';
+import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
+import { openOnboarding } from './onboard.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
@@ -46,10 +48,14 @@ export function meView(root) {
     h('div.sec.mhead2', h('h2', 'ผู้ช่วยจดงาน')),
     h('div.mlist',
       row('mic', 'ปุ่มพูด เริ่มที่', MODES[listenMode()], toggleListen, 'ไม่เก็บไฟล์เสียง')),
+    h('div.sec.mhead2', h('h2', 'หน้าตา')),
+    h('div.mlist',
+      row('layout', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, 'มี 6 แบบให้เลือก')),
     h('div.sec.mhead2', h('h2', 'อื่นๆ')),
     h('div.mlist',
       row('book', 'วิชาของฉัน', `${s.subjects.filter(x => !x.hidden).length} วิชา`, subjectsModal),
       row('spark', 'งานตัวอย่าง', hasSamples ? 'ลบออก' : 'ลองใส่', toggleSamples),
+      row('reset', 'ตอบแบบสอบถามเริ่มต้นใหม่', null, () => openOnboarding({ redo: true }), 'ชื่อ วิชา ปุ่มพูด หน้าโน้ต'),
       row('save', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData, 'ไม่รวมรูป'),
       row('restore', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
       row('bell', 'การแจ้งเตือน', 'ยังไม่เปิดในรุ่นนี้', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ — ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') })),
@@ -60,6 +66,14 @@ export function meView(root) {
   );
 }
 
+function stylePicker() {
+  const cur = noteStyle();
+  openModal({ title: 'หน้าโน้ตงาน', label: 'เลือกหน้าตาหน้าโน้ตงาน', body: h('div',
+    h('p.muted', 'ทุกแบบใช้งานเหมือนกัน ต่างกันที่หน้าตา · ดูได้ตอนดึงหน้าแรกลง'),
+    h('div.stylegrid', NOTE_STYLES.map(st => h('button.stylepick', { 'aria-pressed': String(st.id === cur), onclick: async () => {
+      await app.store.setPref('note_style', st.id); closeModal(); toast(`เปลี่ยนเป็นแบบ "${st.name}" แล้ว`);
+    } }, h('img', { src: stylePreview(st.id), alt: '', loading: 'lazy' }), h('b', st.name))))) });
+}
 function notYet(name, what) {
   openModal({ title: name, body: h('div', h('p', what), h('p.muted', 'ยังไม่เปิดในรุ่นนี้ — ต้องมีบัญชีและเซิร์ฟเวอร์ก่อน ตอนนี้งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น')) });
 }
