@@ -1,10 +1,6 @@
 // แคชไฟล์ของแอปไว้ให้เปิดได้ตอนออฟไลน์ · ข้อมูลผู้ใช้อยู่ใน IndexedDB ไม่ได้อยู่ที่นี่
 // เปลี่ยนไฟล์ในแอปเมื่อไหร่ ต้องขึ้นเลข CACHE ทุกครั้ง
-<<<<<<< HEAD
 const CACHE = 'sabaii-v0.7.0-1';
-=======
-const CACHE = 'sabaii-v0.6.0-1';
->>>>>>> origin/main
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './src/styles/app.css', './src/main.js', './src/ui/kit.js',
