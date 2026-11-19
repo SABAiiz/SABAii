@@ -678,3 +678,11 @@ body.ob-open #nav { opacity: 0; pointer-events: none; }
   .cta.slide { height: 56px; } .cta.slide .th { width: 46px; height: 46px; }
   .b6bento { margin-top: 8px; } .bx { min-height: 52px; padding: 7px 12px; } .seg6 .pill { height: 44px; }
 }
+
+/* เปลี่ยนหน้าระหว่างหน้าแนะนำ ↔ แอปแบบนุ่ม (เบราว์เซอร์ที่ไม่รองรับจะเปลี่ยนหน้าตามปกติ) */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: .28s ease-in both vt-out; }
+::view-transition-new(root) { animation: .42s cubic-bezier(.2,.8,.2,1) both vt-in; }
+@keyframes vt-out { to { opacity: 0; transform: scale(.98); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(18px); } }
+@media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }

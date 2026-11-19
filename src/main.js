@@ -59,7 +59,10 @@ async function boot() {
   store.subscribe(() => { gcUrls(); app.refresh(); });
   addEventListener('hashchange', renderPage);
   app.refresh();
-  if (needsOnboarding()) openOnboarding(); // ครั้งแรก: แบบสอบถามก่อนเข้าแอป
+  // ครั้งแรก: แบบสอบถามก่อนเข้าแอป · กดมาจากหน้าแนะนำ (?from=landing) ข้ามหน้าต้อนรับไปข้อ 1 เลย
+  const fromLanding = new URLSearchParams(location.search).get('from') === 'landing';
+  if (location.search) history.replaceState(history.state, '', location.pathname + location.hash);
+  if (needsOnboarding()) openOnboarding({ start: fromLanding ? 1 : 0 });
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
   addEventListener('offline', () => toast('ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง'));

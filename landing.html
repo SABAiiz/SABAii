@@ -7,7 +7,9 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="SABAii จดงานจากเสียงครู รูปกระดาน หรือพิมพ์สั้น ๆ แล้วบอกว่าวันนี้ต้องทำอะไรก่อน">
 <meta name="theme-color" content="#F5F7FC">
-<meta name="sabaii-app" content="index.html">
+<meta name="sabaii-app" content="index.html?from=landing">
+<script>/* เปิดจากไอคอนแอปบนหน้าจอโฮม (ติดตั้งไว้ตั้งแต่รุ่นก่อน) → เข้าแอปเลย ไม่ต้องผ่านหน้าแนะนำ */
+if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) location.replace(document.querySelector('meta[name="sabaii-app"]').content.split('?')[0] + location.hash);</script>
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

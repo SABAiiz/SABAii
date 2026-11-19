@@ -316,3 +316,11 @@ h2 { font: 700 clamp(34px, 5.4vw, 60px)/1.15 var(--f-display); letter-spacing: -
   .belt { overflow-x: auto; width: auto; scrollbar-width: none; }
   .float-chip, .scr, .steps li { transition: none; }
 }
+
+/* เปลี่ยนหน้าระหว่างหน้าแนะนำ ↔ แอปแบบนุ่ม (เบราว์เซอร์ที่ไม่รองรับจะเปลี่ยนหน้าตามปกติ) */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: .28s ease-in both vt-out; }
+::view-transition-new(root) { animation: .42s cubic-bezier(.2,.8,.2,1) both vt-in; }
+@keyframes vt-out { to { opacity: 0; transform: scale(.98); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(18px); } }
+@media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }

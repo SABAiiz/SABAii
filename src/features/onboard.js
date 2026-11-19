@@ -39,7 +39,7 @@ function welcomeHero() {
   return hero;
 }
 
-export function openOnboarding({ redo = false } = {}) {
+export function openOnboarding({ redo = false, start = 0 } = {}) {
   if (root) return;
   const s = S(), hasSamples = s.tasks.some(t => t.source === 'sample');
   const ans = {
@@ -49,7 +49,7 @@ export function openOnboarding({ redo = false } = {}) {
     style: noteStyle(),
     samples: redo ? hasSamples : null,
   };
-  let step = 0, back = 1;
+  let step = start, back = 1; // มาจากหน้าแนะนำ = เห็นภาพรวมแล้ว เริ่มที่ข้อ 1 เลย
 
   const prog = h('div.ob-prog', { 'aria-hidden': 'true' }, Array.from({ length: QUESTIONS }, () => h('i')));
   const backBtn = h('button.ob-back', { 'aria-label': 'ย้อนกลับ', html: ic('back'), onclick: () => go(step - 1) });
