@@ -1,4 +1,4 @@
-// หน้า "ฉัน" — ชื่อ · สรุปจากงานจริง · กราฟงานเสร็จ 7 วัน · วิชาของฉัน · ธีม · สำรอง/กู้คืน · งานตัวอย่าง · ข้อมูลในเครื่อง
+// หน้า "ฉัน" (0.9) — ชื่อ · การ์ดกรมท่า (วงความคืบหน้า 7 วัน · กราฟ · ค้าง/ใกล้ส่ง/ถึงสอบ จากงานจริง) · ตั้งค่า · ข้อมูล · "เร็ว ๆ นี้" ล่างสุด
 import { h, ic, put, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
 import { toYMD, fromYMD, addDaysYMD, daysBetween, DOW_SHORT } from '../domain/dates.js';
 import { summary, isLive, nextExam } from '../domain/tasks.js';
@@ -21,48 +21,50 @@ export function meView(root) {
   const doneBy = Object.fromEntries(days.map(d => [d, 0]));
   for (const t of s.tasks) if (isLive(t) && t.status === 'done' && t.completed_at) { const d = toYMD(new Date(t.completed_at)); if (d in doneBy) doneBy[d]++; }
   const week = Object.values(doneBy).reduce((a, b) => a + b, 0), max = Math.max(1, ...Object.values(doneBy));
-  const row = (icon, label, value, onclick, sub) => h('button.list-btn', { onclick },
-    h('span', { html: ic(icon) }), h('span.lk', label, sub ? h('small', sub) : ''), value != null ? h('span.lv', value) : '', h('span.chev', { html: ic('right') }));
+  const row = (icon, label, value, onclick, sub, extra) => h('button.list-btn', { onclick },
+    h('span.mi', { html: ic(icon) }), h('span.lk', label, sub ? h('small', sub) : ''), value != null ? h('span.lv', value) : '', extra || '', h('span.chev', { html: ic('right') }));
+  const left = week + sum.open, pct = left ? week / left : 0, C = 2 * Math.PI * 36;
+  const nSubj = s.subjects.filter(x => !x.hidden).length;
 
   put(root,
-    h('div.phead', h('h1', 'ฉัน')),
     h('div.meline', h('span.avatar.big', (name || 'ฉ').slice(0, 1)),
-      h('div', h('b', name || 'ยังไม่ได้ตั้งชื่อ')),
-      h('button.btn.ghost.auto', { onclick: editName }, name ? 'แก้ชื่อ' : 'ตั้งชื่อ')),
-    h('div.stats',
-      h('div.stat', h('b', String(sum.open)), h('small', 'งานค้าง')),
-      h('div.stat', h('b', String(sum.soon)), h('small', 'ใกล้กำหนด')),
-      h('div.stat', h('b', exam ? String(Math.max(0, daysBetween(td, exam.due_date))) : '—'), h('small', exam ? `วันถึงสอบ${subj(exam.subject_id).id ? ' ' + subj(exam.subject_id).name.replace(/^ภาษา/, '') : ''}` : 'ยังไม่มีสอบ'))),
-    h('section.weekcard', { 'aria-label': 'งานที่ทำเสร็จ 7 วันล่าสุด' },
-      h('div.sec', h('h2', 'ทำเสร็จ 7 วันนี้'), h('span', `${week} งาน · ทั้งหมด ${sum.done}`)),
+      h('div', h('b', name || 'ยังไม่ได้ตั้งชื่อ'), h('small', `${nSubj} วิชา`)),
+      h('button.mename', { onclick: editName }, name ? 'แก้ชื่อ' : 'ตั้งชื่อ')),
+    // การ์ดกรมท่าใบเดียว: ความคืบหน้า 7 วัน · กราฟ · ตัวเลขจากงานจริง
+    h('section.mecard', { 'aria-label': 'สรุปงาน' },
+      h('div.mc-top',
+        h('div.ring', { role: 'img', 'aria-label': `ทำเสร็จ ${week} จาก ${left} งาน` },
+          h('span.rs', { html: `<svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="36"/><circle class="on" cx="42" cy="42" r="36" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - pct)).toFixed(1)}"/></svg>` }),
+          h('b', `${week}/${left}`)),
+        h('div', h('small', '7 วันนี้'), h('strong', week ? `ทำเสร็จ ${week} งาน` : 'ยังไม่มีงานเสร็จ', h('br'), sum.open ? `เหลืออีก ${sum.open}` : 'ไม่มีงานค้าง'))),
       h('div.week', { role: 'img', 'aria-label': `งานที่ทำเสร็จ 7 วันล่าสุด รวม ${week} งาน` }, days.map(d => {
         const n = doneBy[d];
-        return h('div.wcol' + (d === td ? '.today' : ''), h('div.wbar', h('i', { style: { height: `${n ? Math.max(10, n / max * 100) : 0}%` } }), n ? h('em', String(n)) : ''),
-          h('span', DOW_SHORT[fromYMD(d).getDay()]));
+        return h('div.wcol' + (d === td ? '.today' : ''), h('div.wbar', h('i', { style: { height: `${n ? Math.max(12, n / max * 100) : 6}%` } }), n ? h('em', String(n)) : ''),
+          h('span', DOW_SHORT[fromYMD(d).getDay()].replace('.', '')));
       })),
-    ),
-    h('div.sec.mhead2', h('h2', 'ดึงงานอัตโนมัติ')),
+      h('div.stats',
+        h('div.stat', h('b', String(sum.open)), h('small', 'งานค้าง')),
+        h('div.stat', h('b', String(sum.soon)), h('small', 'ใกล้ส่ง')),
+        h('div.stat.r', h('b', exam ? String(Math.max(0, daysBetween(td, exam.due_date))) : '—'), h('small', exam ? `วันถึงสอบ${subj(exam.subject_id).id ? ' ' + subj(exam.subject_id).name.replace(/^ภาษา/, '') : ''}` : 'ยังไม่มีสอบ')))),
     h('div.mlist',
-      row('link', 'Google Classroom', 'ยังไม่เปิด', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว'), 'งานที่ครูโพสต์เข้ามาเอง'),
-      row('users', 'ห้องเรียน', 'ยังไม่เปิด', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้'), 'เพื่อนจด ทั้งห้องได้')),
-    h('div.sec.mhead2', h('h2', 'ผู้ช่วยจดงาน')),
-    h('div.mlist',
-      row('mic', 'ปุ่มพูด เริ่มที่', MODES[listenMode()], toggleListen, 'ไม่เก็บไฟล์เสียง')),
-    h('div.sec.mhead2', h('h2', 'หน้าตา')),
-    h('div.mlist',
-      row('layout', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, 'มี 6 แบบให้เลือก')),
-    h('div.sec.mhead2', h('h2', 'อื่นๆ')),
-    h('div.mlist',
-      row('book', 'วิชาของฉัน', `${s.subjects.filter(x => !x.hidden).length} วิชา`, subjectsModal),
+      row('layout', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, null, h('img.mthumb', { src: stylePreview(noteStyle()), alt: '' })),
+      row('mic', 'ปุ่มพูด เริ่มที่', MODES[listenMode()], toggleListen),
+      row('book', 'วิชาของฉัน', `${nSubj} วิชา`, subjectsModal),
       row('spark', 'งานตัวอย่าง', hasSamples ? 'ลบออก' : 'ลองใส่', toggleSamples),
-      row('reset', 'ตอบแบบสอบถามเริ่มต้นใหม่', null, () => openOnboarding({ redo: true }), 'ชื่อ วิชา ปุ่มพูด หน้าโน้ต'),
-      row('save', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData, 'ไม่รวมรูป'),
+      row('reset', 'ตอบแบบสอบถามเริ่มต้นใหม่', null, () => openOnboarding({ redo: true }))),
+    h('div.mlist',
+      row('save', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData),
       row('restore', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
-      row('bell', 'การแจ้งเตือน', 'ยังไม่เปิดในรุ่นนี้', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ — ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') })),
       row('lock', 'ข้อมูลและความเป็นส่วนตัว', s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal),
       row('info', 'เกี่ยวกับ SABAii.com', `รุ่น ${globalThis.SABAII_VERSION || ''}`, () => openModal({ title: 'เกี่ยวกับ SABAii.com', body: h('div',
         h('p', 'แอปจัดการงานเรียน: เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง'),
         h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง ยังไม่มีบัญชี การซิงก์ การอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) }))),
+    // ยังไม่เปิด: อยู่ล่างสุด จาง ๆ
+    h('p.msoon', 'เร็ว ๆ นี้'),
+    h('div.mlist.soon',
+      row('link', 'Google Classroom', 'ยังไม่เปิด', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว')),
+      row('users', 'ห้องเรียน', 'ยังไม่เปิด', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้')),
+      row('bell', 'การแจ้งเตือน', 'ยังไม่เปิด', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') }))),
   );
 }
 
