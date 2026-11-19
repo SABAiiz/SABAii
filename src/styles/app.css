@@ -935,3 +935,45 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 .msoon { font: 600 13px var(--disp); color: var(--mute, #A3ACBF); margin: 24px 4px 0; }
 .mlist.soon { margin-top: 8px; opacity: .6; }
 .mlist.soon .list-btn { font-size: 14.5px; padding: 10px 0; }
+
+/* ================= 0.9.1 หน้าแรก — เน้นจดงาน + ดูงาน · แถบจดงานใต้นิ้วโป้ง ================= */
+.pane-home { display: flex; flex-direction: column; padding-bottom: 0; }
+.pane-home > * { flex: none; }
+#sheet:not(.full) .grab .hint { opacity: 1; }
+.hhead { display: flex; align-items: center; justify-content: space-between; margin: 2px 0 2px; }
+.hdate { font: 500 14px var(--disp); color: var(--text-2); }
+.avatar.grad { width: 38px; height: 38px; color: #fff; font: 600 16px var(--disp); background: conic-gradient(from 210deg, #0A6CF1, #7C4DFF, #E0457B, #F08A24, #0A6CF1); }
+.pane-home h1.big { font: 600 30px/1.2 var(--disp); letter-spacing: -.03em; margin: 6px 0 6px; }
+.pane-home h1.big .g { color: #B4BCCB; font-weight: 500; }
+.pane-home .tlist { margin-top: 2px; }
+.dayhead { display: flex; align-items: center; gap: 8px; font: 600 13.5px var(--disp); color: var(--text-2); margin: 14px 0 0; }
+.dayhead::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.dayhead:first-child { margin-top: 6px; }
+.pane-home .trow { padding: 9px 0; }
+.pane-home .trow .main { gap: 12px; }
+.pane-home .trow .badge { width: 44px; height: 44px; border-radius: 14px; font-family: var(--disp); }
+.pane-home .thumb { width: 44px; height: 44px; border-radius: 14px; flex: none; background: center/cover var(--surface); box-shadow: 0 0 0 1px rgba(11,27,77,.06); }
+.pane-home .trow b { font: 600 16px/1.3 var(--disp); }
+.pane-home .trow small { font: 400 13px var(--disp); }
+.pane-home .trow small em.doing { color: var(--blue); }
+.pane-home .tag { font-family: var(--disp); }
+.pane-home .search { margin-top: 10px; min-height: 46px; background: none; box-shadow: inset 0 0 0 1.5px #E6EAF1; border-radius: 16px; }
+.pane-home .search input { font: 500 16px var(--disp); }
+.pane-home .search input::placeholder { color: var(--text-2); opacity: .7; }
+.pane-home .empty-note { font-family: var(--disp); }
+/* แถบจดงาน: อยู่ล่างสุดของแผ่นเสมอ (เลื่อนรายการได้ แถบไม่หาย) · เหนือเมนูล่าง */
+.capture { position: sticky; z-index: 3; bottom: 0; margin: auto -20px 0; padding: 12px 16px calc(92px + var(--safe-b)); display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0), #fff 26%); }
+.cfield { flex: 1; min-width: 0; height: 60px; border-radius: 30px; background: #fff; display: flex; align-items: center; gap: 4px; padding: 0 8px 0 4px;
+  box-shadow: 0 0 0 1px rgba(11,27,77,.09), 0 18px 34px -18px rgba(11,27,77,.55); }
+.cap { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; color: var(--ink); }
+.cap svg { width: 22px; height: 22px; }
+.cap:active { transform: scale(.94); background: var(--surface); }
+.cap.ctext { flex: 1; width: auto; height: 52px; border-radius: 26px; place-items: center start; padding: 0 16px; font: 500 16px var(--disp); color: #8F99AD; text-align: left; }
+.cap.ctext:active { transform: none; }
+.cap.cmic { width: 70px; height: 70px; background: var(--ink); color: #fff; box-shadow: 0 0 0 6px rgba(11,27,77,.07), 0 18px 32px -12px rgba(11,27,77,.8); }
+.cap.cmic svg { width: 28px; height: 28px; }
+.cap.cmic:active { background: #142a6b; }
+/* เมนูล่างชุดเดียวกับหน้าอื่น */
+#nav { border-radius: 26px; }
+#nav a { font-family: var(--disp); }

@@ -1,8 +1,8 @@
 // หน้าแรก — กลไกแบบแอปเรียกรถ: ชั้นหลังเต็มจอ + แผ่นล่าง 3 ระดับ
-//   แผ่นขึ้น (กลาง/บน) : เพิ่มงาน 4 แบบ · ค้นหา + ชิปวัน · งานแนะนำ (ปักหมุดก่อน แล้วเรียงตามกำหนดส่ง)
+//   แผ่นขึ้น (กลาง/บน) : งานทั้งหมดเรียงตามวันส่ง · ค้นหา + ชิปวัน · แถบจดงานใต้นิ้วโป้ง (พิมพ์ · ถ่ายรูป · แนบรูป · พูด)
 //   แผ่นลง (ล่าง)      : ชั้นหลังคือ "โน้ตหน้างาน" 1 หน้า = 1 งาน · ปัดขึ้น/ลง = งานถัดไป · ปัดซ้าย/ขวา = โน้ตถัดไป
 //                        แผ่นเหลือการ์ดงาน: เพิ่มโน้ต รูป/ข้อความ/เสียง + ทำเลย (จับเวลา) → เสร็จแล้ว
-import { h, ic, ART, toast, badge, shortOf, tintOf, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
+import { h, ic, ART, toast, badge, shortOf, tintOf, nameOf, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
 import { daysBetween } from '../domain/dates.js';
 import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
 import { addTask, addNote, editTask, noteEl } from './add.js';
@@ -248,40 +248,57 @@ export function openNotes(id) {
   targeted = true; setSnap(0); targeted = false; goPage(i < 0 ? 0 : i, true);
 }
 
-/* ---------------- หน้าแรก (ในแผ่นล่าง) ---------------- */
+/* ---------------- หน้าแรก (ในแผ่นล่าง) — 0.9.1: เน้น "จดงาน" กับ "ดูงาน" ----------------
+   บน: วันที่ + "มี N งาน" · งานทั้งหมดเรียงตามวันส่ง แบ่งหัววัน (รูปย่อจากโน้ตจริง) · ค้นหา
+   ล่าง (ใต้นิ้วโป้ง ค้างไว้ตลอด): ช่อง "พิมพ์งาน…" + ถ่ายรูป + แนบรูป + ไมค์ใหญ่
+   ไม่เน้น "ทำอันไหนก่อน" แล้ว (เจ้าของสั่ง) — ปุ่มทำเลย/จับเวลาอยู่ในหน้าโน้ตของงาน */
+const DOWL = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์'], MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+function dayHead(ymd, td) {
+  if (!ymd) return 'ไม่มีกำหนดส่ง';
+  const n = daysBetween(td, ymd), d = new Date(ymd + 'T00:00:00');
+  return n < 0 ? 'เลยกำหนด' : n === 0 ? 'วันนี้' : n === 1 ? 'พรุ่งนี้' : n < 7 ? DOWL[d.getDay()] : `${DOWL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`;
+}
 function renderHome() {
   const keepFocus = document.activeElement?.id === 'home-q';
-  const q = hs.q.trim().toLowerCase(), td = today();
+  const q = hs.q.trim().toLowerCase(), td = today(), now = new Date();
   let list = ranked();
   if (hs.when !== 'all') list = list.filter(t => { const n = t.due_date ? daysBetween(td, t.due_date) : 99; return hs.when === 'today' ? n <= 0 : hs.when === 'tomorrow' ? n === 1 : n <= 7; });
   if (q) list = list.filter(t => `${t.title} ${t.description || ''} ${subj(t.subject_id).name}`.toLowerCase().includes(q));
-  const focus = !q && hs.when === 'all'; // ไม่ได้ค้นหา/กรอง = โชว์แค่ 3 งานแรก
-  const shown = focus ? list.slice(0, TOP) : list;
+  const searching = !!q || hs.when !== 'all';
   const name = S().prefs.display_name;
-  const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน...', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
+  const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
   const empty = !S().tasks.some(t => !t.deleted_at && t.status !== 'done');
+  const tag = t => t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : t.source === 'teacher' ? h('span.tag.teach', 'ฟังครู') : '';
+  // เรียงตามวันส่ง (ปักหมุดขึ้นก่อน) แล้วแบ่งหัววัน
+  const byDue = [...list].sort((a, b) => (!!b.pinned_at - !!a.pinned_at) || ((a.due_date || '9') + (a.due_time || '99')).localeCompare((b.due_date || '9') + (b.due_time || '99')));
+  const items = []; let last = null;
+  for (const t of byDue) {
+    const k = t.pinned_at ? 'pin' : (t.due_date && daysBetween(td, t.due_date) < 0 ? 'late' : t.due_date || '');
+    if (k !== last) { items.push(h('li.dayhead', k === 'pin' ? 'ปักหมุด' : dayHead(t.due_date, td))); last = k; }
+    const s = subj(t.subject_id), img = [...notesOf(t.id)].reverse().find(n => n.kind === 'image' && n.blob);
+    items.push(h('li.trow', h('button.main', { onclick: () => openNotes(t.id) },
+      img ? h('span.thumb', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : badge(s),
+      h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),
+        h('small', t.status === 'doing' ? h('em.doing', 'กำลังทำ · ') : '', dueLine(t), tag(t))))));
+  }
+  const cap = (kind, label, icon, cls = '') => h('button.cap' + cls, { 'data-kind': kind, 'aria-label': label, onclick: () => addTask(kind), html: ic(icon) });
+
   paneHome.replaceChildren(
-    h('div.brandrow', h('div.brand', 'SABA', h('span', 'ii'), h('b', '.')), h('a.avatar', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
-    h('h1.big', name ? `เพิ่มงานกันเลย ${name}` : 'เพิ่มงานกันเลย'),
-    h('div.tiles',
-      tile('speak', 'พูด', 'พูดเอง หรือฟังครู', () => addTask('voice')),
-      tile('attach', 'แนบรูป', 'จากอัลบั้ม/แชท', () => addTask('photo')),
-      tile('type', 'พิมพ์', 'พิมพ์สั้นๆ ก็รู้เรื่อง', () => addTask('text')),
-      tile('shoot', 'ถ่ายรูป', 'กระดาน · ใบงาน', () => addTask('camera'))),
+    h('div.hhead', h('span.hdate', `${DOWL[now.getDay()]} ${now.getDate()} ${MON[now.getMonth()]}`), h('a.avatar.grad', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
+    h('h1.big', name ? h('span.g', `${name},`) : '', name ? h('br') : '',
+      searching ? 'ผลการค้นหา' : empty ? 'ยังไม่มีงาน' : `มี ${list.length} งาน`),
     h('label.search', h('span', { html: ic('search') }), input,
       h('button.chip', { type: 'button', 'aria-label': `กรองตามวัน: ${WHEN[hs.when]}`, onclick: () => { const ks = Object.keys(WHEN); hs.when = ks[(ks.indexOf(hs.when) + 1) % ks.length]; renderHome(); }, html: ic('cal') + `<span>${WHEN[hs.when]}</span>` })),
-    h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : shown.length > 1 ? `ทำ ${shown.length} งานนี้ก่อน` : 'ทำงานนี้ก่อน'), h('span', !focus && list.length ? `${list.length} งาน` : '')),
-    list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow',
-      h('button.main', { onclick: () => openNotes(t.id) }, badge(subj(t.subject_id)),
-        h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),
-          h('small', dueLine(t), t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : t.source === 'teacher' ? h('span.tag.teach', 'ฟังครู') : ''))),
-      h('button.go' + (t.status === 'doing' ? '.doing' : i === 0 ? '.dark' : ''), { onclick: () => openNotes(t.id) }, t.status === 'doing' ? 'กำลังทำ' : 'ทำเลย'))))
-      : empty ? h('div.empty-note', h('b', 'วันนี้ยังไม่มีงานที่ต้องทำ'), h('p', 'เพิ่มงานด้วยปุ่มด้านบน'),
-          h('div.row2', h('button.btn.primary', { onclick: () => addTask('text') }, '+ เพิ่มงานใหม่'),
-            h('button.btn.ghost', { onclick: async () => { await app.store.addSamples(); toast('ใส่งานตัวอย่าง 6 งานแล้ว · ลบได้ในหน้าฉัน'); } }, 'ลองงานตัวอย่าง')))
+    list.length ? h('ul.tlist', items)
+      : empty ? h('div.empty-note', h('p', 'แตะช่องด้านล่างแล้วพิมพ์ หรือกดไมค์แล้วพูด'),
+          h('button.btn.ghost', { onclick: async () => { await app.store.addSamples(); toast('ใส่งานตัวอย่าง 6 งานแล้ว · ลบได้ในหน้าฉัน'); } }, 'ลองงานตัวอย่าง'))
       : h('div.empty-note', 'ไม่พบงานที่ตรงกับที่ค้นหา'),
+    // แถบจดงาน: ใต้นิ้วโป้ง ค้างไว้ตลอด
+    h('div.capture', { role: 'group', 'aria-label': 'จดงานใหม่' },
+      h('div.cfield', h('button.cap.ctext', { 'data-kind': 'text', 'aria-label': 'พิมพ์งาน', onclick: () => addTask('text') }, 'พิมพ์งาน…'),
+        cap('camera', 'ถ่ายรูปกระดาน/ใบงาน', 'camera'), cap('photo', 'แนบรูปจากอัลบั้ม/แชต', 'img')),
+      cap('voice', 'พูดงาน (พูดเอง หรือฟังครู)', 'mic', '.cmic')),
   );
   if (keepFocus) { const el = $('#home-q'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
 }
-const tile = (art, name, sub, onclick) => h('button.tile', { onclick, 'aria-label': `${name} — ${sub}`, html: ART[art] + `<b>${name}</b><small>${sub}</small>` });
 export const focusSearch = () => { setSnap(2); setTimeout(() => $('#home-q')?.focus(), 350); };
