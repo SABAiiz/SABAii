@@ -1,4 +1,6 @@
-// SABAii หน้าแนะนำ — เครื่องยนต์การเคลื่อนไหว (ไม่ใช้ไลบรารี)
+// SABAii หน้าแนะนำ 0.8 — เครื่องยนต์การเคลื่อนไหว (ไม่ใช้ไลบรารี)
+//   แนว fastwork.com/selling: คำในหัวเรื่องสลายเป็นจุด · หัวเรื่องเบลอตอนออก · โพสต์อิทหล่นทีละใบ · แผ่นขาวทับส่วนมืด · การ์ดจุดเด่นลอยขึ้น
+//   ของเดิม 0.6 อยู่ครบ: กล้องพุ่งทะลุการ์ด · เมาส์/เอียงเครื่องหมุนฉาก · มือถือลอยขึ้น · สายพานเอียง · วงขาวเข้าแอป · โบกมือ
 //   • Parallax: แต่ละชั้นขยับตามการเลื่อนด้วยความเร็วต่างกัน (data-depth) + ตามเมาส์เล็กน้อยบนคอม
 //   • ค่าทุกตัววิ่งเข้าหาเป้าแบบนุ่ม (lerp) ใน requestAnimationFrame เดียว — หยุดเองเมื่อนิ่ง ไม่กินแบตตอนไม่ได้เลื่อน
 //   • ไม่ยึด/ไม่หน่วงการเลื่อนของผู้ใช้ · ใช้แค่ transform / opacity (ลื่นบนมือถือ)
@@ -8,7 +10,7 @@
   const root = document.documentElement;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(pointer: fine)').matches;
-  if (!reduce && 'IntersectionObserver' in window) root.classList.add('anim');
+  if (!reduce && 'IntersectionObserver' in window) root.classList.add('anim'); else root.classList.add('no-anim');
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 
   /* ลิงก์เข้าแอป (รุ่นลิงก์ทดลองชี้ไปหน้าแอปอีกหน้า) */
@@ -25,28 +27,28 @@
     $$('.rv').forEach(el => io.observe(el));
   } else $$('.rv').forEach(el => el.classList.add('in'));
 
-  /* คำที่หมุนในหัวเรื่อง */
-  const rot = $('.rot'), rw = $('.rot-w');
-  const WORDS = [['การบ้าน', '#0A6CF1'], ['สอบย่อย', '#E2453A'], ['รายงาน', '#119A5A'], ['ใบงาน', '#D9741A']];
-  const meas = document.createElement('span');
-  meas.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:-9999px';
-  rot.parentNode.append(meas);
-  const widthOf = w => { meas.textContent = w; return meas.getBoundingClientRect().width; };
-  let wi = 0;
-  const sizeRot = () => { const pad = parseFloat(getComputedStyle(rot).paddingLeft) * 2; rot.style.width = widthOf(WORDS[wi][0]) + pad + 'px'; };
-  rot.style.setProperty('--rc', WORDS[0][1]);
-  document.fonts?.ready.then(sizeRot); sizeRot();
+  /* คำที่เปลี่ยนในหัวเรื่อง: คำเดิมเบลอแล้วหดเป็นจุดสามจุด → จุดขยายกลับเป็นคำใหม่ (สีไล่ของแต่ละคำ) */
+  const morph = $('.morph'), mw = $('.mw');
+  const WORDS = [['การบ้าน', '#0A6CF1', '#7C4DFF'], ['สอบย่อย', '#E2453A', '#FF8A3D'], ['รายงาน', '#0E9F6E', '#0A6CF1'], ['ใบงาน', '#D9741A', '#E0457B'], ['งานกลุ่ม', '#7C4DFF', '#E0457B']];
+  let wi = 0, busy = false;
+  const paint = () => { morph.style.setProperty('--c1', WORDS[wi][1]); morph.style.setProperty('--c2', WORDS[wi][2]); };
+  const meas = document.createElement('span'); meas.className = 'mmeas'; meas.setAttribute('aria-hidden', 'true'); morph.append(meas);
+  const sizeRot = () => { meas.textContent = WORDS[wi][0]; morph.style.width = meas.offsetWidth + 'px'; };
+  paint(); document.fonts?.ready.then(sizeRot); sizeRot();
   const word = (d = 1) => {
-    rot.classList.add('out');
+    if (busy) return; busy = true;
+    morph.classList.add('melt');
+    setTimeout(() => { wi = (wi + d + WORDS.length) % WORDS.length; sizeRot(); }, 260);   // ช่องว่างเปลี่ยนขนาดระหว่างเป็นจุด
     setTimeout(() => {
-      wi = (wi + d + WORDS.length) % WORDS.length;
-      rw.textContent = WORDS[wi][0]; rot.style.setProperty('--rc', WORDS[wi][1]); sizeRot();
-      rot.classList.remove('out'); rot.classList.add('pre');
-      requestAnimationFrame(() => requestAnimationFrame(() => rot.classList.remove('pre')));
-    }, 320);
+      morph.classList.add('form'); mw.textContent = WORDS[wi][0]; paint();
+      setTimeout(() => {
+        morph.classList.remove('melt');
+        requestAnimationFrame(() => requestAnimationFrame(() => { morph.classList.remove('form'); busy = false; }));
+      }, 380);
+    }, 520);
   };
   let wordTimer = 0;
-  const autoWord = () => { clearInterval(wordTimer); if (!reduce) wordTimer = setInterval(() => { if (!document.hidden) word(1); }, 2600); };
+  const autoWord = () => { clearInterval(wordTimer); if (!reduce) wordTimer = setInterval(() => { if (!document.hidden) word(1); }, 3000); };
   autoWord();
 
   /* นาฬิกาจับเวลาบนการ์ด */
@@ -55,18 +57,17 @@
     setInterval(() => { s++; el.textContent = `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }, 1000);
   }
 
-  /* พิมพ์ภาษาครู → ชิปวิชา/วัน (เริ่มเมื่อกล่องโผล่) */
-  const typer = $('.typer');
-  if (typer) {
-    const out = $('.ttext', typer), text = [...out.dataset.type];
+  /* พิมพ์ภาษาครู → ชิปวิชา/วัน · ครูพูด → ได้ 2 งาน (เริ่มเมื่อกล่องโผล่ · วนใหม่เรื่อย ๆ) */
+  for (const [typer, out, text] of [[$('.typer'), $('.typer .ttext'), [...($('.typer .ttext')?.dataset.type || '')]], [$('.talk'), $('.talk .said'), [...($('.talk .said')?.dataset.say || '')]]]) {
+    if (!typer || !out) continue;
     const run = () => {
       typer.classList.remove('done'); out.textContent = '';
-      if (reduce) { out.textContent = text.join(''); typer.classList.add('done'); return; }
-      let i = 0;
+      if (reduce) { out.textContent = text.join(''); out.classList.add('done'); typer.classList.add('done'); return; }
+      let i = 0; out.classList.remove('done');
       const t = setInterval(() => {
         out.textContent += text[i++];
-        if (i >= text.length) { clearInterval(t); setTimeout(() => typer.classList.add('done'), 250); setTimeout(run, 4600); }
-      }, 70);
+        if (i >= text.length) { clearInterval(t); out.classList.add('done'); setTimeout(() => typer.classList.add('done'), 250); setTimeout(run, 5200); }
+      }, 55);
     };
     if ('IntersectionObserver' in window) { const o = new IntersectionObserver(es => { if (es[0].isIntersecting) { o.disconnect(); run(); } }, { threshold: .4 }); o.observe(typer); } else run();
   }
@@ -79,23 +80,30 @@
   const heroCards = $$('.hero .fc').map(el => {
     const d = +el.dataset.depth || 1;
     el.style.setProperty('--d', d.toFixed(2));
-    return { el, d, z0: (d - 1) * 150, z: 0, y: 0, o: 1 };
+    return { el, d, z0: (d - 1) * 150, z: 0, x: 0, y: 0, o: 1, side: 1 };
   });
   const story = $('.story'), pin = $('.pin'), phone = $('.phone'), sbar = $('.sbar i');
   const chips = $$('[data-sdepth]').map(el => ({ el, d: +el.dataset.sdepth, y: 0 }));
   const notesSec = $('.notes');
   const belts = $$('[data-belt]').map(el => ({ el, dir: +el.dataset.belt, x: null, rx: 0, top: 0, h: 0, shift: 0 }));
   const fin = $('.final');
-  const conv = $$('.cv').map(el => { const [fx, fy] = el.dataset.from.split(',').map(Number); return { el, fx, fy, p: 0 }; });
+  const painSec = $('.pain'), painPin = $('.pain-pin'), relief = $('.relief');
+  const notes = $$('.pn').map((el, i) => { const cs = getComputedStyle(el); return { el, i, x: cs.getPropertyValue('--x').trim(), y: cs.getPropertyValue('--y').trim(), r: parseFloat(cs.getPropertyValue('--r')) || 0, p: 0 }; });
+  const pp = { s: 1, o: 1 };
+  const featSec = $('.feat');
+  const fxs = $$('[data-fx]').map(el => ({ el, top: 0, p: 0 }));
+  const dock = $('.dock');
   const ph = { ry: -8, rx: 5, q: 0 };
   const cam = { rx: 0, ry: 0, s: 1, ty: 0, o: 1 };
-  let H = { top: 0, h: 1 }, S = { top: 0, h: 1 }, F = { top: 0, h: 1 }, N = { top: 0, h: 1 }, vh = innerHeight, vw = innerWidth;
+  let H = { top: 0, h: 1 }, S = { top: 0, h: 1 }, F = { top: 0, h: 1 }, N = { top: 0, h: 1 }, P = { top: 0, h: 1 }, R = { top: 0, h: 1 }, X = { top: 0, h: 1 }, vh = innerHeight, vw = innerWidth;
   let mx = 0, my = 0, tmx = 0, tmy = 0, handOn = false;
 
   const pos = el => ({ top: el.getBoundingClientRect().top + scrollY, h: el.offsetHeight || 1 });
   function measure() {
     vh = innerHeight; vw = innerWidth;
-    H = pos(hero); S = pos(story); F = pos(fin); N = pos(notesSec);
+    H = pos(hero); S = pos(story); F = pos(fin); N = pos(notesSec); P = pos(painSec); R = pos(relief); X = pos(featSec);
+    for (const c of heroCards) { const r = c.el.getBoundingClientRect(); c.side = (r.left + r.width / 2) < vw / 2 ? -1 : 1; }
+    for (const f of fxs) { const t = f.el.style.transform; f.el.style.transform = 'none'; f.top = pos(f.el).top; f.el.style.transform = t; }
     for (const b of belts) { const t = b.el.style.transform; b.el.style.transform = 'none'; const r = pos(b.el); b.el.style.transform = t; b.top = r.top; b.h = r.h; b.shift = Math.max(160, b.el.scrollWidth - vw + 40); }
     sizeRot();
   }
@@ -124,13 +132,15 @@
       for (const c of heroCards) {
         c.z = go(c.z, c.z0 + Math.min(620, p * 760 * c.d), .16, .1);
         c.y = go(c.y, -y * .12 * c.d, .16, .1);
+        c.x = go(c.x, c.side * p * 240 * c.d, .16, .1);
         c.o = go(c.o, clamp(1 - (p - .3) * 2.4), .2, .003);
-        c.el.style.transform = `translate3d(0,${c.y.toFixed(1)}px,${c.z.toFixed(1)}px)`;
+        c.el.style.transform = `translate3d(${c.x.toFixed(1)}px,${c.y.toFixed(1)}px,${c.z.toFixed(1)}px)`;
         c.el.style.opacity = c.o.toFixed(3);
       }
       cam.s = go(cam.s, 1 - p * .16, .14, .0005); cam.ty = go(cam.ty, p * 70, .14, .1); cam.o = go(cam.o, clamp(1 - p * 1.6), .18, .003);
       heroText.style.transform = `translate3d(0,${cam.ty.toFixed(1)}px,0) scale(${cam.s.toFixed(4)})`;
       heroText.style.opacity = cam.o.toFixed(3);
+      heroText.style.filter = p > .01 ? `blur(${(p * 14).toFixed(2)}px)` : 'none';
     }
 
     // 2 · มือถือโผล่ขึ้นมาจากฉาก แล้วเอียงตามการเลื่อน · ขั้นตอนเปลี่ยนตามระยะ
@@ -159,15 +169,27 @@
       }
     }
 
-    // 5 · การ์ดบินเข้ามาจากด้านหน้าผู้ดู แล้วไปเกาะรอบหัวเรื่อง
-    if (y + vh > F.top - 100) {
-      const p = clamp((y + vh - F.top) / (vh * .85));
-      const dx = Math.min(300, vw * .3), dy = Math.min(200, vh * .22);
-      for (const c of conv) {
-        c.p = go(c.p, p, .1, .001);
-        const e = 1 - c.p;
-        c.el.style.transform = `translate3d(${(e * c.fx * dx).toFixed(1)}px,${(e * c.fy * dy).toFixed(1)}px,0) scale(${(1 + e * .5).toFixed(3)})`;
-        c.el.style.opacity = clamp(c.p * 1.3).toFixed(3);
+    // 3 · ส่วนมืด: โพสต์อิทหล่นจากด้านบนทีละใบ · แผ่นขาวเลื่อนขึ้นมาทับ ฉากด้านหลังยุบลงและมืดลง (การ์ดซ้อน)
+    if (y + vh > P.top && y < R.top + vh) {
+      const p = clamp((y - P.top + vh * .55) / (vh * 1.35));
+      for (const n of notes) {
+        n.p = go(n.p, clamp((p - n.i * .15) / .22), .16, .001);
+        const k = 1 - n.p;
+        n.el.style.transform = `translate(${n.x}, calc(${n.y} - ${(k * 95).toFixed(2)}vh)) rotate(${(n.r - k * 24 * (n.i % 2 ? 1 : -1)).toFixed(2)}deg) scale(${(1 + k * .25).toFixed(3)})`;
+        n.el.style.opacity = clamp(n.p * 3).toFixed(3);
+      }
+      const cover = clamp((y + vh - R.top) / vh);
+      pp.s = go(pp.s, 1 - cover * .08, .16, .0005); pp.o = go(pp.o, 1 - cover * .6, .16, .002);
+      painPin.style.transform = `scale(${pp.s.toFixed(4)})`; painPin.style.opacity = pp.o.toFixed(3);
+    }
+
+    // 4 · จุดเด่น: การ์ดลอยขึ้นจากความลึก เอียงแล้วราบลง
+    if (y + vh > X.top && y < X.top + X.h) {
+      for (const f of fxs) {
+        f.p = go(f.p, clamp((y + vh - f.top) / (vh * .75)), .14, .001);
+        const k = 1 - f.p;
+        f.el.style.transform = `perspective(1200px) translate3d(0,${(k * 140).toFixed(1)}px,${(-k * 120).toFixed(1)}px) rotateX(${(k * 16).toFixed(2)}deg)`;
+        f.el.style.opacity = clamp(f.p * 1.6).toFixed(3);
       }
     }
 
@@ -180,8 +202,16 @@
     setStep(sp); sbar.style.transform = `scaleX(${sp.toFixed(3)})`;
   }
 
-  addEventListener('scroll', () => { solid(); reduce ? reducedTick() : kick(); }, { passive: true });
-  addEventListener('resize', () => { measure(); reduce ? reducedTick() : kick(); });
+  /* หัวเว็บเปลี่ยนเป็นมืดเมื่ออยู่บนส่วนมืด · ปุ่มลอยล่างจอโผล่หลังพ้นฉากแรก หลบตอนถึงกรอบสุดท้าย */
+  function chrome() {
+    const y = scrollY, at = y + 36;
+    const dark = (at > P.top && at < R.top) || (at > X.top && at < X.top + X.h) || at > F.top;
+    top.classList.toggle('on-dark', dark);
+    dock?.classList.toggle('show', y > H.h * .75 && y + vh < F.top + vh * .35);
+  }
+
+  addEventListener('scroll', () => { solid(); chrome(); reduce ? reducedTick() : kick(); }, { passive: true });
+  addEventListener('resize', () => { measure(); chrome(); reduce ? reducedTick() : kick(); });
   if (!reduce) {
     if (fine) addEventListener('pointermove', e => { if (handOn) return; tmx = e.clientX / vw - .5; tmy = e.clientY / vh - .5; kick(); }, { passive: true });
     // เอียงเครื่อง (Android · iOS ต้องขออนุญาตก่อน เลยไม่ใช้) — มุมแรกที่ถือ = จุดกลาง
@@ -248,12 +278,6 @@
     addEventListener('pagehide', handStop);
   }
 
-  /* สปอตไลต์ตามเคอร์เซอร์บนกล่องจุดเด่น (คอม) */
-  if (fine && !reduce) for (const bx of $$('.bx')) bx.addEventListener('pointermove', e => {
-    const r = bx.getBoundingClientRect();
-    bx.style.setProperty('--sx', (e.clientX - r.left).toFixed(0) + 'px'); bx.style.setProperty('--sy', (e.clientY - r.top).toFixed(0) + 'px');
-  }, { passive: true });
-
   /* เข้าแอป: วงขาวขยายจากปุ่มจนเต็มจอ แล้วแบบสอบถามค่อย ๆ โผล่ (แท็บเดิม) */
   for (const a of $$('.app-link')) a.addEventListener('click', e => {
     if (reduce || a.target === '_blank' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
@@ -264,12 +288,12 @@
     portal.style.setProperty('--cx', (r.left + r.width / 2).toFixed(0) + 'px'); portal.style.setProperty('--cy', (r.top + r.height / 2).toFixed(0) + 'px');
     document.body.append(portal);
     root.classList.add('leaving'); handStop();
-    requestAnimationFrame(() => requestAnimationFrame(() => portal.classList.add('go')));
+    requestAnimationFrame(() => requestAnimationFrame(() => portal.classList.add('open')));
     setTimeout(() => { location.href = a.href; }, 640);
   });
   addEventListener('pageshow', e => { if (e.persisted) { root.classList.remove('leaving'); $$('.portal').forEach(p => p.remove()); } });
 
-  addEventListener('load', () => { measure(); reduce ? reducedTick() : kick(); });
+  addEventListener('load', () => { measure(); chrome(); reduce ? reducedTick() : kick(); });
   document.fonts?.ready.then(() => { measure(); kick(); });
-  measure(); solid(); reduce ? reducedTick() : kick();
+  measure(); solid(); chrome(); reduce ? reducedTick() : kick();
 })();
