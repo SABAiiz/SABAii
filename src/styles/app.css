@@ -568,13 +568,15 @@ body.ob-open #nav { opacity: 0; pointer-events: none; }
 .ob-q { font-size: 28px; font-weight: 800; line-height: 1.25; letter-spacing: -.4px; text-wrap: balance; margin-top: -8px; outline: none; }
 .ob-k + .ob-q { margin-top: -10px; }
 .ob-sub { color: var(--text-2); font-size: 15.5px; margin-top: -6px; }
+.ob-note { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: var(--text-2); font-weight: 600; }
+.ob-note span { display: grid; } .ob-note svg { width: 15px; height: 15px; color: #16B76A; }
 .ob-why { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.55; color: var(--text-2); background: var(--surface); border-radius: 14px; padding: 10px 12px; }
 .ob-why span { display: grid; flex: none; margin-top: 1px; } .ob-why svg { width: 16px; height: 16px; color: var(--blue); }
 .ob-foot { flex: none; padding: 12px 20px calc(16px + var(--safe-b)); background: linear-gradient(180deg, rgba(255,255,255,0), var(--bg) 30%); }
 .ob-next { margin-top: 0; }
 .ob-next:disabled { background: var(--surface-2); color: var(--text-2); }
 
-.ob-hero { position: relative; align-self: stretch; height: 300px; margin: 0 -24px 4px; display: grid; place-items: center; overflow: hidden; }
+.ob-hero { position: relative; align-self: stretch; height: 290px; margin: 0 -24px 4px; display: grid; place-items: center; overflow: hidden; }
 .ob-hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(42% 46% at 50% 50%, rgba(10,108,241,.16), transparent 70%); }
 .ob-logo { position: relative; z-index: 3; width: 84px; height: 84px; border-radius: 24px; box-shadow: 0 20px 36px -14px rgba(11,27,77,.55); animation: obpop .9s cubic-bezier(.2,.8,.2,1) both; }
 .obf { position: absolute; z-index: 2; will-change: transform; }
@@ -583,16 +585,17 @@ body.ob-open #nav { opacity: 0; pointer-events: none; }
   font-size: 12px; line-height: 1.35; text-align: left; animation: obpop .95s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(.15s + var(--i) * 90ms); }
 @keyframes obfloat { 0%, 100% { transform: translate3d(0,0,0); } 40% { transform: translate3d(2px,-9px,0); } 75% { transform: translate3d(-2px,-3px,0); } }
 @keyframes obpop { from { opacity: 0; transform: translate3d(0,26px,0) scale(.85); filter: blur(5px); } }
-.o-photo { left: 3%; top: 16px; width: 112px; --fd: 8s; }
+.o-photo { left: calc(50% - 168px); top: 14px; width: 104px; --fd: 8s; }
 .o-photo .obf-c { padding: 4px; position: relative; }
 .o-photo img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; display: block; }
 .obf-tag { position: absolute; left: 9px; bottom: 9px; font-size: 9.5px; font-weight: 700; background: rgba(11,27,77,.65); color: #fff; border-radius: 6px; padding: 1px 6px; }
-.o-task { right: -14px; top: 30px; width: 196px; --fd: 8.5s; }
+.o-task { left: calc(50% + 6px); top: 34px; width: 168px; --fd: 8.5s; }
 .o-task .obf-c { display: flex; align-items: center; gap: 8px; padding: 9px; }
+.o-task .obf-go { display: none; }
 .obf-b { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; font-size: 9.5px; font-weight: 800; flex: none; color: var(--c); background: color-mix(in srgb, var(--c) 15%, #fff); }
 .obf-tt { flex: 1; min-width: 0; } .obf-tt b { display: block; font-size: 12.5px; white-space: nowrap; } .obf-tt small { color: var(--error); font-weight: 700; font-size: 11px; }
 .obf-go { height: 28px; padding: 0 10px; border-radius: 9px; background: var(--blue); color: #fff; font-weight: 700; font-size: 11.5px; display: grid; place-items: center; }
-.o-sticky { left: 6%; bottom: 22px; --fd: 6.5s; }
+.o-sticky { left: calc(50% - 160px); bottom: 26px; --fd: 6.5s; }
 .o-sticky .obf-c { background: #FFE98A; border: 0; border-radius: 5px; font: 600 14px/1.45 var(--hand); color: #20304F; padding: 12px 14px; }
 .o-listen { right: 3%; top: 132px; --fd: 9s; }
 .o-listen .obf-c { display: flex; align-items: center; gap: 8px; padding: 8px 12px 8px 8px; }
@@ -602,7 +605,7 @@ body.ob-open #nav { opacity: 0; pointer-events: none; }
 .obf-wave i { flex: 1; height: 30%; border-radius: 2px; background: var(--blue); opacity: .8; animation: obwave 1s ease-in-out infinite alternate; }
 .obf-wave i:nth-child(3n) { animation-delay: -.35s; } .obf-wave i:nth-child(3n+1) { animation-delay: -.7s; } .obf-wave i:nth-child(4n) { animation-duration: .75s; }
 @keyframes obwave { to { height: 100%; } }
-.o-timer { right: 4%; bottom: 30px; --fd: 6s; }
+.o-timer { left: calc(50% + 34px); bottom: 44px; --fd: 6s; }
 .o-timer .obf-c { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 13px; border-radius: 18px; font-weight: 600; white-space: nowrap; }
 .o-timer b { color: var(--blue); font-variant-numeric: tabular-nums; }
 .obf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); animation: obping 1.6s infinite; }
@@ -611,7 +614,7 @@ body.ob-open #nav { opacity: 0; pointer-events: none; }
 .o-exam .obf-c { padding: 8px 12px; text-align: center; }
 .o-exam small { display: block; font-size: 10.5px; color: var(--text-2); font-weight: 600; }
 .o-exam b { display: block; font-size: 26px; font-weight: 800; color: var(--error); line-height: 1.05; }
-@media (max-height: 700px) { .ob-hero { height: 240px; } .o-exam, .o-listen { display: none; } }
+@media (max-height: 700px) { .ob-hero { height: 250px; } }
 @media (prefers-reduced-motion: reduce) { .obf-fl, .obf-c, .ob-logo, .obf-wave i, .obf-dot { animation: none !important; } }
 .ob[data-step="welcome"] .ob-view { text-align: center; align-items: center; }
 .ob[data-step="welcome"] .ob-why { text-align: left; }
