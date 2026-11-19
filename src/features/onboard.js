@@ -16,18 +16,18 @@ const STEPS = ['welcome', 'name', 'subjects', 'listen', 'style', 'samples', 'don
 
 let root = null;
 
-/** หน้าต้อนรับ: โลโก้กลาง + การ์ด UI ของแอปลอยรอบ ๆ (เข้าฉากทีละใบ · ลอยเบา ๆ · ขยับตามเมาส์บนคอม) */
+/** หน้าต้อนรับ (แนวเดียวกับหน้าแนะนำ 0.8): การ์ดรูปถ่ายจริงวางกองรอบ ๆ เข้าฉากทีละใบ · ลอยเบา ๆ · ขยับตามเมาส์บนคอม */
 function welcomeHero() {
-  const card = (cls, depth, i, ...kids) => h('div.obf.' + cls, { style: { '--i': i }, 'data-depth': depth }, h('div.obf-fl', h('div.obf-c', ...kids)));
-  const bdg = (t, c) => h('span.obf-b', { style: { '--c': c } }, t);
+  const P = 'assets/landing/photos/';
+  const card = (cls, depth, i, src, bdg, c, title, meta, red) => h('div.obf.' + cls, { style: { '--i': i }, 'data-depth': depth },
+    h('div.obf-fl', h('figure.obf-c', h('img', { src, alt: '' }),
+      h('figcaption', h('span.obf-b', { style: { '--c': c } }, bdg), h('span.obf-tt', h('b', title), h('small' + (red ? '.red' : ''), meta))))));
   const hero = h('div.ob-hero', { 'aria-hidden': 'true' },
-    card('o-photo', 1.2, 0, h('img', { src: 'assets/landing/note-photo.jpg', alt: '' }), h('span.obf-tag', 'วิทย์ · 08:54')),
-    card('o-task', .8, 1, bdg('ฟิส', '#8B5CF6'), h('span.obf-tt', h('b', 'แบบฝึกหัด 4.3'), h('small', 'ส่งศุกร์ 08:00')), h('span.obf-go', 'ทำเลย')),
-    card('o-sticky', 1.5, 2, 'ทำแค่ข้อคี่', h('br'), 'ส่งในห้องนะ'),
-    card('o-listen', 1, 3, h('span.obf-mic', { html: ic('mic') }), h('span.obf-wave', Array.from({ length: 9 }, () => h('i')))),
-    card('o-timer', 1.8, 4, h('i.obf-dot'), 'กำลังทำ ', h('b', '12:40')),
-    card('o-exam', .9, 5, h('small', 'สอบย่อย'), h('b', '3'), h('small', 'วัน')),
-    h('img.ob-logo', { src: 'icon.svg', alt: '', width: 84, height: 84 }));
+    card('o1', 1.1, 0, P + 'board.jpg', 'ฟิส', '#7C4DFF', 'แบบฝึกหัด 4.3', 'ส่งศุกร์'),
+    card('o2', .8, 1, 'assets/landing/note-photo.jpg', 'วิทย์', '#F08A24', 'Mind mapping', 'ส่งวันนี้', true),
+    card('o3', 1.4, 2, P + 'chalk.jpg', 'คณิต', '#1769D2', 'สอบย่อยบทที่ 4', 'อีก 3 วัน', true),
+    card('o4', .9, 3, P + 'notes.jpg', 'ชีวะ', '#14A06A', 'สรุปบทที่ 2', 'ส่งพรุ่งนี้'),
+    card('o5', 1.25, 4, P + 'sticky.jpg', 'อังกฤษ', '#E0457B', 'ท่องศัพท์ Unit 5', '20 คำ'));
   if (matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const items = [...hero.querySelectorAll('.obf')];
     let raf = 0, tx = 0, ty = 0, x = 0, y = 0;
@@ -37,6 +37,28 @@ function welcomeHero() {
     hero.addEventListener('pointermove', e => { const r = hero.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width - .5; ty = (e.clientY - r.top) / r.height - .5; if (!raf) raf = requestAnimationFrame(tick); });
   }
   return hero;
+}
+
+/** คำที่เปลี่ยนในหัวเรื่อง (เหมือนหน้าแนะนำ): คำเดิมเบลอหดเป็นจุดสามจุด → จุดขยายเป็นคำใหม่ · หยุดเองเมื่อออกจากหน้านี้ */
+function morphWord() {
+  const W = [['การบ้าน', '#0A6CF1', '#7C4DFF'], ['สอบย่อย', '#E2453A', '#FF8A3D'], ['รายงาน', '#0E9F6E', '#0A6CF1'], ['ใบงาน', '#D9741A', '#E0457B']];
+  const mw = h('span.mw', W[0][0]), meas = h('span.mmeas', { 'aria-hidden': 'true' });
+  const el = h('span.morph', mw, h('span.mdots', { 'aria-hidden': 'true' }, h('i'), h('i'), h('i')), meas);
+  let i = 0;
+  const paint = () => { el.style.setProperty('--c1', W[i][1]); el.style.setProperty('--c2', W[i][2]); };
+  const size = () => { meas.textContent = W[i][0]; if (meas.offsetWidth) el.style.width = meas.offsetWidth + 'px'; };
+  paint(); requestAnimationFrame(size); document.fonts?.ready.then(size);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const t = setInterval(() => {
+      if (!el.isConnected) { clearInterval(t); return; }
+      if (document.hidden) return;
+      el.classList.add('melt');
+      setTimeout(() => { i = (i + 1) % W.length; size(); }, 260);
+      setTimeout(() => { el.classList.add('form'); mw.textContent = W[i][0]; paint();
+        setTimeout(() => { el.classList.remove('melt'); requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('form'))); }, 380); }, 520);
+    }, 3000);
+  }
+  return el;
 }
 
 export function openOnboarding({ redo = false, start = 0 } = {}) {
@@ -97,7 +119,6 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
   const head = (k, q, sub) => [
     k ? h('div.ob-k', `ข้อ ${k} จาก ${QUESTIONS}`) : '',
     h('h1.ob-q', { tabindex: '-1' }, q), sub ? h('p.ob-sub', sub) : ''];
-  const why = text => h('p.ob-why', h('span', { html: ic('info') }), text);
   const option = (on, icon, title, desc, pick) => h('button.ob-opt', { 'aria-pressed': String(on), onclick: pick },
     h('span.ob-oi', { html: ic(icon) }), h('span.ob-ot', h('b', title), h('small', desc)), h('span.ob-ck', { html: ic('check') }));
 
@@ -115,9 +136,8 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
     if (name === 'welcome') {
       view.append(
         welcomeHero(),
-        ...head(0, redo ? 'ตั้งค่า SABAii ใหม่' : ['จดงานครบ', h('br'), 'ไม่พลาดกำหนดส่ง'],
-          `ตอบ ${QUESTIONS} ข้อสั้น ๆ ให้แอปตั้งค่าตามที่คุณใช้จริง ใช้เวลาไม่ถึง 1 นาที`),
-        why('ทุกคำตอบเก็บในเครื่องนี้เท่านั้น ไม่ส่งไปที่ไหน แก้ได้ทุกเมื่อที่หน้า "ฉัน"'));
+        ...head(0, redo ? 'ตั้งค่า SABAii ใหม่' : ['จดงานครบ', h('br'), h('span.ob-ln', 'ไม่ให้', morphWord(), 'หลุด')],
+          `ตอบ ${QUESTIONS} ข้อสั้น ๆ ให้แอปตั้งค่าตามที่คุณใช้จริง ใช้เวลาไม่ถึง 1 นาที`));
       next.textContent = 'เริ่มเลย';
     }
 
@@ -125,7 +145,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const inp = h('input.field.ob-input', { id: 'ob-name', value: ans.name, maxlength: 40, placeholder: 'ชื่อเล่น', autocomplete: 'nickname', 'aria-label': 'ชื่อเล่น',
         oninput: e => { ans.name = e.target.value; label(); }, onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); onNext(); } } });
       const label = () => { next.textContent = ans.name.trim() ? 'ต่อไป' : 'ข้ามข้อนี้'; };
-      view.append(...head(1, 'ให้เราเรียกคุณว่าอะไรดี?', 'ชื่อเล่นก็พอ ไม่ต้องใส่ชื่อจริงหรือชื่อโรงเรียน'), inp, why('ใช้ทักทายและแสดงที่หน้า "ฉัน"'));
+      view.append(...head(1, 'ให้เราเรียกคุณว่าอะไรดี?', 'ชื่อเล่นก็พอ ไม่ต้องใส่ชื่อจริงหรือชื่อโรงเรียน'), inp);
       label();
       setTimeout(() => inp.focus({ preventScroll: true }), 320);
     }
@@ -143,8 +163,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
         onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); addSubj(); } } });
       const addSubj = async () => { const v = add.value.trim(); if (!v) return; const sj = await app.store.ensureSubject(v); ans.subj.add(sj.id); add.value = ''; paint(); };
       view.append(...head(2, 'เทอมนี้เรียนวิชาอะไรบ้าง?', 'แตะเลือกให้ครบ แตะซ้ำเพื่อเอาออก'), grid,
-        h('div.ob-addrow', add, h('button.btn.ghost.auto', { onclick: addSubj }, 'เพิ่ม')), count,
-        why('ใช้เป็นชิปวิชาตอนเพิ่มงาน การ์ดวิชาในหน้างาน และเดาวิชาจากคำที่พิมพ์หรือพูด · วิชาที่ไม่เลือกแค่ซ่อนไว้ ไม่หาย'));
+        h('div.ob-addrow', add, h('button.btn.ghost.auto', { onclick: addSubj }, 'เพิ่ม')), count);
       next.textContent = 'ต่อไป';
       paint();
     }
@@ -157,8 +176,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
           option(ans.listen === 'self', 'text', 'ครูเขียนบนกระดาน หรือโพสต์ในกลุ่ม', 'กดพูดแล้วคุณพูดเองสั้น ๆ ทีละงาน หรือถ่ายรูปกระดานเก็บไว้', () => { ans.listen = 'self'; paint(); }));
         next.disabled = !ans.listen;
       };
-      view.append(...head(3, 'ส่วนใหญ่ครูสั่งงานแบบไหน?', 'เลือกแบบที่เจอบ่อยที่สุด'), box,
-        why(`ปุ่มพูดจะเริ่มที่โหมด "${MODES.teacher}" หรือ "${MODES.self}" ตามคำตอบ · สลับได้ทุกครั้งที่กดพูด · ไม่เก็บไฟล์เสียง`));
+      view.append(...head(3, 'ส่วนใหญ่ครูสั่งงานแบบไหน?', 'เลือกแบบที่เจอบ่อยที่สุด'), box);
       next.textContent = 'ต่อไป';
       paint();
     }
@@ -182,8 +200,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
         let best = cards[0]; for (const c of cards) if (Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - mid)) best = c;
         if (+best.dataset.id !== ans.style) pick(+best.dataset.id, false);
       }, 90); }, { passive: true });
-      view.append(...head(4, 'ชอบหน้าโน้ตงานแบบไหน?', 'ปัดดูทั้ง 6 แบบ แล้วเลือกแบบที่ชอบ ทุกแบบใช้งานเหมือนกัน'), strip, dots,
-        why('หน้านี้คือรูปและโน้ตของงาน (ดึงหน้าแรกลงเพื่อดู) · เปลี่ยนแบบได้ที่หน้า "ฉัน"'));
+      view.append(...head(4, 'ชอบหน้าโน้ตงานแบบไหน?', 'ปัดดูทั้ง 6 แบบ แล้วเลือกแบบที่ชอบ ทุกแบบใช้งานเหมือนกัน'), strip, dots);
       pick(ans.style, false);
       requestAnimationFrame(() => { const c = cards[ans.style - 1]; strip.scrollLeft = c.offsetLeft + c.offsetWidth / 2 - strip.clientWidth / 2; });
     }
@@ -196,8 +213,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
           option(ans.samples === false, 'plus', had ? 'ลบงานตัวอย่างออก' : 'ไม่ต้อง เริ่มจากว่าง', 'เพิ่มงานแรกเองจากหน้าแรก', () => { ans.samples = false; paint(); }));
         next.disabled = ans.samples == null;
       };
-      view.append(...head(5, 'อยากลองกับงานตัวอย่างก่อนไหม?', 'เหมาะถ้ายังไม่มีงานจะจดตอนนี้'), box,
-        why('งานตัวอย่างลบออกได้ทีเดียวที่หน้า "ฉัน" งานของคุณเองไม่หาย'));
+      view.append(...head(5, 'อยากลองกับงานตัวอย่างก่อนไหม?', 'เหมาะถ้ายังไม่มีงานจะจดตอนนี้'), box);
       next.textContent = 'ต่อไป';
       paint();
     }
