@@ -8,14 +8,14 @@ const path = require('path'), fs = require('fs');
 const REAL = process.env.SABAII_URL;
 const BASE = REAL || 'http://sabaii.test/';
 const ROOT = path.join(__dirname, '..');
-const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.wasm': 'application/wasm', '.task': 'application/octet-stream', '.webmanifest': 'application/manifest+json' };
 const SHOTS = process.argv[2] || null;
 const results = [];
 const check = (name, ok, extra = '') => { results.push({ name, ok }); console.log(`${ok ? 'ผ่าน' : 'ตก  '}  ${name}${extra ? '  — ' + extra : ''}`); };
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] }); // กล้องปลอม (ภาพทดสอบ ไม่มีมือ) สำหรับโหมดโบกมือ
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: REAL ? 'allow' : 'block' });
   await ctx.clock.setFixedTime(new Date('2026-11-16T09:40:00Z')); // จ. 16 พ.ย. 69 16:40 เวลาไทย — ตรึงวัน ผลจะไม่เปลี่ยนตามวันที่รัน
   if (!REAL) await ctx.route('http://sabaii.test/**', r => {
@@ -398,6 +398,43 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     check('ฉัน: ทำแบบสอบถามใหม่ → ชื่อเดิมเติมไว้ · ข้าม = ไม่เปลี่ยนอะไร', (await op.inputValue('#ob-name')) === 'มิ้นท์'
       && await op.locator('#ob-skip').click().then(() => wait(400)).then(() => op.evaluate(() => !document.getElementById('onboard') && window.__sabaii.state.prefs.note_style === 6)));
     await octx.close();
+  }
+
+  // 0.7: โหมดโบกมือ — โมเดลจริงจาก assets/vendor + กล้องปลอม · กล้องต้องใช้ https จึงเสิร์ฟผ่าน https://sabaii-hand.test
+  {
+    const hctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block', permissions: ['camera'] });
+    await hctx.route('https://sabaii-hand.test/**', r => { let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html'; if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); });
+    const hp = await hctx.newPage();
+    hp.on('pageerror', e => errors.push('hand: ' + e.message));
+    hp.on('console', m => { if (m.type() === 'error' && !/fonts\.g|Failed to load resource/.test(m.text())) errors.push('hand: ' + m.text()); });
+    await hp.goto('https://sabaii-hand.test/#/home'); await hp.waitForSelector('#onboard'); await hp.click('#ob-skip'); await wait(300);
+    await hp.evaluate(async () => { await window.__sabaii.addSamples(); const s = window.__sabaii; const id = s.state.tasks.find(t => t.title.startsWith('แบบฝึกหัดบทที่ 3')).id; await s.addAttachment(id, { kind: 'text', text: 'โน้ตที่สอง' }); }); await wait(400);
+    const handOpacity = () => hp.evaluate(() => +getComputedStyle(document.getElementById('note-hand')).opacity);
+    const hiddenAtHome = (await handOpacity()) === 0;
+    await hp.evaluate(() => window.__ui.setSnap(0)); await wait(700);
+    check('โบกมือ: ปุ่มมือโผล่เฉพาะตอนดูโน้ต', hiddenAtHome && (await handOpacity()) === 1);
+    await hp.locator('#note-hand').click();
+    const st = await hp.waitForSelector('.hf[data-state="ready"], .hf[data-state="unsupported"], .hf[data-state="denied"]', { timeout: 90000 }).then(e => e.getAttribute('data-state')).catch(() => 'timeout');
+    check('โบกมือ: เปิดกล้อง + โหลดตัวตามมือจากเว็บเราเองได้ (พร้อม)', st === 'ready' && await hp.evaluate(() => !!document.querySelector('.hf video').srcObject?.active), st);
+    const cur = () => hp.evaluate(() => window.__ui.homeState().cur);
+    const until = async (fn, ms = 6000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (await fn()) return true; await wait(150); } return false; };
+    await hp.evaluate(() => window.__ui.handSwipe('up'));
+    const up = await until(async () => (await cur()) === 1);
+    await hp.evaluate(() => window.__ui.handSwipe('down'));
+    const down = await until(async () => (await cur()) === 0 && await hp.evaluate(() => document.getElementById('stage').scrollTop) < 2, 10000);
+    const left0 = await hp.evaluate(() => document.querySelector('#stage .npage .nrow').scrollLeft);
+    await hp.evaluate(() => window.__ui.handSwipe('left'));
+    const left = await until(() => hp.evaluate(l => document.querySelector('#stage .npage .nrow').scrollLeft > l + 50, left0));
+    check('โบกมือ: ขึ้น = งานถัดไป · ลง = งานก่อนหน้า · ซ้าย = โน้ตถัดไป', up && down && left, `${up} ${down} ${left}`);
+    await hp.evaluate(() => window.__ui.setSnap(2)); await wait(500);
+    check('โบกมือ: ออกจากหน้าโน้ต = กล้องดับ', await hp.evaluate(() => !document.querySelector('.hf') && !document.body.classList.contains('hf-on')));
+    // หน้าแนะนำ: ปุ่มโบกมือ → ตัวตามมือพร้อม → ปิดได้
+    await hp.goto('https://sabaii-hand.test/landing.html'); await wait(800);
+    await hp.locator('.handbtn').click();
+    const ls = await hp.waitForSelector('.hb[data-state="ready"], .hb[data-state="unsupported"], .hb[data-state="denied"]', { timeout: 90000 }).then(e => e.getAttribute('data-state')).catch(() => 'timeout');
+    await hp.locator('.handbtn').click(); await wait(400);
+    check('หน้าแนะนำ: ปุ่มโบกมือเปิดกล้อง พร้อมใช้ แล้วปิดได้', ls === 'ready' && await hp.evaluate(() => !document.querySelector('.hb')), ls);
+    await hctx.close();
   }
 
   check('ไม่มี error ใน console', errors.length === 0, errors.slice(0, 3).join(' | '));

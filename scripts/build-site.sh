@@ -6,9 +6,11 @@
 set -e
 cd "$(dirname "$0")/.."
 rm -rf dist && mkdir -p dist/app dist/src
-sed 's|<meta name="sabaii-app" content="[^"]*">|<meta name="sabaii-app" content="app/?from=landing">|' landing.html > dist/index.html
+sed -e 's|<meta name="sabaii-app" content="[^"]*">|<meta name="sabaii-app" content="app/?from=landing">|' \
+    -e 's|<meta name="sabaii-hand" content="[^"]*">|<meta name="sabaii-hand" content="app/src/gesture/hand.js">|' landing.html > dist/index.html
 cp -R src/landing dist/src/landing
 cp -R assets icon.svg dist/
+rm -rf dist/assets/vendor   # ตัวตามมือ (~17MB) มีชุดเดียวที่ /app/ — หน้าแนะนำโหลดจากที่นั่น
 cp index.html manifest.webmanifest sw.js icon.svg dist/app/
 cp -R src assets dist/app/
 rm -rf dist/app/src/landing
