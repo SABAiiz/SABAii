@@ -317,10 +317,36 @@ h2 { font: 700 clamp(34px, 5.4vw, 60px)/1.15 var(--f-display); letter-spacing: -
   .float-chip, .scr, .steps li { transition: none; }
 }
 
-/* เปลี่ยนหน้าระหว่างหน้าแนะนำ ↔ แอปแบบนุ่ม (เบราว์เซอร์ที่ไม่รองรับจะเปลี่ยนหน้าตามปกติ) */
-@view-transition { navigation: auto; }
-::view-transition-old(root) { animation: .28s ease-in both vt-out; }
-::view-transition-new(root) { animation: .42s cubic-bezier(.2,.8,.2,1) both vt-in; }
-@keyframes vt-out { to { opacity: 0; transform: scale(.98); } }
-@keyframes vt-in { from { opacity: 0; transform: translateY(18px); } }
-@media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
+
+/* ================= ความลึก (เพิ่มบนของเดิม ไม่เปลี่ยนเลย์เอาต์) =================
+   ฉากแรกเป็น 3 มิติจริง: .hero ให้มุมมอง · .cards หมุนทั้งฉาก (เมาส์/เอียงเครื่อง) · .fc แต่ละใบมีระยะ Z ของตัวเอง */
+.hero { perspective: 1100px; perspective-origin: 50% 42%; }
+.cards { transform-style: preserve-3d; will-change: transform; }
+.fc { transform-style: preserve-3d; }
+/* เงายิ่งใกล้ยิ่งฟุ้งและลึก (--d มาจาก data-depth) */
+.hero .card { position: relative; overflow: hidden;
+  box-shadow: 0 calc(12px + 16px * var(--d, 1)) calc(26px + 28px * var(--d, 1)) calc(-14px - 8px * var(--d, 1)) rgba(11, 27, 77, calc(.2 + .14 * var(--d, 1))), 0 2px 6px rgba(11, 27, 77, .06); }
+.hero .card.pill { overflow: visible; }
+/* แสงสะท้อนจากทิศเดียวกันทุกใบ ขยับตามการหมุนของฉาก */
+.hero .card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(140% 90% at var(--lx, 50%) var(--ly, 8%), rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 46%); mix-blend-mode: soft-light; }
+
+/* จอมือถือ: ขั้นก่อนหน้าเลื่อนขึ้นไป ขั้นถัดไปโผล่จากล่าง (ตามทิศที่เลื่อน) + ชัดลึก */
+.scr { filter: blur(6px); transition: opacity .55s var(--ease), transform .7s var(--ease), filter .55s var(--ease); }
+.pin[data-step="0"] .s0, .pin[data-step="1"] .s1, .pin[data-step="2"] .s2 { filter: none; }
+.pin[data-step="1"] .s0, .pin[data-step="2"] .s0, .pin[data-step="2"] .s1 { transform: translateY(-26px) scale(.98); }
+
+/* กล่องจุดเด่น: ลอยขึ้นจากความลึก + สปอตไลต์ตามเคอร์เซอร์ */
+.anim .bento .rv { transform: perspective(900px) translate3d(0, 56px, -60px) rotateX(12deg) scale(.96); transform-origin: 50% 100%; }
+.anim .bento .rv.in { transform: none; }
+.bx { position: relative; overflow: hidden; }
+.bx::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .35s;
+  background: radial-gradient(280px circle at var(--sx, 50%) var(--sy, 50%), rgba(10, 108, 241, .09), transparent 70%); }
+.bx:hover::before { opacity: 1; }
+
+/* เข้าแอป: วงขาวขยายจากปุ่ม (สีเดียวกับพื้นแบบสอบถาม) */
+.portal { position: fixed; inset: 0; z-index: 100; background: #fff; pointer-events: none; clip-path: circle(0px at var(--cx) var(--cy)); transition: clip-path .64s cubic-bezier(.7, 0, .25, 1); }
+.portal.go { clip-path: circle(150vmax at var(--cx) var(--cy)); }
+.leaving main { opacity: .55; transition: opacity .5s; }
+.leaving .app-link { transform: scale(.94); }
+@media (prefers-reduced-motion: reduce) { .scr { filter: none; } .anim .bento .rv { transform: none; } }
