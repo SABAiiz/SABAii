@@ -1,0 +1,505 @@
+<title>หน้าโน้ตงาน 6 แบบ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700;800&family=Mali:wght@500;600;700&family=IBM+Plex+Mono:wght@600&display=swap">
+<style>
+/* หน้ากระดาน: หัวเรื่อง + ตาราง 3 คอลัมน์ของมือถือ 375×812 (จอแคบ = คอลัมน์เดียว ย่อเครื่องให้พอดี)
+   หน้าจอในเครื่องคือภาพจำลองแอป (แอปเป็นธีมสว่างอย่างเดียว) จึงใช้สีตายตัว ส่วนกรอบหน้ากระดานตามธีมผู้ดู */
+:root{
+  --page:#E7ECF4; --ink:#0B1B4D; --sub:#56627C; --card:#FFFFFF; --rule:#D3DBE8; --accent:#0A6CF1; --frame:#0E1324;
+  --f-head:"Anuphan","Noto Sans Thai Looped",system-ui,sans-serif;
+  --f-app:"Inter","Noto Sans Thai Looped","Thonburi","Leelawadee UI",Tahoma,sans-serif;
+  --f-hand:"Mali","Noto Sans Thai Looped",cursive;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--page:#0A0F1E;--ink:#E7ECF6;--sub:#98A3BD;--card:#131A2D;--rule:#28324E;--accent:#5A9BFF;--frame:#000;color-scheme:dark}}
+:root[data-theme="dark"]{--page:#0A0F1E;--ink:#E7ECF6;--sub:#98A3BD;--card:#131A2D;--rule:#28324E;--accent:#5A9BFF;--frame:#000;color-scheme:dark}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font-family:var(--f-app);-webkit-font-smoothing:antialiased;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1320px;margin:0 auto}
+header{max-width:860px;margin-bottom:36px}
+header .eyebrow{font:600 12.5px/1 var(--f-head);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+header h1{font:700 clamp(28px,4vw,40px)/1.15 var(--f-head);letter-spacing:-.01em;text-wrap:balance}
+header p{color:var(--sub);font-size:15px;line-height:1.7;margin-top:10px;max-width:68ch}
+.keep{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.keep span{font-size:12.5px;font-weight:600;border:1px solid var(--rule);background:var(--card);border-radius:999px;padding:4px 10px;color:var(--sub)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:48px 28px;justify-items:center}
+.item{width:395px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.cap{min-height:150px}
+.cap h2{font:700 20px/1.3 var(--f-head);display:flex;align-items:baseline;gap:10px}
+.cap h2 b{font:700 13px/1 var(--f-mono);color:var(--accent);border:1.5px solid currentColor;border-radius:7px;padding:4px 6px}
+.cap p{font-size:13.5px;line-height:1.65;color:var(--sub);margin-top:6px}
+.cap .meta{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.cap .meta span{font-size:12px;font-weight:700;border-radius:6px;padding:3px 8px;background:var(--card);border:1px solid var(--rule)}
+.cap .meta .warn{color:#C2410C}
+.cap .meta .ok{color:#15803D}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cap .meta .warn{color:#FDBA74}:root:not([data-theme="light"]) .cap .meta .ok{color:#86EFAC}}
+:root[data-theme="dark"] .cap .meta .warn{color:#FDBA74}
+:root[data-theme="dark"] .cap .meta .ok{color:#86EFAC}
+.pw{padding:10px}
+@media (max-width:440px){.grid{grid-template-columns:1fr}.item{width:100%}.pw{zoom:.86;align-self:center}}
+@media (max-width:370px){.pw{zoom:.76}}
+
+/* ================= มือถือ (ร่วมกันทุกแบบ) ================= */
+.phone{width:375px;height:812px;border-radius:50px;position:relative;overflow:hidden;isolation:isolate;flex:none;
+  font-family:var(--f-app);color:#0B1B4D;background:#EEF2F9;
+  box-shadow:0 0 0 9px var(--frame),0 0 0 10px #2B3149,0 34px 60px -22px rgba(11,27,77,.5)}
+.phone *{box-sizing:border-box}
+.sb{position:absolute;top:0;left:0;right:0;height:50px;display:flex;justify-content:space-between;align-items:center;padding:8px 30px 0 40px;font-weight:600;font-size:16px;z-index:20}
+.sb svg{height:12px;width:auto}
+.island{position:absolute;top:11px;left:50%;width:112px;height:33px;margin-left:-56px;background:#000;border-radius:20px;z-index:21}
+.hi{position:absolute;bottom:8px;left:50%;width:130px;margin-left:-65px;height:5px;border-radius:3px;background:#0B1B4D;z-index:21}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.fill{fill:currentColor;stroke:none}
+.abs{position:absolute}
+.ph{overflow:hidden}
+.ph img{display:block;width:100%;height:100%;object-fit:cover}
+.grab{width:38px;height:5px;border-radius:3px;background:#E1E7F2;margin:0 auto}
+.row{display:flex;align-items:center}
+
+/* ================= 1 · เรียบหรู ================= */
+.v1{background:linear-gradient(180deg,#FFEBD2 0%,#F7F1EA 34%,#EEF2F9 64%)}
+.v1 .top{top:58px;left:16px;right:16px;gap:8px}
+.v1 .fab{width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 4px 14px rgba(120,70,20,.12)}
+.v1 .chip{height:42px;border-radius:21px;background:#fff;gap:8px;padding:0 14px 0 5px;box-shadow:0 4px 14px rgba(120,70,20,.12);font-size:14px;font-weight:700}
+.v1 .chip small{font-weight:500;color:#5E6B85;font-size:13px}
+.v1 .badge{width:32px;height:32px;border-radius:50%;background:#FDE3C2;color:#B85F0B;font-size:10.5px;font-weight:800;display:grid;place-items:center}
+.v1 .pg{margin-left:auto;height:42px;border-radius:21px;background:rgba(255,255,255,.7);padding:0 12px;font-size:12.5px;font-weight:700;color:#5E6B85;gap:6px}
+.v1 .pg i{display:block;width:6px;height:6px;border-radius:3px;background:#C9D2E3}
+.v1 .pg i.on{height:14px;background:#0B1B4D}
+.v1 .photo{top:118px;left:50%;width:290px;height:346px;margin-left:-145px;background:#fff;padding:6px;border-radius:24px;box-shadow:0 22px 40px -14px rgba(140,80,20,.38),0 2px 6px rgba(11,27,77,.06)}
+.v1 .photo .ph{width:100%;height:100%;border-radius:18px}
+.v1 .tag{left:16px;bottom:16px;background:rgba(11,27,77,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:#fff;font-size:11px;font-weight:600;padding:5px 9px;border-radius:10px;gap:5px}
+.v1 .tag .ic{width:12px;height:12px}
+.v1 .peek{top:474px;left:0;right:0;justify-content:center;gap:4px;font-size:12.5px;color:#5E6B85;font-weight:600}
+.v1 .peek .ic{width:15px;height:15px}
+.v1 .peek b{color:#0B1B4D}
+.v1 .sheet{left:0;right:0;bottom:0;height:308px;background:#fff;border-radius:30px 30px 0 0;padding:10px 20px 0;box-shadow:0 -12px 30px rgba(11,27,77,.07)}
+.v1 .chips{gap:6px;margin-top:14px}
+.v1 .t{height:26px;padding:0 10px;border-radius:13px;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.v1 .t-s{background:#FFF1DF;color:#B85F0B}
+.v1 .t-d{background:#FDECEE;color:#D9443A}
+.v1 .t-d::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px rgba(217,68,58,.18)}
+.v1 h3{font-size:28px;font-weight:800;letter-spacing:-.5px;line-height:1.2;margin-top:8px}
+.v1 .desc{font-size:13.5px;color:#5E6B85;margin-top:1px}
+.v1 .edit{top:36px;right:20px;width:42px;height:42px;border-radius:50%;background:#F1F4FA;display:grid;place-items:center}
+.v1 .lbl{font-size:11.5px;font-weight:700;color:#8590A8;letter-spacing:.08em;margin:16px 0 8px}
+.v1 .adds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.v1 .add{height:60px;border-radius:18px;background:#F5F7FB;border:1px solid #E7ECF5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:13px;font-weight:700}
+.v1 .add .ic{color:#0A6CF1}
+.v1 .cta{margin-top:14px;height:58px;border-radius:20px;background:linear-gradient(180deg,#2B82FF,#0A6CF1);color:#fff;padding:0 8px 0 22px;font-size:18px;font-weight:800;gap:10px;box-shadow:0 12px 22px -10px rgba(10,108,241,.7),inset 0 1px 0 rgba(255,255,255,.25)}
+.v1 .cta small{font-size:13px;font-weight:600;opacity:.75}
+.v1 .cta span{margin-left:auto;width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+
+/* ================= 2 · ภาพเต็มจอ ================= */
+.v2{background:#0B1430;color:#fff}
+.v2 .sb{color:#fff}
+.v2 .hi{background:#fff}
+.v2 .bg{inset:-50px;background:url(sabaii-note-photo.jpg) center/cover;filter:blur(30px) brightness(.5) saturate(1.4)}
+.v2 .bg2{inset:0;background:linear-gradient(180deg,rgba(6,12,36,.45),rgba(6,12,36,0) 35%,rgba(6,12,36,.55))}
+.v2 .glass{background:rgba(255,255,255,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.18)}
+.v2 .top{top:58px;left:16px;right:16px;gap:8px}
+.v2 .fab{width:42px;height:42px;border-radius:50%;display:grid;place-items:center}
+.v2 .chip{height:42px;border-radius:21px;gap:8px;padding:0 14px;font-size:14px;font-weight:700}
+.v2 .chip i{width:9px;height:9px;border-radius:50%;background:#FFB054;box-shadow:0 0 10px #FFB054}
+.v2 .chip small{font-weight:500;opacity:.7;font-size:13px}
+.v2 .vp{right:12px;top:250px;flex-direction:column;gap:6px;align-items:center}
+.v2 .vp i{width:4px;height:22px;border-radius:2px;background:rgba(255,255,255,.3)}
+.v2 .vp i.on{background:#fff}
+.v2 .vp small{font-size:10px;opacity:.7;margin-top:2px}
+.v2 .photo{top:114px;left:32px;right:32px;height:370px;border-radius:20px;box-shadow:0 34px 60px -14px rgba(0,0,0,.7)}
+.v2 .tag{left:12px;bottom:12px;font-size:11px;font-weight:600;padding:5px 9px;border-radius:10px;gap:5px;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.v2 .tag .ic{width:12px;height:12px}
+.v2 .peek{top:496px;left:0;right:0;justify-content:center;gap:4px;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.72)}
+.v2 .peek .ic{width:15px;height:15px}
+.v2 .sheet{left:0;right:0;bottom:0;height:290px;border-radius:32px 32px 0 0;padding:10px 22px 0;background:rgba(16,24,56,.5);backdrop-filter:blur(34px) saturate(1.6);-webkit-backdrop-filter:blur(34px) saturate(1.6);border-top:1px solid rgba(255,255,255,.16)}
+.v2 .grab{background:rgba(255,255,255,.3)}
+.v2 .kick{margin-top:16px;gap:7px;font-size:13px;font-weight:600;color:rgba(255,255,255,.72)}
+.v2 .kick b{color:#FF8E7E;font-weight:700}
+.v2 .kick i{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.45)}
+.v2 h3{font-size:31px;font-weight:800;letter-spacing:-.6px;line-height:1.2;margin-top:4px}
+.v2 .edit{top:34px;right:22px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center}
+.v2 .adds{display:flex;justify-content:space-between;padding:0 14px;margin-top:18px}
+.v2 .add{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;color:rgba(255,255,255,.85)}
+.v2 .add span{width:54px;height:54px;border-radius:50%;display:grid;place-items:center}
+.v2 .add .ic{width:22px;height:22px}
+.v2 .cta{margin-top:18px;height:56px;border-radius:28px;background:#fff;color:#0B1B4D;justify-content:center;gap:10px;font-size:18px;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.v2 .cta .ic{width:16px;height:16px}
+
+/* ================= 3 · ใบงาน (ตั๋ว) ================= */
+.v3{background:#E6EBF4}
+.v3 .top{top:58px;left:16px;right:16px;gap:8px}
+.v3 .fab{width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 3px 10px rgba(11,27,77,.08)}
+.v3 .chip{height:42px;border-radius:21px;background:#fff;gap:8px;padding:0 14px 0 6px;font-size:14px;font-weight:700;box-shadow:0 3px 10px rgba(11,27,77,.08)}
+.v3 .chip .badge{width:30px;height:30px;border-radius:9px;background:#F4A340;color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center}
+.v3 .pg{margin-left:auto;font:600 13px var(--f-mono);color:#5E6B85;background:#fff;height:32px;border-radius:9px;padding:0 10px;display:flex;align-items:center}
+.v3 .photo{top:114px;left:50%;width:316px;height:378px;margin-left:-158px;border-radius:18px;box-shadow:0 20px 36px -14px rgba(11,27,77,.4)}
+.v3 .tag{right:12px;top:12px;font-size:11px;font-weight:600;padding:5px 9px;border-radius:10px;gap:5px;background:rgba(255,255,255,.9);color:#0B1B4D}
+.v3 .tag .ic{width:12px;height:12px}
+.v3 .peek{top:502px;left:0;right:0;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:#5E6B85}
+.v3 .peek .ic{width:14px;height:14px}
+.v3 .tk{left:12px;right:12px;bottom:26px;filter:drop-shadow(0 16px 26px rgba(11,27,77,.16))}
+.v3 .tk-a{background:#fff;border-radius:24px 24px 0 0;padding:16px 20px 16px;border-bottom:2px dashed #D6DEEB;position:relative}
+.v3 .tk-b{background:#fff;border-radius:0 0 24px 24px;padding:14px 14px;gap:8px;position:relative}
+.v3 .tk-b::before,.v3 .tk-b::after{content:"";position:absolute;top:-12px;width:22px;height:22px;border-radius:50%;background:#E6EBF4}
+.v3 .tk-b::before{left:-11px}.v3 .tk-b::after{right:-11px}
+.v3 .lab{font:600 11px var(--f-mono);letter-spacing:.12em;color:#D07A12}
+.v3 h3{font-size:26px;font-weight:800;letter-spacing:-.4px;line-height:1.2;margin-top:4px}
+.v3 .edit{top:14px;right:14px;width:38px;height:38px;border-radius:12px;background:#F1F4FA;display:grid;place-items:center}
+.v3 .edit .ic{width:18px;height:18px}
+.v3 .fields{display:grid;grid-template-columns:repeat(3,1fr);margin-top:12px}
+.v3 .fields div{padding-left:12px;border-left:1px solid #E6EBF4}
+.v3 .fields div:first-child{padding-left:0;border-left:0}
+.v3 .fields small{display:block;font-size:11px;color:#8590A8;font-weight:600}
+.v3 .fields b{display:block;font-size:15px;font-weight:800}
+.v3 .fields .red{color:#D9443A}
+.v3 .sq{width:50px;height:52px;border-radius:15px;background:#F1F4FA;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:10px;font-weight:700;color:#5E6B85}
+.v3 .sq .ic{color:#0B1B4D}
+.v3 .cta{flex:1;height:52px;border-radius:15px;background:#0A6CF1;color:#fff;justify-content:center;gap:8px;font-size:17px;font-weight:800}
+.v3 .cta .ic{width:18px;height:18px}
+
+/* ================= 4 · สมุดกราฟ ================= */
+.v4{background-color:#F4F7FC;background-image:linear-gradient(#DCE5F3 1px,transparent 1px),linear-gradient(90deg,#DCE5F3 1px,transparent 1px);background-size:22px 22px;background-position:-1px 6px}
+.v4 .ink{border:2px solid #0B1B4D;box-shadow:3px 3px 0 #0B1B4D}
+.v4 .top{top:58px;left:16px;right:16px;gap:10px}
+.v4 .fab{width:42px;height:42px;border-radius:14px;background:#fff;display:grid;place-items:center}
+.v4 .chip{height:42px;border-radius:14px;background:#fff;gap:8px;padding:0 12px 0 5px;font-size:14px;font-weight:700}
+.v4 .chip .badge{width:30px;height:30px;border-radius:9px;background:#F4A340;color:#0B1B4D;font-size:10px;font-weight:800;display:grid;place-items:center;border:1.5px solid #0B1B4D}
+.v4 .pg{margin-left:auto;font:700 15px var(--f-hand);color:#0B1B4D}
+.v4 .photo{top:118px;left:44px;width:268px;background:#fff;padding:10px 10px 0;border-radius:4px;box-shadow:0 16px 28px -12px rgba(11,27,77,.38),0 1px 2px rgba(11,27,77,.12)}
+.v4 .photo .ph{width:248px;height:296px}
+.v4 .photo p{font:600 14px/40px var(--f-hand);color:#33406A;text-align:center}
+.v4 .tape{top:-13px;left:50%;width:96px;height:26px;margin-left:-48px;background:rgba(255,213,92,.78);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.v4 .ghost{top:146px;left:330px;width:200px;height:300px;border:2px dashed #94A9CF;border-radius:6px;background:rgba(255,255,255,.55);padding:12px 0 0 10px;color:#5A6F99}
+.v4 .peek{top:494px;left:0;right:0;justify-content:center;gap:4px;font:600 14px var(--f-hand);color:#33406A}
+.v4 .peek .ic{width:15px;height:15px}
+.v4 .sheet{left:0;right:0;bottom:0;height:298px;background:#fff;border-radius:26px 26px 0 0;border-top:2px solid #0B1B4D;padding:10px 20px 0}
+.v4 .grab{background:#0B1B4D;opacity:.18}
+.v4 .chips{gap:8px;margin-top:14px}
+.v4 .stamp{border:2px solid #D9443A;color:#D9443A;border-radius:8px;padding:1px 8px;font-size:12.5px;font-weight:800}
+.v4 .chips small{font-size:13px;color:#5E6B85;font-weight:600}
+.v4 h3{font:700 31px/1.35 var(--f-hand);margin-top:4px}
+.v4 h3 mark{background:linear-gradient(transparent 52%,#FFE27A 52%,#FFE27A 88%,transparent 88%);color:inherit;padding:0 3px}
+.v4 .edit{top:34px;right:20px;width:40px;height:40px;border-radius:12px;background:#fff;display:grid;place-items:center}
+.v4 .adds{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.v4 .add{height:50px;border-radius:14px;background:#fff;justify-content:center;gap:6px;font-size:14px;font-weight:700}
+.v4 .add.y{background:#FFF6D6}.v4 .add.b{background:#E7F0FE}.v4 .add.p{background:#FCE8F1}
+.v4 .cta{margin-top:16px;height:58px;border-radius:16px;background:#0A6CF1;color:#fff;justify-content:center;gap:10px;font-size:19px;font-weight:800;border:2px solid #0B1B4D;box-shadow:4px 4px 0 #0B1B4D}
+
+/* ================= 5 · สีวิชาเต็มหัว ================= */
+.v5{background:#fff}
+.v5 .sb{color:#fff}
+.v5 .hero{inset:0 0 auto 0;height:560px;background:radial-gradient(120% 75% at 85% 0%,#FFC074 0%,#F6A043 38%,#E7792A 100%)}
+.v5 .wm{top:396px;left:-14px;font:800 150px/1 "Noto Sans Thai Looped",sans-serif;color:rgba(255,255,255,.16);letter-spacing:-4px;white-space:nowrap}
+.v5 .top{top:58px;left:16px;right:16px;gap:8px;color:#fff}
+.v5 .fab{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center}
+.v5 .chip{height:42px;border-radius:21px;background:rgba(255,255,255,.22);gap:6px;padding:0 15px;font-size:14px;font-weight:700}
+.v5 .chip small{font-weight:500;opacity:.85;font-size:13px}
+.v5 .pg{margin-left:auto;font-size:12.5px;font-weight:700;opacity:.9}
+.v5 .photo{top:116px;left:50%;width:298px;height:356px;margin-left:-149px;border-radius:22px;border:4px solid #fff;box-shadow:0 26px 40px -14px rgba(120,45,0,.6)}
+.v5 .peek{top:490px;left:50%;transform:translateX(-50%);height:30px;padding:0 12px;border-radius:15px;background:rgba(255,255,255,.22);color:#fff;font-size:12.5px;font-weight:700;gap:4px;white-space:nowrap}
+.v5 .peek .ic{width:14px;height:14px}
+.v5 .sheet{left:0;right:0;bottom:0;height:282px;background:#fff;border-radius:30px 30px 0 0;padding:10px 20px 0}
+.v5 .due{margin-top:14px;gap:8px;font-size:14px;font-weight:700;color:#D9443A}
+.v5 .due small{color:#8590A8;font-weight:600;font-size:13px}
+.v5 h3{font-size:30px;font-weight:800;letter-spacing:-.6px;line-height:1.2;margin-top:2px}
+.v5 .edit{top:30px;right:20px;width:40px;height:40px;border-radius:50%;background:#F1F4FA;display:grid;place-items:center}
+.v5 .addr{margin-top:16px;gap:8px}
+.v5 .addr p{flex:1;font-size:14px;font-weight:700;color:#5E6B85}
+.v5 .addr span{width:46px;height:46px;border-radius:50%;background:#FFF0DD;color:#C4650C;display:grid;place-items:center}
+.v5 .slide{margin-top:18px;height:62px;border-radius:31px;background:#0B1B4D;position:relative;justify-content:center;color:#fff;font-size:16px;font-weight:700;gap:10px}
+.v5 .slide .th{position:absolute;left:5px;top:5px;width:52px;height:52px;border-radius:50%;background:#F6A043;display:grid;place-items:center;box-shadow:0 4px 12px rgba(246,160,67,.5)}
+.v5 .slide .chev{letter-spacing:-2px;background:linear-gradient(90deg,rgba(255,255,255,.15),rgba(255,255,255,.7));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800}
+
+/* ================= 6 · การ์ดลอย ================= */
+.v6{background:radial-gradient(90% 60% at 50% 30%,#FFFFFF 0%,#E9EEF7 100%)}
+.v6 .top{top:58px;left:16px;right:16px;gap:8px}
+.v6 .fab{width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 3px 12px rgba(11,27,77,.08)}
+.v6 .chip{height:42px;border-radius:21px;background:#fff;gap:6px;padding:0 14px;font-size:14px;font-weight:700;box-shadow:0 3px 12px rgba(11,27,77,.08)}
+.v6 .chip small{color:#5E6B85;font-weight:500;font-size:13px}
+.v6 .pg{margin-left:auto;gap:5px}
+.v6 .pg i{width:7px;height:7px;border-radius:4px;background:#C9D2E3}
+.v6 .pg i.on{width:20px;background:#0B1B4D}
+.v6 .photo{top:114px;left:52px;width:272px;height:325px;border-radius:24px;box-shadow:0 22px 36px -16px rgba(11,27,77,.45)}
+.v6 .next{top:136px;left:338px;width:240px;height:281px;border-radius:22px;background:#fff;border:2px dashed #C3CEE2;padding:0 0 0 10px;color:#0A6CF1;align-items:center}
+.v6 .dots{top:452px;left:0;right:0;justify-content:center;gap:6px}
+.v6 .dots i{width:6px;height:6px;border-radius:3px;background:#C9D2E3}
+.v6 .dots i.on{width:18px;background:#0A6CF1}
+.v6 .peek{top:470px;left:0;right:0;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:#8590A8}
+.v6 .peek .ic{width:14px;height:14px}
+.v6 .card{left:10px;right:10px;bottom:22px;background:#fff;border-radius:32px;padding:16px;box-shadow:0 24px 50px -12px rgba(11,27,77,.3),0 0 0 1px rgba(11,27,77,.04)}
+.v6 .hd{gap:12px}
+.v6 .badge{width:48px;height:48px;border-radius:15px;background:#F4A340;color:#fff;font-size:13px;font-weight:800;display:grid;place-items:center;flex:none}
+.v6 .hd h3{font-size:22px;font-weight:800;letter-spacing:-.3px;line-height:1.2}
+.v6 .hd small{font-size:13px;color:#5E6B85;font-weight:600}
+.v6 .edit{margin-left:auto;width:40px;height:40px;border-radius:50%;background:#F1F4FA;display:grid;place-items:center;flex:none}
+.v6 .bento{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.v6 .bx{border-radius:18px;padding:10px 12px;min-height:64px}
+.v6 .bx small{display:block;font-size:11.5px;font-weight:700;letter-spacing:.02em}
+.v6 .bx b{display:block;font-size:19px;font-weight:800;margin-top:1px}
+.v6 .bx.r{background:#FDECEE;color:#D9443A}
+.v6 .bx.n{background:#F1F4FA;gap:10px}
+.v6 .bx.n small{color:#5E6B85}
+.v6 .bx.n .mini{width:36px;height:42px;border-radius:8px;flex:none}
+.v6 .seg{margin-top:8px;height:50px;border-radius:16px;background:#F1F4FA;display:grid;grid-template-columns:repeat(3,1fr)}
+.v6 .seg span{display:flex;align-items:center;justify-content:center;gap:6px;font-size:13.5px;font-weight:700;position:relative}
+.v6 .seg span+span::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:1px;background:#DCE3EF}
+.v6 .seg .ic{width:18px;height:18px;color:#0A6CF1}
+.v6 .cta{margin-top:10px;height:56px;border-radius:18px;background:#0B1B4D;color:#fff;padding:0 7px 0 20px;font-size:18px;font-weight:800}
+.v6 .cta small{font-size:12.5px;font-weight:600;opacity:.6;margin-left:8px}
+.v6 .cta span{margin-left:auto;width:42px;height:42px;border-radius:13px;background:#0A6CF1;display:grid;place-items:center}
+
+@media (prefers-reduced-motion: no-preference){
+  .v1 .t-d::before{animation:pulse 1.8s ease-in-out infinite}
+  .v5 .slide .th{animation:nudge 2.4s ease-in-out infinite}
+}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(217,68,58,0)}}
+@keyframes nudge{0%,70%,100%{transform:translateX(0)}82%{transform:translateX(14px)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="sig" viewBox="0 0 64 12"><rect x="0" y="8" width="3.5" height="4" rx="1"/><rect x="5" y="5.5" width="3.5" height="6.5" rx="1"/><rect x="10" y="3" width="3.5" height="9" rx="1" opacity=".35"/><rect x="15" y="0" width="3.5" height="12" rx="1" opacity=".35"/><text x="23" y="11" font-size="12" font-weight="700" font-family="Inter,sans-serif">5G</text><rect x="42" y="0.5" width="19" height="11" rx="3.5"/><rect x="62" y="4" width="1.6" height="4" rx=".8"/></symbol>
+</svg>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">SABAii · หน้าโน้ตงาน</div>
+  <h1>หน้าโน้ตงาน 6 แบบ — โครงเดิม หน้าตาใหม่</h1>
+  <p>ทุกแบบมีของเดิมครบ ไม่เพิ่มหรือตัดหน้าที่ ต่างกันที่การจัดลำดับสายตาและอารมณ์ของหน้า ภาพในเครื่องใช้รูปจริงของงาน Mind mapping · งานถัดไปสมมติเป็นคณิต</p>
+  <div class="keep"><span>ปุ่มกลับ</span><span>ป้ายวิชา + จำนวนโน้ต</span><span>รูปโน้ตเต็มใบ</span><span>ปัดขึ้น = งานถัดไป</span><span>ชื่องาน · กำหนดส่ง · แก้ไข</span><span>เพิ่มโน้ต รูป / ข้อความ / เสียง</span><span>ทำเลย</span></div>
+</header>
+
+<div class="grid">
+
+<!-- ============ 1 ============ -->
+<section class="item">
+  <div class="cap">
+    <h2><b>01</b>เรียบหรู ใกล้ของเดิมที่สุด</h2>
+    <p>สีวิชาเป็นแสงจาง ๆ ด้านบน · รูปมีขอบขาวเหมือนรูปอัด · วิชากับกำหนดส่งย้ายไปเป็นป้ายเหนือชื่องาน ชื่องานเลยไม่ต้องซ้ำ "วิทยาศาสตร์" · ปุ่มเพิ่มโน้ตเป็นกล่องไอคอนสีฟ้า · ตัดปุ่ม + ลอยที่ซ้ำกับปุ่มเพิ่มโน้ต</p>
+    <div class="meta"><span class="ok">แก้ CSS เป็นหลัก</span><span>เสี่ยงน้อย</span></div>
+  </div>
+  <div class="pw"><div class="phone v1">
+    <div class="island"></div>
+    <div class="sb"><span>09:53</span><svg viewBox="0 0 64 12"><use href="#sig"/></svg></div>
+    <div class="abs row top">
+      <div class="fab"><svg class="ic"><use href="#i-back"/></svg></div>
+      <div class="row chip"><span class="badge">วิทย์</span>วิทยาศาสตร์<small>· โน้ต 1</small></div>
+      <div class="row pg"><i class="on"></i><i></i>1/2</div>
+    </div>
+    <div class="abs photo"><div class="ph"><img src="sabaii-note-photo.jpg" alt="รูปโน้ต: สไลด์ Introduction to mind mapping บนจอหน้าห้อง"></div>
+      <div class="abs row tag"><svg class="ic"><use href="#i-cam"/></svg>พฤ. 19 พ.ย. · 08:54</div></div>
+    <div class="abs row peek"><svg class="ic"><use href="#i-up"/></svg>ปัดขึ้น · งานถัดไป <b>คณิต</b></div>
+    <div class="abs sheet">
+      <div class="grab"></div>
+      <div class="row chips"><span class="t t-s">วิทยาศาสตร์</span><span class="t t-d">ส่งวันนี้</span></div>
+      <h3>Mind mapping</h3>
+      <div class="desc">ผังความคิด 5W1H · ประมาณ 30 นาที</div>
+      <div class="abs edit"><svg class="ic"><use href="#i-pen"/></svg></div>
+      <div class="lbl">เพิ่มโน้ตให้งานนี้</div>
+      <div class="adds">
+        <div class="add"><svg class="ic"><use href="#i-cam"/></svg>รูป</div>
+        <div class="add"><svg class="ic"><use href="#i-pen"/></svg>ข้อความ</div>
+        <div class="add"><svg class="ic"><use href="#i-mic"/></svg>เสียง</div>
+      </div>
+      <div class="row cta">ทำเลย <small>เริ่มจับเวลา</small><span><svg class="ic fill"><use href="#i-play"/></svg></span></div>
+    </div>
+    <div class="hi"></div>
+  </div></div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="item">
+  <div class="cap">
+    <h2><b>02</b>ภาพเต็มจอ</h2>
+    <p>รูปโน้ตเบลอเป็นพื้นหลัง ทุกงานจึงมีสีของตัวเองตามรูป · แผ่นล่างเป็นกระจกฝ้า ตัวหนังสือขาว · ปุ่มเพิ่มโน้ตเป็นวงกลมแบบแอปกล้อง · ปุ่มทำเลยสีขาวเด่นสุดในจอ</p>
+    <div class="meta"><span class="warn">หน้านี้หน้าเดียวเป็นสีมืด</span><span class="warn">กระจกฝ้ากินแรงเครื่องเก่า</span></div>
+  </div>
+  <div class="pw"><div class="phone v2">
+    <div class="abs bg"></div><div class="abs bg2"></div>
+    <div class="island"></div>
+    <div class="sb"><span>09:53</span><svg viewBox="0 0 64 12" fill="#fff" stroke="none"><use href="#sig"/></svg></div>
+    <div class="abs row top">
+      <div class="fab glass"><svg class="ic"><use href="#i-back"/></svg></div>
+      <div class="row chip glass"><i></i>วิทยาศาสตร์<small>· โน้ต 1</small></div>
+    </div>
+    <div class="abs row vp"><i class="on"></i><i></i><small>1/2</small></div>
+    <div class="abs ph photo"><img src="sabaii-note-photo.jpg" alt="รูปโน้ต: สไลด์ Introduction to mind mapping บนจอหน้าห้อง">
+      <div class="abs row tag"><svg class="ic"><use href="#i-cam"/></svg>08:54</div></div>
+    <div class="abs row peek"><svg class="ic"><use href="#i-up"/></svg>ปัดขึ้น · คณิต</div>
+    <div class="abs sheet">
+      <div class="grab"></div>
+      <div class="row kick">วิทยาศาสตร์<i></i><b>ส่งวันนี้</b></div>
+      <h3>Mind mapping</h3>
+      <div class="abs edit glass"><svg class="ic"><use href="#i-pen"/></svg></div>
+      <div class="adds">
+        <div class="add"><span class="glass"><svg class="ic"><use href="#i-cam"/></svg></span>รูป</div>
+        <div class="add"><span class="glass"><svg class="ic"><use href="#i-pen"/></svg></span>ข้อความ</div>
+        <div class="add"><span class="glass"><svg class="ic"><use href="#i-mic"/></svg></span>เสียง</div>
+      </div>
+      <div class="row cta"><svg class="ic fill"><use href="#i-play"/></svg>ทำเลย</div>
+    </div>
+    <div class="hi"></div>
+  </div></div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="item">
+  <div class="cap">
+    <h2><b>03</b>ใบงาน แบบตั๋ว</h2>
+    <p>แผ่นล่างกลายเป็นการ์ดลอยมีรอยปรุ แบ่ง "ข้อมูลงาน" กับ "ลงมือ" · ส่ง / ใช้เวลา / โน้ต อยู่ 3 ช่องอ่านทีเดียวจบ · ปุ่มเพิ่มโน้ตย่อเป็นปุ่มเล็กข้างปุ่มทำเลย รูปเลยใหญ่ขึ้นเกือบ 10%</p>
+    <div class="meta"><span>ปานกลาง</span><span class="warn">ปุ่มเพิ่มโน้ตเล็กลง</span></div>
+  </div>
+  <div class="pw"><div class="phone v3">
+    <div class="island"></div>
+    <div class="sb"><span>09:53</span><svg viewBox="0 0 64 12"><use href="#sig"/></svg></div>
+    <div class="abs row top">
+      <div class="fab"><svg class="ic"><use href="#i-back"/></svg></div>
+      <div class="row chip"><span class="badge">วิทย์</span>โน้ต 1 รายการ</div>
+      <div class="pg">01/02</div>
+    </div>
+    <div class="abs ph photo"><img src="sabaii-note-photo.jpg" alt="รูปโน้ต: สไลด์ Introduction to mind mapping บนจอหน้าห้อง">
+      <div class="abs row tag"><svg class="ic"><use href="#i-cam"/></svg>พฤ. 08:54</div></div>
+    <div class="abs row peek"><svg class="ic"><use href="#i-up"/></svg>ปัดขึ้น · คณิต</div>
+    <div class="abs tk">
+      <div class="tk-a">
+        <div class="lab">ใบงาน · วิทยาศาสตร์</div>
+        <h3>Mind mapping</h3>
+        <div class="abs edit"><svg class="ic"><use href="#i-pen"/></svg></div>
+        <div class="fields">
+          <div><small>ส่ง</small><b class="red">วันนี้</b></div>
+          <div><small>ใช้เวลา</small><b>~30 นาที</b></div>
+          <div><small>โน้ต</small><b>1 รูป</b></div>
+        </div>
+      </div>
+      <div class="row tk-b">
+        <div class="sq"><svg class="ic"><use href="#i-cam"/></svg>รูป</div>
+        <div class="sq"><svg class="ic"><use href="#i-pen"/></svg>ข้อความ</div>
+        <div class="sq"><svg class="ic"><use href="#i-mic"/></svg>เสียง</div>
+        <div class="row cta">ทำเลย<svg class="ic"><use href="#i-arrow"/></svg></div>
+      </div>
+    </div>
+    <div class="hi"></div>
+  </div></div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="item">
+  <div class="cap">
+    <h2><b>04</b>สมุดกราฟ</h2>
+    <p>พื้นเป็นกระดาษกราฟ รูปเป็นรูปโพลารอยด์ติดเทป (ตัวรูปตั้งตรง ไม่เอียง ตามที่เคยสั่งไว้) · ชื่องานเป็นลายมือ + ปากกาไฮไลต์ · ปุ่มขอบหนาเงาแข็งแบบสติกเกอร์ · ขอบการ์ดว่างโผล่ทางขวา บอกว่าปัดซ้ายเพื่อเพิ่มโน้ตได้</p>
+    <div class="meta"><span>สนุก ดูเป็นของนักเรียน</span><span class="warn">ต้องเปลี่ยนทั้งแอปให้เข้ากัน</span></div>
+  </div>
+  <div class="pw"><div class="phone v4">
+    <div class="island"></div>
+    <div class="sb"><span>09:53</span><svg viewBox="0 0 64 12"><use href="#sig"/></svg></div>
+    <div class="abs row top">
+      <div class="fab ink"><svg class="ic"><use href="#i-back"/></svg></div>
+      <div class="row chip ink"><span class="badge">วิทย์</span>โน้ต 1 รายการ</div>
+      <div class="pg">งาน 1/2</div>
+    </div>
+    <div class="abs row ghost"><svg class="ic"><use href="#i-plus"/></svg></div>
+    <div class="abs photo"><div class="abs tape"></div>
+      <div class="ph"><img src="sabaii-note-photo.jpg" alt="รูปโน้ต: สไลด์ Introduction to mind mapping บนจอหน้าห้อง"></div>
+      <p>จอหน้าห้อง · พฤ. 08:54</p></div>
+    <div class="abs row peek"><svg class="ic"><use href="#i-up"/></svg>ปัดขึ้น · คณิต</div>
+    <div class="abs sheet">
+      <div class="grab"></div>
+      <div class="row chips"><span class="stamp">ส่งวันนี้!</span><small>วิทยาศาสตร์</small></div>
+      <h3><mark>Mind mapping</mark></h3>
+      <div class="abs edit ink"><svg class="ic"><use href="#i-pen"/></svg></div>
+      <div class="adds">
+        <div class="row add ink y"><svg class="ic"><use href="#i-cam"/></svg>รูป</div>
+        <div class="row add ink b"><svg class="ic"><use href="#i-pen"/></svg>ข้อความ</div>
+        <div class="row add ink p"><svg class="ic"><use href="#i-mic"/></svg>เสียง</div>
+      </div>
+      <div class="row cta">ทำเลย<svg class="ic"><use href="#i-arrow"/></svg></div>
+    </div>
+    <div class="hi"></div>
+  </div></div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="item">
+  <div class="cap">
+    <h2><b>05</b>สีวิชาเต็มหัว + ปัดเพื่อเริ่ม</h2>
+    <p>ครึ่งบนทั้งก้อนเป็นสีวิชา (วิทย์ = ส้ม) ปัดขึ้นไปงานคณิตแล้วพื้นเปลี่ยนเป็นฟ้า รู้วิชาก่อนอ่าน · ปุ่มเพิ่มโน้ตเป็นวงกลมสีวิชาแถวเดียว · ปุ่มเริ่มเป็นแถบปัดขวา ใช้ท่าเดียวกับ "ปัดขวาเพื่อเสร็จ" ที่เลือกไว้แล้ว และกันกดพลาด</p>
+    <div class="meta"><span>ปานกลาง</span><span class="warn">ปัดช้ากว่ากด 1 จังหวะ</span></div>
+  </div>
+  <div class="pw"><div class="phone v5">
+    <div class="abs hero"></div>
+    <div class="abs wm" aria-hidden="true">วิทย์</div>
+    <div class="island"></div>
+    <div class="sb"><span>09:53</span><svg viewBox="0 0 64 12" fill="#fff"><use href="#sig"/></svg></div>
+    <div class="abs row top">
+      <div class="fab"><svg class="ic"><use href="#i-back"/></svg></div>
+      <div class="row chip">วิทยาศาสตร์<small>· โน้ต 1</small></div>
+      <div class="pg">1 / 2</div>
+    </div>
+    <div class="abs ph photo"><img src="sabaii-note-photo.jpg" alt="รูปโน้ต: สไลด์ Introduction to mind mapping บนจอหน้าห้อง"></div>
+    <div class="abs row peek"><svg class="ic"><use href="#i-up"/></svg>ปัดขึ้น · คณิต</div>
+    <div class="abs sheet">
+      <div class="grab"></div>
+      <div class="row due"><svg class="ic" style="width:16px;height:16px"><use href="#i-clock"/></svg>ส่งวันนี้<small>· ยังไม่เริ่ม</small></div>
+      <h3>Mind mapping</h3>
+      <div class="abs edit"><svg class="ic"><use href="#i-pen"/></svg></div>
+      <div class="row addr"><p>เพิ่มโน้ต</p>
+        <span><svg class="ic"><use href="#i-cam"/></svg></span>
+        <span><svg class="ic"><use href="#i-pen"/></svg></span>
+        <span><svg class="ic"><use href="#i-mic"/></svg></span></div>
+      <div class="row slide"><span class="th"><svg class="ic"><use href="#i-arrow"/></svg></span>ปัดเพื่อเริ่มทำ <span class="chev">›››</span></div>
+    </div>
+    <div class="hi"></div>
+  </div></div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="item">
+  <div class="cap">
+    <h2><b>06</b>การ์ดลอย กล่องข้อมูล</h2>
+    <p>แผ่นล่างลอยมีขอบรอบด้าน ดูเป็นวิดเจ็ต · ป้ายวิชาสีเต็มก้อนใหญ่ · กำหนดส่งกับโน้ตเป็น 2 กล่อง (กล่องโน้ตมีรูปย่อ) · ปุ่มเพิ่มโน้ตรวมเป็นแถบเดียว · ปุ่มทำเลยสีกรมท่า · การ์ดโน้ตถัดไปโผล่ขวา</p>
+    <div class="meta"><span>ปานกลาง</span><span class="warn">ต้องปรับตอนดันแผ่นขึ้นเต็มจอ</span></div>
+  </div>
+  <div class="pw"><div class="phone v6">
+    <div class="island"></div>
+    <div class="sb"><span>09:53</span><svg viewBox="0 0 64 12"><use href="#sig"/></svg></div>
+    <div class="abs row top">
+      <div class="fab"><svg class="ic"><use href="#i-back"/></svg></div>
+      <div class="row chip">โน้ต 1 รายการ</div>
+      <div class="row pg"><i class="on"></i><i></i></div>
+    </div>
+    <div class="abs ph photo"><img src="sabaii-note-photo.jpg" alt="รูปโน้ต: สไลด์ Introduction to mind mapping บนจอหน้าห้อง"></div>
+    <div class="abs row next"><svg class="ic"><use href="#i-plus"/></svg></div>
+    <div class="abs row dots"><i class="on"></i><i></i></div>
+    <div class="abs row peek"><svg class="ic"><use href="#i-up"/></svg>ปัดขึ้น · คณิต</div>
+    <div class="abs card">
+      <div class="row hd"><span class="badge">วิทย์</span>
+        <div><h3>Mind mapping</h3><small>วิทยาศาสตร์</small></div>
+        <div class="edit"><svg class="ic"><use href="#i-pen"/></svg></div></div>
+      <div class="bento">
+        <div class="bx r"><small>กำหนดส่ง</small><b>วันนี้</b></div>
+        <div class="row bx n"><div class="ph mini"><img src="sabaii-note-photo.jpg" alt=""></div><div><small>โน้ต</small><b>1 รูป</b></div></div>
+      </div>
+      <div class="seg">
+        <span><svg class="ic"><use href="#i-cam"/></svg>รูป</span>
+        <span><svg class="ic"><use href="#i-pen"/></svg>ข้อความ</span>
+        <span><svg class="ic"><use href="#i-mic"/></svg>เสียง</span>
+      </div>
+      <div class="row cta">ทำเลย<small>เริ่มจับเวลา</small><span><svg class="ic fill"><use href="#i-play"/></svg></span></div>
+    </div>
+    <div class="hi"></div>
+  </div></div>
+</section>
+
+</div>
+</div>
