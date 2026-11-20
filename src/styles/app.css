@@ -977,3 +977,71 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 /* เมนูล่างชุดเดียวกับหน้าอื่น */
 #nav { border-radius: 26px; }
 #nav a { font-family: var(--disp); }
+
+/* ================= 0.9.2 หน้าแรก — ยกหน้าตา (โครงเดิมของเจ้าของ: ดูงานด้านบน · จดงานใต้นิ้วโป้ง) ================= */
+.pane-home h1.big { font-size: 34px; margin: 4px 0 2px; }
+/* แถบ 7 วัน */
+.hweek { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 14px -4px 0; }
+.hd { position: relative; height: 66px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: var(--text-2); transition: background .25s, color .25s, transform .15s; }
+.hd:active { transform: scale(.94); }
+.hd small { font: 500 11.5px var(--disp); }
+.hd b { font: 600 19px/1.15 Inter, sans-serif; color: var(--ink); }
+.hd .dots { display: flex; gap: 3px; height: 6px; margin-top: 3px; }
+.hd .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+.hd .dots i.ex { background: var(--error); }
+.hd.now { background: var(--surface); }
+.hd.sel { background: var(--ink); color: rgba(255,255,255,.7); box-shadow: 0 12px 22px -12px rgba(11,27,77,.8); }
+.hd.sel b { color: #fff; } .hd.sel .dots i { background: #fff; } .hd.sel .dots i.ex { background: #FF8A80; }
+.pane-home .search { margin-top: 12px; }
+/* หัววัน */
+.dayhead { justify-content: flex-start; margin: 16px 0 2px; font: 600 16px var(--disp); color: var(--ink); }
+.dayhead::after { display: none; }
+.dayhead i { font: 600 12px/22px Inter, sans-serif; font-style: normal; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: var(--surface); color: var(--text-2); text-align: center; }
+.dayhead.late span { color: var(--error); } .dayhead.late i { background: #FDECEE; color: var(--error); }
+/* แถวงาน: การ์ดบาง ๆ แถบสีวิชาซ้าย · รูปย่อ · ป้ายเวลาขวา */
+.pane-home .tlist { display: flex; flex-direction: column; gap: 8px; }
+.pane-home .trow { padding: 0; }
+.pane-home .trow .main { position: relative; width: 100%; padding: 10px 12px 10px 10px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 1px #EDF0F5, 0 12px 24px -22px rgba(11,27,77,.6); transition: transform .15s, box-shadow .2s; }
+.pane-home .trow .main:active { transform: scale(.985); box-shadow: 0 0 0 1px #E1E6EF; }
+.pane-home .thumb { width: 54px; height: 54px; border-radius: 15px; }
+.pane-home .thumb.stile { display: grid; place-items: center; background: linear-gradient(150deg, color-mix(in srgb, var(--c) 72%, #fff), var(--c)); box-shadow: none; overflow: hidden; }
+.pane-home .thumb.stile span { font: 700 13px var(--disp); color: #fff; letter-spacing: -.01em; }
+.pane-home .trow .main > div { flex: 1; min-width: 0; }
+.pane-home .trow small.sj { display: block; font: 600 12.5px var(--disp); color: var(--c); }
+.pane-home .trow small.sj em.doing { font-style: normal; color: var(--blue); }
+.pane-home .trow b { font: 600 16.5px/1.3 var(--disp); margin-top: 1px; }
+.pane-home .trow .tag { display: inline-block; margin: 4px 0 0; }
+.due { flex: none; height: 28px; padding: 0 10px; border-radius: 14px; font: 600 13px/28px var(--disp); background: var(--surface); color: var(--ink); }
+.due.hot { background: #FDECEE; color: var(--error); }
+.due.ex { background: var(--error); color: #fff; }
+/* ว่าง: กองรูปจริง */
+.hempty { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 26px 0 10px; text-align: center; font: 500 16px var(--disp); color: var(--text-2); }
+.hstack { position: relative; width: 210px; height: 150px; }
+.hstack img { position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; object-fit: cover; border-radius: 16px; border: 5px solid #fff; box-shadow: 0 18px 30px -16px rgba(11,27,77,.6);
+  transform: translate(calc(-50% + (var(--i) - 1) * 62px), -50%) rotate(calc((var(--i) - 1) * 9deg)); }
+.hstack img:nth-child(2) { z-index: 2; transform: translate(-50%, -56%) scale(1.06); }
+/* แถบจดงาน: กระจก · ตัวอย่างประโยคเปลี่ยนเอง · ไมค์มีวงแสง */
+.capture { background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.96) 30%); }
+.cfield { -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); background: rgba(255,255,255,.92); }
+.cap.ctext { overflow: hidden; }
+.cph { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity .35s, filter .35s, transform .35s cubic-bezier(.2,.8,.2,1); }
+.cph.out { opacity: 0; filter: blur(6px); transform: translateY(-6px); }
+.cap.cmic { position: relative; isolation: isolate; }
+.cap.cmic::before { content: ""; position: absolute; inset: -5px; border-radius: 50%; z-index: -1; background: radial-gradient(closest-side, rgba(10,108,241,.9), rgba(124,77,255,.5) 70%, transparent); opacity: .5; filter: blur(6px); animation: micglow 3.2s ease-in-out infinite; }
+@keyframes micglow { 50% { opacity: .85; } }
+/* เข้าหน้าแรกครั้งแรก: ของในหน้าค่อย ๆ ขึ้นทีละชิ้น (ครั้งเดียว ไม่เล่นซ้ำตอนข้อมูลเปลี่ยน) */
+.pane-home.enter .hhead, .pane-home.enter h1.big, .pane-home.enter .hweek, .pane-home.enter .search { animation: hrise .7s cubic-bezier(.2,.8,.2,1) both; }
+.pane-home.enter h1.big { animation-delay: .06s; } .pane-home.enter .hweek { animation-delay: .12s; } .pane-home.enter .search { animation-delay: .16s; }
+.pane-home.enter .trow, .pane-home.enter .dayhead { animation: hrise .7s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(.2s + var(--k, 0) * 50ms); }
+.pane-home.enter .capture { animation: hcap .8s cubic-bezier(.2,.8,.2,1) .25s both; }
+@keyframes hrise { from { opacity: 0; transform: translate3d(0,16px,0); filter: blur(6px); } }
+@keyframes hcap { from { opacity: 0; transform: translate3d(0,30px,0); } }
+@media (prefers-reduced-motion: reduce) { .cap.cmic::before, .pane-home.enter * { animation: none !important; } .cph { transition: none; } }
+@media (max-height: 700px) { .pane-home h1.big { font-size: 28px; } .hd { height: 56px; } .pane-home .thumb { width: 46px; height: 46px; } }
+.cap.ctext { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 0; line-height: 1.25; }
+.clab { font: 500 11.5px var(--disp); color: #A3ACBF; }
+.cph { font: 600 15px var(--disp); color: #5E6B85; max-width: 100%; }
+.pane-home .trow .tag { margin: 0 0 0 6px; vertical-align: 1px; }
+
+.pane-home .thumb { flex: none; align-self: center; height: 54px; }
+@media (max-height: 700px) { .pane-home .thumb { height: 46px; } }

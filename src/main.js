@@ -9,7 +9,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.9.1';
+globalThis.SABAII_VERSION = '0.9.2';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', me: 'ฉัน', subject: 'วิชา' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
