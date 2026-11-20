@@ -1,10 +1,11 @@
-// หน้าแรก — กลไกแบบแอปเรียกรถ: ชั้นหลังเต็มจอ + แผ่นล่าง 3 ระดับ
+// หน้าแรก — กลไกแบบแอปเรียกรถ: ชั้นหลังเต็มจอ + แผ่นล่าง 3 ระดับ (0.9.2: โครงเดิม หน้าตาชุดเดียวกับหน้าแนะนำ)
 //   แผ่นขึ้น (กลาง/บน) : เพิ่มงาน 4 แบบ · ค้นหา + ชิปวัน · งานแนะนำ (ปักหมุดก่อน แล้วเรียงตามกำหนดส่ง)
 //   แผ่นลง (ล่าง)      : ชั้นหลังคือ "โน้ตหน้างาน" 1 หน้า = 1 งาน · ปัดขึ้น/ลง = งานถัดไป · ปัดซ้าย/ขวา = โน้ตถัดไป
 //                        แผ่นเหลือการ์ดงาน: เพิ่มโน้ต รูป/ข้อความ/เสียง + ทำเลย (จับเวลา) → เสร็จแล้ว
 import { h, ic, ART, toast, badge, shortOf, tintOf, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
 import { daysBetween } from '../domain/dates.js';
 import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
+const DOWL = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์'], MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 import { addTask, addNote, editTask, noteEl } from './add.js';
 import { notePane } from './notestyle.js';
 import { initHandsfree, stopHandsfree } from './handsfree.js';
@@ -30,6 +31,7 @@ export const homeState = () => ({ snapIdx, cur, pages: [...pages], noteMode: doc
 export function initHome() {
   sheet = $('#sheet'); paneHome = $('#pane-home'); paneNote = $('#pane-note'); stage = $('#stage');
   measureSafe(); initSheetDrag(); initStage(); initNoteUi();
+  stage.after(h('div', { id: 'stage-dim', 'aria-hidden': 'true' }));
   onBack(() => { if (!isNoteMode() || modalOpen()) return false; setSnap(2, true); return true; });
   addEventListener('resize', () => setSnap(snapIdx));
   app.openNotes = openNotes;
@@ -39,9 +41,21 @@ export function renderHomeAll() { renderHome(); renderStage(); }
 
 /* ---------------- แผ่นล่าง ---------------- */
 const isNoteMode = () => document.body.classList.contains('note-mode');
+/* ความลึกตอนดึงแผ่น (0.9.2): โน้ตด้านหลังย่อ + มืดตอนแผ่นเต็มจอ → ค่อย ๆ ขยาย/สว่างตามนิ้วจนเต็มเมื่อดึงลงสุด
+   ที่จับเปลี่ยนเป็น "ปล่อยเพื่อดูโน้ต" เมื่อเลยจุดเข้าโหมดโน้ต · เข้าระดับแล้วสั่นเบา ๆ (Android) · ดันขึ้นเกินจอ = ยืดแล้วเด้งกลับ */
+let hintEl = null, lastSnap = 2;
+function pullDepth(v) {
+  const [lo, , hi] = snapPx(), p = Math.max(0, Math.min(1, (hi - v) / Math.max(1, hi - lo)));
+  const r = document.documentElement.style;
+  r.setProperty('--pull', p.toFixed(3));
+  r.setProperty('--stage-tf', p > .995 || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'none' : `scale(${(.9 + .1 * p).toFixed(4)})`);
+  hintEl ||= $('.grab .hint');
+  if (hintEl) hintEl.textContent = sheet.classList.contains('dragging') && v < snapPx()[1] - 12 ? 'ปล่อยเพื่อดูโน้ต' : 'ดึงลงเพื่อดูโน้ตหน้างาน';
+}
 function setVis(v) {
   vis = v;
   document.documentElement.style.setProperty('--sheet-vis', v + 'px');
+  pullDepth(v);
   sheet.classList.toggle('full', v >= snapPx()[2] - 2);
   sheet.dataset.snap = ['low', 'mid', 'top'][snapIdx];
   const nm = v < (snapPx()[0] + snapPx()[1]) / 2;
@@ -53,8 +67,11 @@ function setVis(v) {
     targeted = false;
   }
 }
-export function setSnap(i, fromBack = false) {
+export function setSnap(i, fromBack = false, felt = false) {
   snapIdx = Math.max(0, Math.min(2, i));
+  if (felt && snapIdx !== lastSnap) navigator.vibrate?.(8);
+  lastSnap = snapIdx;
+  over(0);
   setVis(snapPx()[snapIdx]);
   if (snapIdx < 2) paneHome.scrollTop = 0;
   if (snapIdx > 0 && !fromBack) dropBack('note');
@@ -66,9 +83,11 @@ function settle(hist) {
   const v = (y1 - y0) / Math.max(1, t1 - t0); // พิกเซล/มิลลิวินาที (+ = ลง)
   const target = vis - v * 180, s = snapPx();
   let best = 0; s.forEach((x, i) => { if (Math.abs(x - target) < Math.abs(s[best] - target)) best = i; });
-  setSnap(best);
+  setSnap(best, false, true);
 }
-const clampVis = v => Math.max(LOW * .7, Math.min(innerHeight, v));
+/** ดันแผ่นขึ้นเกินขอบจอ: ของในแผ่นยืดตามนิ้วแบบหนืด (ไม่เกิน 44px) แล้วเด้งกลับตอนปล่อย */
+function over(px) { sheet.style.setProperty('--over', Math.min(44, Math.max(0, px * .3)).toFixed(1) + 'px'); }
+const clampVis = v => { over(v - innerHeight); return Math.max(LOW * .7, Math.min(innerHeight, v)); };
 function initSheetDrag() {
   // ลากได้ทั้งแผ่น (รวมบนปุ่ม) — แผ่นตามนิ้วทันที ไม่ต้องกด · แตะเฉย ๆ ไม่ขยับ
   let drag = null, suppress = false;
@@ -261,8 +280,8 @@ function renderHome() {
   const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน...', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
   const empty = !S().tasks.some(t => !t.deleted_at && t.status !== 'done');
   paneHome.replaceChildren(
-    h('div.brandrow', h('div.brand', 'SABA', h('span', 'ii'), h('b', '.')), h('a.avatar', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
-    h('h1.big', name ? `เพิ่มงานกันเลย ${name}` : 'เพิ่มงานกันเลย'),
+    h('div.brandrow', h('span.hdate', (d => `${DOWL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`)(new Date())), h('a.avatar.grad', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
+    h('h1.big', name ? [h('span.g', `${name},`), h('br')] : '', 'จดงานอะไรดี?'),
     h('div.tiles',
       tile('speak', 'พูด', 'พูดเอง หรือฟังครู', () => addTask('voice')),
       tile('attach', 'แนบรูป', 'จากอัลบั้ม/แชท', () => addTask('photo')),
@@ -270,12 +289,12 @@ function renderHome() {
       tile('shoot', 'ถ่ายรูป', 'กระดาน · ใบงาน', () => addTask('camera'))),
     h('label.search', h('span', { html: ic('search') }), input,
       h('button.chip', { type: 'button', 'aria-label': `กรองตามวัน: ${WHEN[hs.when]}`, onclick: () => { const ks = Object.keys(WHEN); hs.when = ks[(ks.indexOf(hs.when) + 1) % ks.length]; renderHome(); }, html: ic('cal') + `<span>${WHEN[hs.when]}</span>` })),
-    h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : shown.length > 1 ? `ทำ ${shown.length} งานนี้ก่อน` : 'ทำงานนี้ก่อน'), h('span', !focus && list.length ? `${list.length} งาน` : '')),
-    list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow',
-      h('button.main', { onclick: () => openNotes(t.id) }, badge(subj(t.subject_id)),
+    h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : 'ใกล้ส่ง'), h('span', !focus && list.length ? `${list.length} งาน` : '')),
+    list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow', { style: { '--c': subj(t.subject_id).color || '#69778F', '--k': i } },
+      h('button.main', { onclick: () => openNotes(t.id) }, thumbOf(t) || badge(subj(t.subject_id)),
         h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),
           h('small', dueLine(t), t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : t.source === 'teacher' ? h('span.tag.teach', 'ฟังครู') : ''))),
-      h('button.go' + (t.status === 'doing' ? '.doing' : i === 0 ? '.dark' : ''), { onclick: () => openNotes(t.id) }, t.status === 'doing' ? 'กำลังทำ' : 'ทำเลย'))))
+      h('button.go' + (t.status === 'doing' ? '.doing' : ''), { onclick: () => openNotes(t.id), 'aria-label': `${t.status === 'doing' ? 'กำลังทำ' : 'ทำเลย'} ${t.title}` }, t.status === 'doing' ? 'กำลังทำ' : h('i')))))
       : empty ? h('div.empty-note', h('b', 'วันนี้ยังไม่มีงานที่ต้องทำ'), h('p', 'เพิ่มงานด้วยปุ่มด้านบน'),
           h('div.row2', h('button.btn.primary', { onclick: () => addTask('text') }, '+ เพิ่มงานใหม่'),
             h('button.btn.ghost', { onclick: async () => { await app.store.addSamples(); toast('ใส่งานตัวอย่าง 6 งานแล้ว · ลบได้ในหน้าฉัน'); } }, 'ลองงานตัวอย่าง')))
@@ -283,5 +302,7 @@ function renderHome() {
   );
   if (keepFocus) { const el = $('#home-q'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
 }
-const tile = (art, name, sub, onclick) => h('button.tile', { onclick, 'aria-label': `${name} — ${sub}`, html: ART[art] + `<b>${name}</b><small>${sub}</small>` });
+const tile = (art, name, sub, onclick) => h('button.tile', { onclick, 'data-art': art, 'aria-label': `${name} — ${sub}`, html: `<span class="ti-ic">${ART[art]}</span><b>${name}</b><small>${sub}</small>` });
+/** รูปย่อจากรูปโน้ตล่าสุดของงาน (ไม่มีรูป = ใช้ป้ายวิชาเดิม) */
+const thumbOf = t => { const img = [...notesOf(t.id)].reverse().find(n => n.kind === 'image' && n.blob); return img ? h('span.thumb', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : null; };
 export const focusSearch = () => { setSnap(2); setTimeout(() => $('#home-q')?.focus(), 350); };
