@@ -982,3 +982,12 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 @keyframes hrise { from { opacity: 0; transform: translate3d(0,14px,0); filter: blur(6px); } }
 @media (prefers-reduced-motion: reduce) { .pane-home .tile { animation: none; } }
 @media (max-height: 700px) { .tile { min-height: 100px; } .tile .ti-ic { width: 40px; height: 40px; } .tile .ti-ic svg { width: 24px; height: 24px; } .pane-home h1.big { font-size: 28px; margin-bottom: 12px; } }
+/* ดึงแผ่นแบบ Bolt — ความลึก: โน้ตด้านหลังย่อ + มืดตอนแผ่นเต็มจอ แล้วขยายเต็มเมื่อดึงลง (--pull: 0 = แผ่นเต็มจอ · 1 = ดึงลงสุด) */
+#stage { transform: var(--stage-tf, none); transform-origin: 50% 32%; transition: transform .34s cubic-bezier(.2,.8,.2,1); }
+#stage-dim { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: #0B1B4D; opacity: calc((1 - var(--pull, 1)) * .32); transition: opacity .34s cubic-bezier(.2,.8,.2,1); }
+#sheet.dragging ~ #stage-dim, body:has(#sheet.dragging) #stage, body:has(#sheet.dragging) #stage-dim { transition: none; }
+#sheet .pane { transform: translate3d(0, calc(-1 * var(--over, 0px)), 0); transition: opacity .2s, transform .45s cubic-bezier(.2,.8,.2,1.4); }
+#sheet.dragging .pane { transition: opacity .2s; }
+.grab .hint { transition: opacity .2s, color .2s; }
+#sheet.dragging .grab .hint { color: var(--ink); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { #stage, #stage-dim, #sheet .pane { transition: none; } }
