@@ -1031,3 +1031,17 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 @media (max-height: 700px) { .tile { min-height: 124px; } .tile .ta { height: 66px; } .ta-attach i { width: 46px; height: 50px; } .ta-shoot { height: 74px; } }
 /* ดูโน้ตอยู่ / อยู่หน้าอื่น = หยุดภาพเคลื่อนไหวในกล่องหน้าแรก (ประหยัดแบต ไม่แย่งเครื่องตอนเลื่อนโน้ต) */
 body.note-mode .pane-home *, body:has(#page:not([hidden])) .pane-home * { animation-play-state: paused !important; }
+
+/* ================= 0.9.5 เมนูล่าง: เม็ดยากรมท่า + เนื้อหาจางหายก่อนถึงเมนู (ไม่โผล่ใต้เมนู/แถบโฮมของ iPhone) ================= */
+#nav { height: 62px; padding: 6px; gap: 4px; border-radius: 31px; width: min(calc(100vw - 48px), 330px);
+  background: rgba(11,27,77,.94); -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset, 0 18px 34px -14px rgba(11,27,77,.65); bottom: calc(12px + var(--safe-b)); }
+#nav a { flex-direction: row; gap: 7px; border-radius: 25px; color: rgba(255,255,255,.62); font: 600 14px var(--disp); white-space: nowrap; transition: background .25s, color .25s; }
+#nav a svg { width: 20px; height: 20px; }
+#nav a[aria-current="page"] { background: #fff; color: var(--ink); }
+/* ม่านขาวไล่ที่ขอบล่าง: เนื้อหาที่เลื่อนผ่านเมนูจางหาย ไม่โผล่ใต้เมนู */
+#page::after, #sheet.full .pane-home::after { content: ""; position: sticky; bottom: calc(-110px - var(--safe-b)); display: block; height: calc(130px + var(--safe-b)); margin: -30px -20px calc(-110px - var(--safe-b));
+  background: linear-gradient(180deg, rgba(255,255,255,0), #fff 46%); pointer-events: none; z-index: 2; }
+#page { padding-bottom: calc(140px + var(--safe-b)); }
+.pane-home { padding-bottom: calc(140px + var(--safe-b)); }
+#page::after { margin-left: -16px; margin-right: -16px; }
