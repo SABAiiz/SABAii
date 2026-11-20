@@ -1,10 +1,11 @@
-// หน้าแรก — กลไกแบบแอปเรียกรถ: ชั้นหลังเต็มจอ + แผ่นล่าง 3 ระดับ
-//   แผ่นขึ้น (กลาง/บน) : งานทั้งหมดเรียงตามวันส่ง · ค้นหา + ชิปวัน · แถบจดงานใต้นิ้วโป้ง (พิมพ์ · ถ่ายรูป · แนบรูป · พูด)
+// หน้าแรก — กลไกแบบแอปเรียกรถ: ชั้นหลังเต็มจอ + แผ่นล่าง 3 ระดับ (0.9.2: โครงเดิม หน้าตาชุดเดียวกับหน้าแนะนำ)
+//   แผ่นขึ้น (กลาง/บน) : เพิ่มงาน 4 แบบ · ค้นหา + ชิปวัน · งานแนะนำ (ปักหมุดก่อน แล้วเรียงตามกำหนดส่ง)
 //   แผ่นลง (ล่าง)      : ชั้นหลังคือ "โน้ตหน้างาน" 1 หน้า = 1 งาน · ปัดขึ้น/ลง = งานถัดไป · ปัดซ้าย/ขวา = โน้ตถัดไป
 //                        แผ่นเหลือการ์ดงาน: เพิ่มโน้ต รูป/ข้อความ/เสียง + ทำเลย (จับเวลา) → เสร็จแล้ว
-import { h, ic, ART, toast, badge, shortOf, tintOf, nameOf, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
+import { h, ic, ART, toast, badge, shortOf, tintOf, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
 import { daysBetween } from '../domain/dates.js';
 import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
+const DOWL = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์'], MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 import { addTask, addNote, editTask, noteEl } from './add.js';
 import { notePane } from './notestyle.js';
 import { initHandsfree, stopHandsfree } from './handsfree.js';
@@ -21,7 +22,7 @@ function measureSafe() {
 const snapPx = () => [LOW + safeB, Math.round(innerHeight * .58), innerHeight]; // บนสุด = ชิดขอบจอบน
 let snapIdx = 2, vis = 0;
 let pages = [], cur = 0, targeted = false; // targeted = เปิดโน้ตของงานที่เลือกไว้ (ไม่ต้องกลับไปงานอันดับ 1)
-const hs = { q: '', when: 'all', day: null };
+const hs = { q: '', when: 'all' };
 export const TOP = 3; // งานแนะนำไม่เกิน 3 งาน — ยาวกว่านี้นักเรียนก็ไม่รู้จะเริ่มอะไรอยู่ดี ที่เหลืออยู่หน้างาน
 let extra = null;  // งานนอก 3 อันดับที่ผู้ใช้เปิดโน้ตเอง (จากหน้างาน/หน้าวิชา) — ใส่ไว้ในชั้นโน้ตชั่วคราว
 const WHEN = { all: 'ทั้งหมด', today: 'วันนี้', tomorrow: 'พรุ่งนี้', week: '7 วันนี้' };
@@ -248,102 +249,42 @@ export function openNotes(id) {
   targeted = true; setSnap(0); targeted = false; goPage(i < 0 ? 0 : i, true);
 }
 
-/* ---------------- หน้าแรก (ในแผ่นล่าง) — 0.9.2: เน้น "จดงาน" กับ "ดูงาน" (โครงของเจ้าของ · ยกหน้าตาให้ชั้นเดียวกับหน้าแนะนำ) ----------------
-   บน: วันที่ · "มี N งาน" · แถบ 7 วัน (จุด = มีงาน · แตะ = ดูเฉพาะวันนั้น) · ค้นหา
-   กลาง: งานทั้งหมดเรียงตามวันส่ง แบ่งหัววัน · รูปย่อจากโน้ตจริง (ไม่มีรูป = สีวิชา) · ป้ายเวลา/สอบด้านขวา
-   ล่าง (ใต้นิ้วโป้ง ค้างไว้ตลอด): ช่องพิมพ์ที่ตัวอย่างเปลี่ยนเอง + ถ่ายรูป + แนบรูป + ไมค์ใหญ่
-   ไม่เน้น "ทำอันไหนก่อน" แล้ว (เจ้าของสั่ง) — ปุ่มทำเลย/จับเวลาอยู่ในหน้าโน้ตของงาน */
-const DOWL = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์'], DOWS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
-const MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-const EXAMPLES = ['คณิต ใบงาน 7 ส่งพน.', 'ฟิสิกส์ สอบย่อย อ.หน้า', 'อังกฤษ ท่องศัพท์ 20 คำ ส่งศ.', 'ไทย สรุปบทที่ 3 ส่งจ.'];
-const ymdOf = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-function dayHead(ymd, td) {
-  if (!ymd) return 'ไม่มีกำหนดส่ง';
-  const n = daysBetween(td, ymd), d = new Date(ymd + 'T00:00:00');
-  return n < 0 ? 'เลยกำหนด' : n === 0 ? 'วันนี้' : n === 1 ? 'พรุ่งนี้' : n < 7 ? DOWL[d.getDay()] : `${DOWL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`;
-}
-let entered = false, exTimer = 0;
+/* ---------------- หน้าแรก (ในแผ่นล่าง) ---------------- */
 function renderHome() {
   const keepFocus = document.activeElement?.id === 'home-q';
-  const q = hs.q.trim().toLowerCase(), td = today(), now = new Date();
-  const empty = !S().tasks.some(t => !t.deleted_at && t.status !== 'done');
-  if (empty) hs.day = null;
-  const all = ranked();
-  let list = all;
-  if (hs.day) list = list.filter(t => t.due_date === hs.day);
+  const q = hs.q.trim().toLowerCase(), td = today();
+  let list = ranked();
   if (hs.when !== 'all') list = list.filter(t => { const n = t.due_date ? daysBetween(td, t.due_date) : 99; return hs.when === 'today' ? n <= 0 : hs.when === 'tomorrow' ? n === 1 : n <= 7; });
   if (q) list = list.filter(t => `${t.title} ${t.description || ''} ${subj(t.subject_id).name}`.toLowerCase().includes(q));
-  const searching = !!q || hs.when !== 'all';
+  const focus = !q && hs.when === 'all'; // ไม่ได้ค้นหา/กรอง = โชว์แค่ 3 งานแรก
+  const shown = focus ? list.slice(0, TOP) : list;
   const name = S().prefs.display_name;
-  const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
-  const tag = t => t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : t.source === 'teacher' ? h('span.tag.teach', 'ฟังครู') : '';
-
-  // แถบ 7 วัน: วันนี้ + 6 วันถัดไป · จุดตามจำนวนงาน (แดง = มีสอบ)
-  const week = Array.from({ length: 7 }, (_, i) => { const d = new Date(now); d.setDate(d.getDate() + i); return d; });
-  const strip = h('div.hweek', { role: 'group', 'aria-label': 'งาน 7 วัน' }, week.map((d, i) => {
-    const k = ymdOf(d), due = all.filter(t => t.due_date === k), ex = due.some(t => t.type === 'exam');
-    return h('button.hd' + (i === 0 ? '.now' : '') + (hs.day === k ? '.sel' : ''), { 'aria-pressed': String(hs.day === k), 'aria-label': `${DOWL[d.getDay()]} ${d.getDate()} · ${due.length ? due.length + ' งาน' : 'ว่าง'}`,
-      onclick: () => { hs.day = hs.day === k ? null : k; renderHome(); } },
-      h('small', i === 0 ? 'วันนี้' : DOWS[d.getDay()]), h('b', String(d.getDate())),
-      h('span.dots', due.slice(0, 3).map(t => h('i' + (t.type === 'exam' ? '.ex' : '')))), ex ? '' : '');
-  }));
-
-  // งานเรียงตามวันส่ง (ปักหมุดขึ้นก่อน) แบ่งหัววัน
-  const byDue = [...list].sort((a, b) => (!!b.pinned_at - !!a.pinned_at) || ((a.due_date || '9') + (a.due_time || '99')).localeCompare((b.due_date || '9') + (b.due_time || '99')));
-  const groups = [];
-  for (const t of byDue) {
-    const k = t.pinned_at ? 'pin' : (t.due_date && daysBetween(td, t.due_date) < 0 ? 'late' : t.due_date || '');
-    if (!groups.length || groups[groups.length - 1].k !== k) groups.push({ k, label: k === 'pin' ? 'ปักหมุด' : dayHead(t.due_date, td), items: [] });
-    groups[groups.length - 1].items.push(t);
-  }
-  let n = 0;
-  const items = groups.flatMap(g => [
-    h('li.dayhead' + (g.k === 'late' ? '.late' : ''), h('span', g.label), h('i', String(g.items.length))),
-    ...g.items.map(t => {
-      const s = subj(t.subject_id), img = [...notesOf(t.id)].reverse().find(x => x.kind === 'image' && x.blob), dd = t.due_date ? daysBetween(td, t.due_date) : 99;
-      const pill = t.type === 'exam' ? `สอบ${t.due_time ? ' ' + t.due_time : ''}` : t.due_time || '';
-      return h('li.trow', { style: { '--c': s.color || '#69778F', '--k': n++ } }, h('button.main', { onclick: () => openNotes(t.id) },
-        img ? h('span.thumb', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : h('span.thumb.stile', h('span', nameOf(s) ? nameOf(s).slice(0, 4) : '•')),
-        h('div', h('small.sj', nameOf(s) || 'ไม่ระบุวิชา', t.status === 'doing' ? h('em.doing', ' · กำลังทำ') : '', tag(t)),
-          h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', t.title)),
-        pill ? h('span.due' + (t.type === 'exam' ? '.ex' : dd <= 1 ? '.hot' : ''), pill) : ''));
-    })]);
-
-  // ช่องพิมพ์: ตัวอย่างประโยคเปลี่ยนเอง (สอนวิธีพิมพ์ไปในตัว)
-  const ph = h('span.cph', EXAMPLES[0]);
-  clearInterval(exTimer);
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    let e = 0;
-    exTimer = setInterval(() => {
-      if (!ph.isConnected) return clearInterval(exTimer);
-      if (document.hidden || isNoteMode()) return;
-      ph.classList.add('out');
-      setTimeout(() => { e = (e + 1) % EXAMPLES.length; ph.textContent = EXAMPLES[e]; ph.classList.remove('out'); }, 380);
-    }, 3400);
-  }
-  const cap = (kind, label, icon, cls = '') => h('button.cap' + cls, { 'data-kind': kind, 'aria-label': label, onclick: () => addTask(kind), html: ic(icon) });
-  const dsel = hs.day ? new Date(hs.day + 'T00:00:00') : null;
-
-  paneHome.classList.toggle('enter', !entered); entered = true;
+  const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน...', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
+  const empty = !S().tasks.some(t => !t.deleted_at && t.status !== 'done');
   paneHome.replaceChildren(
-    h('div.hhead', h('span.hdate', `${DOWL[now.getDay()]} ${now.getDate()} ${MON[now.getMonth()]}`), h('a.avatar.grad', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
-    h('h1.big', name ? h('span.g', `${name},`) : '', name ? h('br') : '',
-      searching ? 'ผลการค้นหา' : dsel ? `${dayHead(hs.day, td)} ${list.length ? list.length + ' งาน' : 'ว่าง'}` : empty ? 'ยังไม่มีงาน' : `มี ${list.length} งาน`),
-    empty ? '' : strip,
-    empty ? '' : h('label.search', h('span', { html: ic('search') }), input,
+    h('div.brandrow', h('span.hdate', (d => `${DOWL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`)(new Date())), h('a.avatar.grad', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
+    h('h1.big', name ? [h('span.g', `${name},`), h('br')] : '', 'จดงานอะไรดี?'),
+    h('div.tiles',
+      tile('speak', 'พูด', 'พูดเอง หรือฟังครู', () => addTask('voice')),
+      tile('attach', 'แนบรูป', 'จากอัลบั้ม/แชท', () => addTask('photo')),
+      tile('type', 'พิมพ์', 'พิมพ์สั้นๆ ก็รู้เรื่อง', () => addTask('text')),
+      tile('shoot', 'ถ่ายรูป', 'กระดาน · ใบงาน', () => addTask('camera'))),
+    h('label.search', h('span', { html: ic('search') }), input,
       h('button.chip', { type: 'button', 'aria-label': `กรองตามวัน: ${WHEN[hs.when]}`, onclick: () => { const ks = Object.keys(WHEN); hs.when = ks[(ks.indexOf(hs.when) + 1) % ks.length]; renderHome(); }, html: ic('cal') + `<span>${WHEN[hs.when]}</span>` })),
-    list.length ? h('ul.tlist', items)
-      : empty ? h('div.hempty',
-          h('div.hstack', { 'aria-hidden': 'true' }, ['board', 'notes', 'chalk'].map((f, i) => h('img', { src: `assets/landing/photos/${f}.jpg`, alt: '', style: { '--i': i } }))),
-          h('p', 'จดงานแรกจากช่องด้านล่าง'),
-          h('button.btn.ghost', { onclick: async () => { await app.store.addSamples(); toast('ใส่งานตัวอย่าง 6 งานแล้ว · ลบได้ในหน้าฉัน'); } }, 'ลองงานตัวอย่าง'))
-      : h('div.empty-note', hs.day ? 'วันนั้นว่าง ไม่มีงาน' : 'ไม่พบงานที่ตรงกับที่ค้นหา'),
-    // แถบจดงาน: ใต้นิ้วโป้ง ค้างไว้ตลอด
-    h('div.capture', { role: 'group', 'aria-label': 'จดงานใหม่' },
-      h('div.cfield', h('button.cap.ctext', { 'data-kind': 'text', 'aria-label': 'พิมพ์งาน', onclick: () => addTask('text') }, h('small.clab', 'พิมพ์งาน เช่น'), ph),
-        cap('camera', 'ถ่ายรูปกระดาน/ใบงาน', 'camera'), cap('photo', 'แนบรูปจากอัลบั้ม/แชต', 'img')),
-      cap('voice', 'พูดงาน (พูดเอง หรือฟังครู)', 'mic', '.cmic')),
+    h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : 'ใกล้ส่ง'), h('span', !focus && list.length ? `${list.length} งาน` : '')),
+    list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow', { style: { '--c': subj(t.subject_id).color || '#69778F', '--k': i } },
+      h('button.main', { onclick: () => openNotes(t.id) }, thumbOf(t) || badge(subj(t.subject_id)),
+        h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),
+          h('small', dueLine(t), t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : t.source === 'teacher' ? h('span.tag.teach', 'ฟังครู') : ''))),
+      h('button.go' + (t.status === 'doing' ? '.doing' : ''), { onclick: () => openNotes(t.id), 'aria-label': `${t.status === 'doing' ? 'กำลังทำ' : 'ทำเลย'} ${t.title}` }, t.status === 'doing' ? 'กำลังทำ' : h('i')))))
+      : empty ? h('div.empty-note', h('b', 'วันนี้ยังไม่มีงานที่ต้องทำ'), h('p', 'เพิ่มงานด้วยปุ่มด้านบน'),
+          h('div.row2', h('button.btn.primary', { onclick: () => addTask('text') }, '+ เพิ่มงานใหม่'),
+            h('button.btn.ghost', { onclick: async () => { await app.store.addSamples(); toast('ใส่งานตัวอย่าง 6 งานแล้ว · ลบได้ในหน้าฉัน'); } }, 'ลองงานตัวอย่าง')))
+      : h('div.empty-note', 'ไม่พบงานที่ตรงกับที่ค้นหา'),
   );
   if (keepFocus) { const el = $('#home-q'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
 }
+const tile = (art, name, sub, onclick) => h('button.tile', { onclick, 'data-art': art, 'aria-label': `${name} — ${sub}`, html: `<span class="ti-ic">${ART[art]}</span><b>${name}</b><small>${sub}</small>` });
+/** รูปย่อจากรูปโน้ตล่าสุดของงาน (ไม่มีรูป = ใช้ป้ายวิชาเดิม) */
+const thumbOf = t => { const img = [...notesOf(t.id)].reverse().find(n => n.kind === 'image' && n.blob); return img ? h('span.thumb', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : null; };
 export const focusSearch = () => { setSnap(2); setTimeout(() => $('#home-q')?.focus(), 350); };

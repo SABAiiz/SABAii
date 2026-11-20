@@ -29,7 +29,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error' && !/fonts\.g|Failed to load resource/.test(m.text())) errors.push(m.text()); });
   await page.goto(BASE + '#/home');
-  await page.waitForSelector('.capture');
+  await page.waitForSelector('.tiles');
   await wait(400);
   // 0.5: ครั้งแรกมีแบบสอบถามก่อนเข้าแอป — ข้ามได้ (เทสต์ส่วนใหญ่ใช้ค่าตั้งต้น · ทดสอบแบบสอบถามเต็มท้ายไฟล์)
   check('0.5 ครั้งแรก: มีแบบสอบถามก่อนเข้าแอป + ปุ่มข้าม', await page.locator('#onboard').isVisible() && await page.locator('#ob-skip').isVisible());
@@ -38,12 +38,12 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const shot = async n => { if (!SHOTS) return; await page.evaluate(() => document.getElementById('toast')?.classList.remove('show')); await wait(300); await page.screenshot({ path: `${SHOTS}/${n}.png` }); };
   const tasks = () => page.evaluate(() => window.__sabaii.state.tasks.filter(t => !t.deleted_at));
   const ui = () => page.evaluate(() => window.__ui.homeState());
-  const typeAdd = async text => { await page.locator('.cap.ctext').click(); await page.fill('#add-text', text); };
+  const typeAdd = async text => { await page.locator('.tile', { hasText: 'พิมพ์' }).click(); await page.fill('#add-text', text); };
   const pressed = () => page.locator('.qchip[aria-pressed="true"]').allTextContents();
 
   // หน้าแรกว่าง
-  check('หน้าแรกว่าง: "ยังไม่มีงาน" + ปุ่มลองงานตัวอย่าง', (await page.locator('.pane-home h1.big').textContent()).includes('ยังไม่มีงาน') && await page.getByRole('button', { name: 'ลองงานตัวอย่าง' }).isVisible());
-  check('แถบจดงานใต้นิ้วโป้งครบ 4 แบบ (พิมพ์ · ถ่ายรูป · แนบรูป · พูด)', (await page.locator('.capture .cap').evaluateAll(els => els.map(e => e.dataset.kind))).join(',') === 'text,camera,photo,voice');
+  check('หน้าแรกว่าง: "วันนี้ยังไม่มีงานที่ต้องทำ" + ปุ่มเพิ่ม', await page.getByText('วันนี้ยังไม่มีงานที่ต้องทำ').isVisible() && await page.getByRole('button', { name: '+ เพิ่มงานใหม่' }).isVisible());
+  check('ปุ่มเพิ่มงานครบ 4 แบบตามภาพวาด', (await page.locator('.tile b').allTextContents()).join(',') === 'พูด,แนบรูป,พิมพ์,ถ่ายรูป');
   await shot('01-home-empty');
 
   // A: พิมพ์งานเดียว
@@ -80,7 +80,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.evaluate(id => window.__sabaii.purgeTask(id), q7.id); await wait(200);
 
   // H: พิมพ์ค้างแล้วกดย้อนกลับ ต้องถามก่อนทิ้ง
-  await page.locator('.cap.ctext').click();
+  await page.locator('.tile', { hasText: 'พิมพ์' }).click();
   await page.fill('#add-text', 'ข้อความที่ยังไม่บันทึก');
   await page.goBack(); await wait(250);
   check('H กดย้อนกลับตอนพิมพ์ค้าง → ถามก่อนทิ้ง', await page.getByText('ทิ้งข้อความที่พิมพ์ไว้?').isVisible());
@@ -93,7 +93,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   // ถ่ายรูป → งานใหม่ที่มีรูปเป็นโน้ตแรก
   const jpg = await page.screenshot({ type: 'jpeg', quality: 60, clip: { x: 0, y: 0, width: 300, height: 400 } });
-  const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.cap[data-kind="camera"]').click()]);
+  const [fc] = await Promise.all([page.waitForEvent('filechooser'), page.locator('.tile', { hasText: 'ถ่ายรูป' }).click()]);
   await fc.setFiles({ name: 'board.jpg', mimeType: 'image/jpeg', buffer: jpg });
   await page.waitForSelector('.modal .preview');
   await page.fill('#add-text', 'ฟิสิกส์ แบบฝึกหัด 4.1 ข้อ 1-15 ส่งศุกร์ 8.00');
@@ -130,7 +130,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   // C: ไมโครโฟนใช้ไม่ได้ → พิมพ์แทนได้
   await page.evaluate(() => { delete window.webkitSpeechRecognition; delete window.SpeechRecognition; });
-  await page.locator('.cap[data-kind="voice"]').click();
+  await page.locator('.tile', { hasText: 'พูด' }).click();
   await wait(300);
   check('C เสียงใช้ไม่ได้ → หน้าพูดยังเปิด บอกว่าฟังไม่ได้ ให้พิมพ์/วางแทน', /ฟังเสียงไม่ได้.*พิมพ์หรือวาง/.test(await page.locator('.lstatus').textContent()) && await page.locator('#listen-toggle').isHidden());
   await page.fill('#add-text', 'การบ้านนะ แบบฝึก 2.1 ส่งพรุ่งนี้ แล้วก็อ่านหน้า 10 ถึง 12');
@@ -216,7 +216,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   // G: หลายขนาดจอ ไม่มีเลื่อนแนวนอน + ไม่มีคำ null/undefined หลุด
   for (const r of ['home', 'tasks', 'me']) {
-    await page.goto(BASE + '#/' + r); await page.waitForSelector('.capture'); await wait(250);
+    await page.goto(BASE + '#/' + r); await page.waitForSelector('.tiles'); await wait(250);
     for (const w of [320, 360, 390, 430, 768, 1280]) {
       await page.setViewportSize({ width: w, height: 812 }); await wait(60);
       const over = await page.evaluate(() => Math.max(document.documentElement.scrollWidth, document.getElementById('page').scrollWidth, document.getElementById('pane-home').scrollWidth) - Math.min(window.innerWidth, document.getElementById('page').clientWidth || window.innerWidth));
@@ -227,7 +227,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     check(`G หน้า ${r}: ทุกขนาดจอไม่ล้น · ไม่มี false/null/undefined/NaN หลุด`, !results.some(x => !x.ok && x.name.startsWith(`G ${r} `)) && !/\b(false|null|undefined|NaN)\b/.test(txt));
   }
   await page.setViewportSize({ width: 375, height: 812 });
-  await page.goto(BASE + '#/home'); await page.waitForSelector('.capture'); await wait(300);
+  await page.goto(BASE + '#/home'); await page.waitForSelector('.tiles'); await wait(300);
   await shot('09-home-375');
 
   // ธีมสว่างอย่างเดียว: เครื่องตั้งโหมดมืด หรือเคยเลือกธีมมืดไว้ ก็ยังสว่าง · ไม่มีเมนูธีมสี
@@ -244,13 +244,13 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     if (!REAL) await tctx.route('http://sabaii.test/**', r => { let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html'; if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); });
     const tp = await tctx.newPage();
     tp.on('pageerror', e => errors.push('touch: ' + e.message));
-    await tp.goto(BASE + '#/home'); await tp.waitForSelector('.capture');
+    await tp.goto(BASE + '#/home'); await tp.waitForSelector('.tiles');
     await tp.locator('#ob-skip').click(); await wait(300);
     await tp.evaluate(() => window.__sabaii.addSamples()); await wait(500);
-    check('หน้าแรกเห็นงานทั้งหมด (6 งาน) แบ่งตามวัน', (await tp.locator('.pane-home .trow').count()) === 6 && (await tp.locator('.pane-home .dayhead').count()) >= 2);
+    check('งานแนะนำไม่เกิน 3 งาน (มี 6 งาน) · ใต้รายการเว้นว่าง', (await tp.locator('.pane-home .trow').count()) === 3 && (await tp.locator('.pane-home a.more, .pane-home p.muted.center').count()) === 0);
     check('ชั้นโน้ตมีแค่ 3 งานเดียวกัน', (await tp.evaluate(() => window.__ui.homeState().pages.length)) === 3);
     await tp.fill('#home-q', 'ขุนช้าง');
-    check('ค้นหา → เจองานที่ต้องการ', (await tp.locator('.pane-home .trow').count()) === 1 && await tp.getByText('ผลการค้นหา').isVisible());
+    check('ค้นหา → เจองานที่อยู่นอก 3 อันดับได้', (await tp.locator('.pane-home .trow').count()) === 1 && await tp.getByText('ผลการค้นหา').isVisible());
     await tp.fill('#home-q', ''); await tp.locator('#home-q').blur();
     const late = await tp.evaluate(() => window.__sabaii.state.tasks.find(t => /ขุนช้าง/.test(t.title)).id);
     await tp.evaluate(id => window.__ui.openNotes(id), late); await wait(600);
@@ -316,8 +316,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     for (const k of ['SpeechRecognition', 'webkitSpeechRecognition']) Object.defineProperty(window, k, { value: Fake, configurable: true, writable: true });
   });
   await page.evaluate(() => { location.hash = '#/home'; }); await wait(600);
-  check('หน้าแรก: ปุ่มไมค์บอกว่า "พูดเอง หรือฟังครู"', (await page.locator('.cap[data-kind="voice"]').getAttribute('aria-label')).includes('พูดเอง หรือฟังครู'));
-  await page.locator('.cap[data-kind="voice"]').click(); await wait(900);
+  check('หน้าแรก: ปุ่มพูดเขียนว่า "พูดเอง หรือฟังครู"', (await page.locator('.tile', { hasText: 'พูด' }).textContent()).includes('พูดเอง หรือฟังครู'));
+  await page.locator('.tile', { hasText: 'พูด' }).click(); await wait(900);
   check('ฟังครู: เปิดมาที่โหมดที่ตั้งไว้ · เบราว์เซอร์ตัดแล้วฟังต่อเอง', (await page.locator('.lmode [aria-pressed="true"]').textContent()) === 'ครูกำลังสั่งงาน'
     && (await page.evaluate(() => window.__fakeSR.starts)) >= 2 && (await page.locator('.lstatus').textContent()).includes('กำลังฟัง'));
   check('ฟังครู: แยกได้ 2 งาน · โชว์คำที่ครูพูด', (await page.locator('.lrow').count()) === 2 && (await page.locator('.lquote').first().textContent()).includes('ไม่ต้องทำข้อ 9'));
