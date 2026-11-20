@@ -303,14 +303,11 @@ function renderHome() {
   if (keepFocus) { const el = $('#home-q'); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
 }
 /* ปุ่มเพิ่มงาน 4 แบบ (0.9.3): แต่ละกล่องมีภาพเล่าเรื่องของตัวเอง แบบหน้าแนะนำ
-   พูด = กรมท่า คลื่นเสียงขยับ (ทางลัดที่เร็วสุด) · แนบรูป = รูปจริงของคุณ 3 ใบซ้อนกัน · พิมพ์ = ประโยคตัวอย่างพิมพ์เอง · ถ่ายรูป = ช่องเล็งกล้องบนรูปกระดาน */
+   พูด = กรมท่า คลื่นเสียงขยับ (ทางลัดที่เร็วสุด) · แนบรูป = รูปตัวอย่าง 3 ใบซ้อนกัน · พิมพ์ = ประโยคตัวอย่างพิมพ์เอง · ถ่ายรูป = ช่องเล็งกล้องบนรูปกระดาน */
 const TYPE_EX = ['คณิต ใบงาน 7 ส่งพน.', 'ฟิสิกส์ สอบย่อย อ.หน้า', 'อังกฤษ ท่องศัพท์ ส่งศ.'];
 let typeTimer = 0;
-function photosForTiles() {
-  const mine = S().attachments?.filter(a => a.kind === 'image' && a.blob && !a.deleted_at).slice(-3).reverse().map(urlOf) || [];
-  const stock = ['board', 'notes', 'chalk'].map(f => `assets/landing/photos/${f}.jpg`);
-  return [...mine, ...stock].slice(0, 3);
-}
+/** รูปตัวอย่างในกล่อง "แนบรูป" — ใช้รูปชุดเดียวกับหน้าแนะนำเสมอ (ไม่ดึงโน้ตที่ผู้ใช้บันทึกไว้มาโชว์ — เจ้าของสั่ง) */
+const photosForTiles = () => ['board', 'notes', 'chalk'].map(f => `assets/landing/photos/${f}.jpg`);
 function tileArt(art) {
   if (art === 'speak') return h('span.ta.ta-speak', h('span.ti-ic', { html: ic('mic') }), h('span.ta-wave', Array.from({ length: 9 }, (_, i) => h('i', { style: { '--k': i } }))));
   if (art === 'attach') return h('span.ta.ta-attach', photosForTiles().map((u, i) => h('i', { style: { backgroundImage: `url("${u}")`, '--k': i } })));
