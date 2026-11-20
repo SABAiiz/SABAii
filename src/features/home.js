@@ -160,9 +160,13 @@ function renderStage() {
   if (!pages.length) stage.append(h('section.npage', h('div.nrow', h('div.nitem.empty', h('div', h('b', 'ยังไม่มีงาน'), h('p.muted', 'เพิ่มงานแล้วรูปกระดาน ใบงาน และโน้ตจะมาอยู่ตรงนี้'))))));
   goPage(Math.max(0, pages.indexOf(keep)), false);
 }
+let landT = 0;
 export function goPage(i, smooth = true) {
   cur = Math.max(0, Math.min(pages.length - 1, i));
   stage.scrollTo({ top: cur * innerHeight, behavior: smooth ? 'smooth' : 'instant' });
+  // เลื่อนแบบนุ่มบางทีหยุดก่อนถึงหน้า (scroll-snap/เครื่องช้า) → เช็กอีกครั้งแล้วพาไปให้ถึง
+  clearTimeout(landT);
+  if (smooth) landT = setTimeout(() => { const want = cur * innerHeight; if (isNoteMode() && Math.abs(stage.scrollTop - want) > 2) stage.scrollTo({ top: want, behavior: 'instant' }); }, 900);
   syncNote();
   depth();
 }
