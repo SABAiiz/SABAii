@@ -281,6 +281,16 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     await tp.screenshot({ path: SHOTS ? `${SHOTS}/11-touch-top.png` : '/dev/null' }).catch(() => {});
     await swipe(195, 330, 700);
     check('นิ้ว: เต็มจอแล้วดึงลงจากรายการ (อยู่บนสุด) → แผ่นลงตามนิ้ว', (await tst()).snapIdx < 2, `snap=${(await tst()).snapIdx}`);
+    // 0.9.6: ลากนิ้วบนเมนูล่าง → เม็ดตามนิ้ว ปล่อยตรงไหนไปหน้านั้น · แตะเฉย ๆ ยังใช้ได้
+    await tp.evaluate(() => window.__ui.setSnap(2)); await wait(500);
+    const nb = await tp.locator('#nav').boundingBox(), ny = nb.y + nb.height / 2;
+    await touch('touchStart', nb.x + nb.width / 6, ny);
+    for (let i = 1; i <= 12; i++) { await touch('touchMove', nb.x + nb.width / 6 + nb.width * .62 * i / 12, ny); await wait(16); }
+    const midDrag = await tp.evaluate(() => document.getElementById('nav').classList.contains('drag') && document.querySelector('#nav a[data-r="me"]').classList.contains('over'));
+    await touch('touchEnd'); await wait(600);
+    check('นิ้ว: ลากบนเมนูล่างจากหน้าหลักไปช่อง "ฉัน" → เม็ดตามนิ้ว ปล่อยแล้วไปหน้าฉัน', midDrag && await tp.evaluate(() => location.hash === '#/me'));
+    await tp.locator('#nav a[data-r="tasks"]').tap(); await wait(500);
+    check('นิ้ว: แตะเมนูเฉย ๆ ยังเปลี่ยนหน้าได้', await tp.evaluate(() => location.hash === '#/tasks'));
     await tctx.close();
   }
 
