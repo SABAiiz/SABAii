@@ -991,3 +991,43 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 .grab .hint { transition: opacity .2s, color .2s; }
 #sheet.dragging .grab .hint { color: var(--ink); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { #stage, #stage-dim, #sheet .pane { transition: none; } }
+
+/* ================= 0.9.3 ปุ่มเพิ่มงาน 4 แบบ: ภาพเล่าเรื่องในแต่ละกล่อง ================= */
+.tile { min-height: 148px; padding: 0 16px 14px; justify-content: flex-end; }
+.tile::after { display: none; }
+.tile .ta { position: absolute; left: 0; right: 0; top: 0; height: 84px; pointer-events: none; }
+.tile b { position: relative; z-index: 1; }
+.tile small { position: relative; z-index: 1; }
+/* พูด: กรมท่า ทางลัดที่เร็วสุด */
+.tile[data-art="speak"] { background: radial-gradient(120% 90% at 100% 0%, #1D3A9A, transparent 60%), #0B1B4D; box-shadow: 0 18px 30px -18px rgba(11,27,77,.8); }
+.tile[data-art="speak"] b { color: #fff; } .tile[data-art="speak"] small { color: rgba(255,255,255,.62); }
+.ta-speak .ti-ic { position: absolute; left: 14px; top: 14px; width: 46px; height: 46px; border-radius: 50%; background: var(--blue); color: #fff; box-shadow: 0 0 0 0 rgba(10,108,241,.55); animation: tapulse 2s infinite; }
+.ta-speak .ti-ic svg { width: 22px; height: 22px; }
+@keyframes tapulse { 70% { box-shadow: 0 0 0 12px rgba(10,108,241,0); } 100% { box-shadow: 0 0 0 0 rgba(10,108,241,0); } }
+.ta-wave { position: absolute; left: 72px; right: 16px; top: 22px; height: 30px; display: flex; align-items: center; gap: 4px; }
+.ta-wave i { flex: 1; height: 30%; border-radius: 3px; background: rgba(255,255,255,.85); animation: tawave .9s ease-in-out infinite alternate; animation-delay: calc(var(--k) * -.11s); }
+.ta-wave i:nth-child(3n) { animation-duration: .7s; } .ta-wave i:nth-child(4n+1) { animation-duration: 1.15s; }
+@keyframes tawave { to { height: 100%; } }
+/* แนบรูป: รูปจริง 3 ใบซ้อนกัน */
+.ta-attach i { position: absolute; top: 12px; width: 58px; height: 62px; border-radius: 10px; background: center/cover #ddd; border: 3px solid #fff; box-shadow: 0 10px 18px -10px rgba(11,27,77,.6);
+  left: calc(16px + var(--k) * 34px); rotate: calc((var(--k) - 1) * 8deg); z-index: calc(3 - var(--k)); }
+.ta-attach i:nth-child(2) { top: 8px; }
+/* พิมพ์: ประโยคตัวอย่างพิมพ์เอง */
+.ta-type { display: flex; align-items: center; padding: 0 12px; }
+.ta-in { display: flex; align-items: center; width: 100%; height: 40px; margin-top: 10px; padding: 0 12px; border-radius: 13px; background: #fff; box-shadow: 0 8px 16px -12px rgba(11,27,77,.5); font: 600 14px var(--disp); color: var(--ink); overflow: hidden; white-space: nowrap; }
+.ta-caret { width: 2px; height: 18px; background: var(--blue); margin-left: 1px; flex: none; animation: blink 1s steps(1) infinite; }
+/* ถ่ายรูป: ช่องเล็งกล้องบนรูปกระดานจริง */
+.tile[data-art="shoot"] { background: #fff; }
+.ta-shoot { height: 92px; background: center/cover; border-radius: 24px 24px 0 0; }
+.ta-shoot::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, rgba(11,27,77,.15), rgba(255,255,255,.95) 98%); }
+.ta-vf { position: absolute; inset: 14px 22px 22px; border-radius: 6px;
+  background: linear-gradient(#fff, #fff) left top / 14px 3px no-repeat, linear-gradient(#fff, #fff) left top / 3px 14px no-repeat,
+    linear-gradient(#fff, #fff) right top / 14px 3px no-repeat, linear-gradient(#fff, #fff) right top / 3px 14px no-repeat,
+    linear-gradient(#fff, #fff) left bottom / 14px 3px no-repeat, linear-gradient(#fff, #fff) left bottom / 3px 14px no-repeat,
+    linear-gradient(#fff, #fff) right bottom / 14px 3px no-repeat, linear-gradient(#fff, #fff) right bottom / 3px 14px no-repeat; }
+.ta-shoot .ti-ic { position: absolute; left: auto; right: 12px; top: 12px; width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--ink); }
+.ta-shoot .ti-ic svg { width: 18px; height: 18px; }
+@media (prefers-reduced-motion: reduce) { .ta-wave i, .ta-speak .ti-ic, .ta-caret { animation: none; } }
+@media (max-height: 700px) { .tile { min-height: 124px; } .tile .ta { height: 66px; } .ta-attach i { width: 46px; height: 50px; } .ta-shoot { height: 74px; } }
+/* ดูโน้ตอยู่ / อยู่หน้าอื่น = หยุดภาพเคลื่อนไหวในกล่องหน้าแรก (ประหยัดแบต ไม่แย่งเครื่องตอนเลื่อนโน้ต) */
+body.note-mode .pane-home *, body:has(#page:not([hidden])) .pane-home * { animation-play-state: paused !important; }
