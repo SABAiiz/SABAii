@@ -1056,3 +1056,9 @@ body.note-mode .pane-home *, body:has(#page:not([hidden])) .pane-home * { animat
 #page::after { margin-left: -16px; margin-right: -16px; }
 /* เมนูหลบอยู่ (ดูโน้ต/เลื่อนลง): ปิดกระจกฝ้า ไม่ให้เครื่องคำนวณเบลอทับชั้นโน้ตที่กำลังเลื่อน */
 #nav.away { -webkit-backdrop-filter: none; backdrop-filter: none; visibility: hidden; transition: transform .3s cubic-bezier(.2,.8,.2,1), opacity .2s, visibility 0s linear .3s; }
+/* ลากนิ้วบนเมนู: เม็ดตามนิ้ว (ไม่หน่วง) · ช่องที่นิ้วอยู่เป็นตัวขาว */
+#nav { touch-action: none; -webkit-user-select: none; user-select: none; }
+#nav.drag::before { transform: translateX(var(--nx, 0px)) scale(1.04); transition: none; }
+#nav.drag a[aria-current="page"]:not(.over) { color: #6B7690; }
+#nav.drag a[aria-current="page"]:not(.over) svg { transform: none; }
+#nav.drag a.over { color: #fff; }

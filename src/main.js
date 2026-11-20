@@ -9,7 +9,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.9.5';
+globalThis.SABAII_VERSION = '0.9.6';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', me: 'ฉัน', subject: 'วิชา' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -39,6 +39,7 @@ async function boot() {
   };
   const autoHide = el => { let last = 0; el.addEventListener('scroll', () => { const y = el.scrollTop, dy = y - last; last = y; if (Math.abs(dy) < 4) return; const away = dy > 0 && y > 40; if (away !== navAway) { navAway = away; app.updateNav(); } }, { passive: true }); };
   autoHide(page); autoHide($('#pane-home'));
+  navDrag(nav);
 
   let last = null;
   function renderPage() {
@@ -70,3 +71,40 @@ async function boot() {
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }
 boot();
+
+/** เมนูล่าง: วางนิ้วแล้วลากซ้ายขวา เม็ดกรมท่าเลื่อนตามนิ้ว ปล่อยตรงไหนไปหน้านั้น (แตะเฉย ๆ ยังใช้ได้เหมือนเดิม)
+    ข้ามช่องแล้วสั่นเบา ๆ (Android) · ลากเกิน 6px ถึงนับว่าลาก ไม่ให้แตะพลาด */
+function navDrag(nav) {
+  const links = [...nav.querySelectorAll('a')];
+  let d = null, suppress = false;
+  const slot = () => (nav.clientWidth - 12) / links.length;
+  const idxAt = x => Math.max(0, Math.min(links.length - 1, Math.round(x / slot())));
+  nav.addEventListener('pointerdown', e => {
+    if (e.button) return;
+    const cur = Math.max(0, links.findIndex(a => a.hasAttribute('aria-current')));
+    d = { x0: e.clientX, start: cur * slot(), moved: false, at: cur, id: e.pointerId };
+  });
+  nav.addEventListener('pointermove', e => {
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x0;
+    if (!d.moved) { if (Math.abs(dx) < 6) return; d.moved = true; nav.classList.add('drag'); nav.setPointerCapture?.(e.pointerId); }
+    const x = Math.max(0, Math.min(slot() * (links.length - 1), d.start + dx));
+    nav.style.setProperty('--nx', x.toFixed(1) + 'px');
+    const i = idxAt(x);
+    if (i !== d.at) { d.at = i; navigator.vibrate?.(6); }
+    links.forEach((a, k) => a.classList.toggle('over', k === i));
+  });
+  const end = e => {
+    if (!d || (e && e.pointerId !== d.id)) return;
+    const done = d; d = null;
+    links.forEach(a => a.classList.remove('over'));
+    if (!done.moved) return;
+    suppress = true; setTimeout(() => { suppress = false; }, 0);
+    nav.classList.remove('drag');
+    location.hash = links[done.at].getAttribute('href');
+    app.updateNav?.();
+  };
+  nav.addEventListener('pointerup', end); nav.addEventListener('pointercancel', end);
+  nav.addEventListener('click', e => { if (suppress) { e.preventDefault(); e.stopPropagation(); } }, true);
+}
+
