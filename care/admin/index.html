@@ -92,7 +92,7 @@ tr.flash td{animation:fl 1.2s ease}
 <div class="gate" id="gate">
   <div class="brand"><i></i><h1>เสียงคนดูแล · หลังบ้าน</h1></div>
   <p>ตารางข้อมูลทุกคำตอบ แก้ไขในช่องได้ทันที และเพิ่มข้อมูลจากการสัมภาษณ์ตัวต่อตัวได้</p>
-  <form id="gateForm"><input type="password" id="code" placeholder="รหัสทีม" autocomplete="off" style="flex:1"><button class="go">เข้า</button></form>
+  <form id="gateForm"><input type="password" id="code" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="รหัสทีม" autocomplete="off" style="flex:1"><button class="go">เข้า</button></form>
   <p class="err" id="gateErr"></p>
 </div>
 
@@ -286,7 +286,7 @@ async function load(){
     $('gate').hidden=true;$('app').hidden=false;render();
   }catch(e){try{sessionStorage.removeItem('care_code')}catch(_){};$('gate').hidden=false;$('app').hidden=true;$('gateErr').textContent=code?'รหัสไม่ถูกต้อง หรือเชื่อมต่อไม่ได้':''}
 }
-$('gateForm').onsubmit=e=>{e.preventDefault();code=$('code').value.trim();load()};
+$('gateForm').onsubmit=e=>{e.preventDefault();code=$('code').value.replace(/\s+/g,'').toLowerCase();load()};
 if(code)load();
 }
 </script>

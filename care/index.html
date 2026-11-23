@@ -143,7 +143,7 @@ table{width:100%;border-collapse:collapse;font-size:15px}td,th{text-align:left;p
   <div class="top"><div class="brand"><i></i>เสียงคนดูแล · ผลสำหรับทีม</div><span class="small"><a href="admin/">ตารางหลังบ้าน</a> · <a href="#">ไปหน้าแบบสอบถาม</a></span></div>
   <div id="gate">
     <h2>ใส่รหัสทีม</h2>
-    <form id="gateForm" style="display:flex;gap:10px;max-width:440px"><input type="password" id="code" autocomplete="off" placeholder="รหัสทีม"><button class="go" style="flex:none">ดูผล</button></form>
+    <form id="gateForm" style="display:flex;gap:10px;max-width:440px"><input type="password" id="code" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="รหัสทีม"><button class="go" style="flex:none">ดูผล</button></form>
     <p class="err" id="gateErr"></p>
   </div>
   <div id="dash" hidden></div>
@@ -406,7 +406,7 @@ function renderDash(){
 }
 async function load(){
   let code='';try{code=sessionStorage.getItem('care_code')||''}catch(e){}
-  code=$('code').value.trim()||code;
+  code=$('code').value.replace(/\s+/g,'').toLowerCase()||code;
   const ge=$('gateErr');ge.textContent='กำลังโหลด…';
   try{
     const r=await fetch(SB_URL+'/rest/v1/rpc/care_survey_results',{method:'POST',headers:H,body:JSON.stringify({p_code:code})});
