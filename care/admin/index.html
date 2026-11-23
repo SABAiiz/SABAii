@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>เสียงคนดูแล · หลังบ้าน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a working ledger — quiet, dense, trustworthy
+   IDEA: a spreadsheet the team actually lives in during the hackathon
+   PICTURE: the grid itself, sticky header and first column, editable cells
+   COLOUR and TYPE: white, ink, lacquer red for actions and focus; Plex Sans Thai Looped
+   LAYOUT: toolbar band, full-width grid, slide-in row editor */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#141112);--ink:light-dark(#1f1a1a,#f1eaea);--mute:light-dark(#6b6060,#ad9f9f);
+--soft:light-dark(#f7f1f1,#231c1d);--line:light-dark(#e6dcdc,#352b2d);--red:light-dark(#b3261e,#f0716a);
+--redink:light-dark(#fff,#1a0c0b);--card:light-dark(#fff,#1b1617);--hi:light-dark(#fff6d6,#3a3216)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "IBM Plex Sans Thai Looped",system-ui,sans-serif}
+h1,h2{font-family:Anuphan,system-ui,sans-serif;margin:0;line-height:1.2}
+h1{font-size:22px}h2{font-size:20px}
+a{color:var(--red)}
+button,select,input,textarea{font:inherit;color:var(--ink)}
+button{min-height:40px;padding:0 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;font-family:Anuphan;font-weight:600}
+button.go{background:var(--red);border-color:var(--red);color:var(--redink)}
+button.danger{color:var(--red);border-color:var(--red)}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--red);outline-offset:1px}
+input,select,textarea{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;font-size:16px}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:12px max(2vw,12px)}
+.bar1{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:8px}.brand i{width:12px;height:12px;border-radius:50%;background:var(--red)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.tools input[type=search]{width:min(260px,100%)}
+.count{color:var(--mute);font-size:14px}
+.gridwrap{overflow:auto;height:calc(100vh - 130px);height:calc(100dvh - 130px)}
+table{border-collapse:separate;border-spacing:0;font-size:14px;min-width:100%}
+th,td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:0;vertical-align:top;background:var(--card)}
+th{position:sticky;top:0;z-index:5;background:var(--soft);font-family:Anuphan;font-weight:600;text-align:left;white-space:nowrap}
+th button{all:unset;display:block;padding:8px 10px;cursor:pointer;width:100%;box-sizing:border-box}
+th button:focus-visible{outline:2px solid var(--red)}
+th .ar{color:var(--mute);font-size:12px;margin-left:4px}
+td.num,th.num{position:sticky;left:0;z-index:4;text-align:center;min-width:64px}
+th.num{z-index:6}
+td.num button{min-height:30px;padding:0 8px;font-size:13px;margin:4px}
+td.num small{display:block;color:var(--mute);font-size:12px}
+.cell{padding:7px 10px;min-height:36px;max-width:var(--w,200px);min-width:var(--min,90px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell[contenteditable]{cursor:text}
+.cell[contenteditable]:focus{white-space:pre-wrap;overflow:visible;max-width:none;width:var(--w,200px);background:var(--hi);outline:2px solid var(--red);outline-offset:-2px}
+.cell.wrap{white-space:normal;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.cell.wrap:focus{display:block}
+td select{border:0;border-radius:0;background:transparent;padding:7px 8px;font-size:14px;width:100%;min-width:var(--min,90px)}
+.tag{display:inline-block;background:var(--soft);border-radius:99px;padding:1px 8px;margin:1px 2px 1px 0;font-size:12.5px}
+tr.saving td{opacity:.6}
+tr.flash td{animation:fl 1.2s ease}
+@keyframes fl{from{background:var(--hi)}}
+@media (prefers-reduced-motion:reduce){tr.flash td{animation:none}}
+.empty{padding:40px;text-align:center;color:var(--mute)}
+/* gate */
+.gate{max-width:420px;margin:12vh auto;padding:0 18px}
+.gate form{display:flex;gap:8px;margin-top:14px}
+.err{color:var(--red);min-height:1.4em;font-size:14px}
+/* side panel */
+.scrim{position:fixed;inset:0;background:rgb(0 0 0/.35);z-index:30}
+.panel{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--bg);z-index:31;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgb(0 0 0/.15)}
+.panel .ph{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.panel .pb{overflow:auto;padding:14px 18px 24px;flex:1}
+.panel .pf{display:flex;gap:8px;padding:12px 18px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.panel .pf .go{flex:1}
+.f{margin:0 0 14px}
+.f label.l{display:block;font-weight:600;font-size:14px;margin-bottom:5px}
+.f input,.f select,.f textarea{width:100%}
+.f textarea{min-height:90px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips label{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:99px;padding:5px 10px;font-size:14px;cursor:pointer}
+.chips input{width:auto;margin:0;accent-color:var(--red)}
+.chips label:has(input:checked){border-color:var(--red);background:var(--soft)}
+.sep{font-family:Anuphan;font-weight:600;color:var(--mute);font-size:13px;margin:18px 0 8px;border-top:1px solid var(--line);padding-top:12px}
+.dlg{position:fixed;inset:0;display:grid;place-items:center;z-index:40;background:rgb(0 0 0/.35)}
+.dlg>div{background:var(--bg);border-radius:16px;padding:20px;width:min(360px,92vw)}
+.dlg .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="brand"><i></i><h1>เสียงคนดูแล · หลังบ้าน</h1></div>
+  <p>ตารางข้อมูลทุกคำตอบ แก้ไขในช่องได้ทันที และเพิ่มข้อมูลจากการสัมภาษณ์ตัวต่อตัวได้</p>
+  <form id="gateForm"><input type="password" id="code" placeholder="รหัสทีม" autocomplete="off" style="flex:1"><button class="go">เข้า</button></form>
+  <p class="err" id="gateErr"></p>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <div class="bar1">
+      <div class="brand"><i></i><h1>หลังบ้าน · <span id="n">0</span> แถว</h1></div>
+      <div class="tools" style="margin:0"><a href="../#team">หน้าสรุปผล</a><a href="../" target="_blank" rel="noopener">เปิดแบบสอบถาม</a></div>
+    </div>
+    <div class="tools">
+      <button class="go" id="add">+ เพิ่มข้อมูลสัมภาษณ์</button>
+      <input type="search" id="q" placeholder="ค้นหาในทุกช่อง">
+      <select id="fRole" aria-label="กรองกลุ่ม"><option value="">ทุกกลุ่ม</option></select>
+      <button id="fTarget" aria-pressed="false">เฉพาะวัยทำงาน 30–45</button>
+      <button id="csv">ดาวน์โหลด CSV</button>
+      <button id="reload">รีเฟรช</button>
+      <span class="count" id="count"></span>
+    </div>
+  </header>
+  <div class="gridwrap"><table id="grid"></table></div>
+</div>
+
+<div id="panelRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script src="../schema.js"></script>
+<script>
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toast=t=>{const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),1800)};
+let code='',rows=[],sortK='created_at',sortDir=-1,onlyTarget=false;
+try{code=sessionStorage.getItem('care_code')||''}catch(e){}
+
+async function rpc(fn,body){
+  const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:H,body:JSON.stringify(body)});
+  if(!r.ok){const t=await r.text();throw new Error(t||r.status)}
+  return r.json();
+}
+const roleOf=r=>ROLES[r.answers?.role]?r.answers.role:'family';
+const isTarget=r=>r.answers?.age==='a30'&&['full','flex'].includes(r.answers?.work);
+const optLabel=(role,id,k)=>{if(id==='pains'||id==='top')return PAIN[k]?.[role]||PAIN[k]?._||k;const q=ROLES[role]?.qs.find(x=>x.id===id);return q?.o?.[k]??k};
+
+/* columns: where = 'row' (top-level) or 'ans' (inside answers) */
+const COLS=[
+ {k:'created_at',l:'เวลา',w:110,ro:1,where:'row',fmt:v=>v?new Date(v).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):''},
+ {k:'role',l:'กลุ่ม',w:150,where:'ans',sel:()=>Object.fromEntries(Object.entries(ROLES).map(([k,r])=>[k,r.short]))},
+ {k:'source',l:'ช่องทาง',w:110,where:'row'},
+ {k:'interviewer',l:'ผู้สัมภาษณ์',w:120,where:'row'},
+ {k:'age',l:'อายุ',w:90,where:'ans',sel:()=>AGEQ.o},
+ {k:'work',l:'งาน',w:130,where:'ans',sel:()=>WORKQ.o},
+ {k:'_ctx',l:'บริบท',w:220,ro:1,where:'calc'},
+ {k:'pains',l:'Pain ที่เลือก',w:260,ro:1,where:'ans'},
+ {k:'top',l:'หนักสุด',w:170,where:'ans',sel:r=>Object.fromEntries(Object.entries(PAIN).filter(([k,v])=>v[roleOf(r)]).map(([k,v])=>[k,v._]))},
+ {k:'freq',l:'ความถี่',w:150,where:'ans',sel:()=>FREQ},
+ {k:'story',l:'เรื่องเล่า',w:320,wrap:1,where:'ans'},
+ {k:'why',l:'ทำไมยังแก้ไม่ได้',w:260,wrap:1,where:'ans'},
+ {k:'wtp',l:'ยอมจ่าย/เดือน',w:130,where:'ans',sel:()=>WTP},
+ {k:'contact_name',l:'ชื่อเล่น',w:100,where:'row'},
+ {k:'contact',l:'ติดต่อ',w:140,where:'row'},
+ {k:'evidence',l:'หลักฐาน (ลิงก์)',w:180,where:'row'},
+ {k:'notes',l:'โน้ตทีม',w:260,wrap:1,where:'row'}
+];
+const CTX={live:'ดูแล',helpers:'ช่วยกัน',s_live:'อยู่กับ',s_watch:'ถ้าลูกรู้ว่าสบายดี',p_type:'งาน',r_know:'รู้ทันที'};
+function ctxText(r){const x=r.answers||{},role=roleOf(r);return Object.keys(CTX).filter(k=>x[k]!=null).map(k=>CTX[k]+': '+(Array.isArray(x[k])?x[k].map(v=>optLabel(role,k,v)).join(', '):optLabel(role,k,x[k]))).join(' · ')}
+function raw(r,c){if(c.where==='row')return r[c.k];if(c.where==='calc')return ctxText(r);return r.answers?.[c.k]}
+function plain(r,c){const v=raw(r,c),role=roleOf(r);if(v==null)return '';if(c.fmt)return c.fmt(v);if(c.k==='role')return ROLES[v]?.name||v;
+  if(Array.isArray(v))return v.map(x=>optLabel(role,c.k,x)).join(', ');if(c.sel)return (c.sel(r)[v]??optLabel(role,c.k,v));return String(v)}
+
+function visible(){
+  const q=$('q').value.trim().toLowerCase(),fr=$('fRole').value;
+  let v=rows.filter(r=>(!fr||roleOf(r)===fr)&&(!onlyTarget||isTarget(r)));
+  if(q)v=v.filter(r=>COLS.some(c=>plain(r,c).toLowerCase().includes(q)));
+  return v.sort((a,b)=>{const x=plain(a,COLS.find(c=>c.k===sortK)),y=plain(b,COLS.find(c=>c.k===sortK));
+    if(sortK==='created_at')return sortDir*((a.created_at||'')<(b.created_at||'')?-1:1);return sortDir*x.localeCompare(y,'th')});
+}
+function cellHtml(r,c){
+  const v=raw(r,c),style=`style="--w:${c.w}px;--min:${Math.min(c.w,120)}px"`;
+  if(c.k==='pains')return `<div class="cell" ${style} title="${esc(plain(r,c))}">${(v||[]).map(k=>`<span class="tag">${esc(PAIN[k]?._||k)}</span>`).join('')}</div>`;
+  if(c.ro)return `<div class="cell" ${style} title="${esc(plain(r,c))}">${esc(plain(r,c))}</div>`;
+  if(c.sel){const o=c.sel(r);return `<select data-k="${c.k}" ${style} aria-label="${esc(c.l)}"><option value=""></option>${Object.entries(o).map(([k,l])=>`<option value="${esc(k)}"${v===k?' selected':''}>${esc(l)}</option>`).join('')}</select>`}
+  if(c.k==='evidence'&&v&&/^https?:\/\//.test(v))return `<div class="cell" ${style} contenteditable="plaintext-only" data-k="${c.k}" title="${esc(v)}">${esc(v)}</div>`;
+  return `<div class="cell${c.wrap?' wrap':''}" ${style} contenteditable="plaintext-only" data-k="${c.k}" title="${esc(v||'')}">${esc(v||'')}</div>`;
+}
+function render(){
+  const v=visible();$('n').textContent=rows.length;
+  $('count').textContent=v.length===rows.length?'':`แสดง ${v.length} จาก ${rows.length}`;
+  const head=`<thead><tr><th class="num">#</th>${COLS.map(c=>`<th><button data-sort="${c.k}">${esc(c.l)}<span class="ar">${sortK===c.k?(sortDir>0?'▲':'▼'):''}</span></button></th>`).join('')}</tr></thead>`;
+  const body=v.length?v.map((r,i)=>`<tr data-id="${r.id}"><td class="num"><small>${v.length-i}</small><button data-edit="${r.id}" aria-label="แก้ไขแถว">แก้ไข</button></td>${COLS.map(c=>`<td>${cellHtml(r,c)}</td>`).join('')}</tr>`).join('')
+    :`<tr><td colspan="${COLS.length+1}"><div class="empty">${rows.length?'ไม่พบแถวที่ตรงกับตัวกรอง':'ยังไม่มีข้อมูล กด "+ เพิ่มข้อมูลสัมภาษณ์" หรือรอคำตอบจากแบบสอบถาม'}</div></td></tr>`;
+  $('grid').innerHTML=head+'<tbody>'+body+'</tbody>';
+}
+const byId=id=>rows.find(r=>r.id===id);
+
+async function save(r,patch,flash=true){
+  const tr=document.querySelector(`tr[data-id="${r?.id}"]`);if(tr)tr.classList.add('saving');
+  const next={...(r||{}),...patch.row,answers:{...(r?.answers||{}),...patch.ans}};
+  Object.keys(next.answers).forEach(k=>{const v=next.answers[k];if(v===''||v==null||(Array.isArray(v)&&!v.length))delete next.answers[k]});
+  if(!next.answers.v)next.answers.v=VERSION;
+  try{
+    const res=await rpc('care_survey_admin_save',{p_code:code,p_id:r?.id||null,p_answers:next.answers,p_source:next.source||'',p_contact_name:next.contact_name||'',p_contact:next.contact||'',p_interviewer:next.interviewer||'',p_evidence:next.evidence||'',p_notes:next.notes||''});
+    const i=rows.findIndex(x=>x.id===res.id);if(i>=0)rows[i]=res;else rows.unshift(res);
+    toast('บันทึกแล้ว');return res;
+  }catch(e){toast('บันทึกไม่สำเร็จ ลองอีกครั้ง');throw e}
+  finally{if(tr)tr.classList.remove('saving')}
+}
+
+/* inline edits */
+$('grid').addEventListener('focusout',async e=>{
+  const el=e.target.closest('.cell[contenteditable]');if(!el)return;
+  const tr=el.closest('tr'),r=byId(tr.dataset.id),c=COLS.find(x=>x.k===el.dataset.k);
+  const val=el.textContent.trim(),old=String(raw(r,c)??'');if(val===old)return;
+  try{await save(r,c.where==='row'?{row:{[c.k]:val}}:{ans:{[c.k]:val}});el.title=val}catch(_){el.textContent=old}
+});
+$('grid').addEventListener('keydown',e=>{const el=e.target.closest('.cell[contenteditable]');if(!el)return;
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.blur()}if(e.key==='Escape'){const r=byId(el.closest('tr').dataset.id);el.textContent=String(raw(r,COLS.find(x=>x.k===el.dataset.k))??'');el.blur()}});
+$('grid').addEventListener('change',async e=>{
+  const s=e.target.closest('select[data-k]');if(!s)return;
+  const r=byId(s.closest('tr').dataset.id);
+  try{await save(r,{ans:{[s.dataset.k]:s.value}});if(s.dataset.k==='role')render()}catch(_){render()}
+});
+$('grid').addEventListener('click',e=>{
+  const sb=e.target.closest('[data-sort]');if(sb){const k=sb.dataset.sort;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=k==='created_at'?-1:1}render();return}
+  const ed=e.target.closest('[data-edit]');if(ed)openPanel(byId(ed.dataset.edit));
+});
+
+/* row editor panel (add + full edit) */
+function field(q,role,val){
+  const id='f_'+q.id;
+  if(q.t==='one'||q.t==='top'){const o=q.t==='top'?Object.fromEntries(Object.entries(PAIN).filter(([k,v])=>v[role]).map(([k,v])=>[k,v[role]])):q.o;
+    return `<div class="f"><label class="l" for="${id}">${esc(q.t==='top'?'ข้อที่หนักที่สุด':q.q)}</label><select id="${id}" data-a="${q.id}"><option value=""></option>${Object.entries(o).map(([k,l])=>`<option value="${esc(k)}"${val===k?' selected':''}>${esc(l)}</option>`).join('')}</select></div>`}
+  if(q.t==='many')return `<div class="f"><span class="l">${esc(q.q)}</span><div class="chips">${Object.entries(q.o).map(([k,l])=>`<label><input type="checkbox" data-m="${q.id}" value="${esc(k)}"${(val||[]).includes(k)?' checked':''}>${esc(l)}</label>`).join('')}</div></div>`;
+  if(q.t==='text'||q.t==='short')return `<div class="f"><label class="l" for="${id}">${esc(q.q)}</label><textarea id="${id}" data-a="${q.id}">${esc(val||'')}</textarea></div>`;
+  return '';
+}
+function meta(k,l,v,ph=''){return `<div class="f"><label class="l" for="m_${k}">${l}</label><input id="m_${k}" data-r="${k}" value="${esc(v||'')}" placeholder="${esc(ph)}"></div>`}
+function openPanel(r){
+  const isNew=!r;let role=r?roleOf(r):'family';const ans={...(r?.answers||{})};
+  const draw=()=>{
+    const qs=ROLES[role].qs.filter(q=>q.t!=='contact');
+    $('panelRoot').innerHTML=`<div class="scrim" id="scrim"></div><aside class="panel" role="dialog" aria-modal="true" aria-label="แก้ไขข้อมูล">
+    <div class="ph"><h2>${isNew?'เพิ่มข้อมูลสัมภาษณ์':'แก้ไขแถว'}</h2><button id="pClose" aria-label="ปิด">ปิด</button></div>
+    <div class="pb">
+      <div class="f"><label class="l" for="pRole">กลุ่มผู้ตอบ</label><select id="pRole">${Object.entries(ROLES).map(([k,x])=>`<option value="${k}"${k===role?' selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+      ${qs.map(q=>field(q,role,ans[q.id])).join('')}
+      <div class="sep">ข้อมูลของทีม</div>
+      ${meta('source','ช่องทาง',r?.source??(isNew?'interview':''),'เช่น interview, fb, family')}
+      ${meta('interviewer','ผู้สัมภาษณ์',r?.interviewer,'ชื่อคนในทีม')}
+      ${meta('evidence','หลักฐาน (ลิงก์ Drive, คลิปเสียง, รูป)',r?.evidence,'https://')}
+      <div class="f"><label class="l" for="m_notes">โน้ตทีม</label><textarea id="m_notes" data-r="notes">${esc(r?.notes||'')}</textarea></div>
+      ${meta('contact_name','ชื่อเล่นผู้ตอบ',r?.contact_name)}
+      ${meta('contact','ติดต่อ (LINE / เบอร์)',r?.contact)}
+    </div>
+    <div class="pf">${isNew?'':'<button class="danger" id="pDel">ลบแถว</button>'}<button class="go" id="pSave">บันทึก</button></div></aside>`;
+    $('pRole').onchange=e=>{collect();role=e.target.value;draw()};
+    $('pClose').onclick=$('scrim').onclick=close;
+    $('pSave').onclick=async()=>{collect();const row={};document.querySelectorAll('[data-r]').forEach(el=>row[el.dataset.r]=el.value.trim());
+      const keep=new Set(['v','role',...ROLES[role].qs.map(q=>q.id)]);Object.keys(ans).forEach(k=>{if(!keep.has(k))delete ans[k]});
+      ans.role=role;$('pSave').disabled=true;
+      try{const base=r?{...r,answers:{}}:null;const res=await save(base,{row,ans});close();render();const tr=document.querySelector(`tr[data-id="${res.id}"]`);if(tr){tr.classList.add('flash');tr.scrollIntoView({block:'nearest'});document.querySelector('.gridwrap').scrollLeft=0}}catch(_){ $('pSave').disabled=false}};
+    if(!isNew)$('pDel').onclick=()=>confirmDlg('ลบแถวนี้ถาวร? กู้คืนไม่ได้',async()=>{try{await rpc('care_survey_admin_delete',{p_code:code,p_id:r.id});rows=rows.filter(x=>x.id!==r.id);close();render();toast('ลบแล้ว')}catch(_){toast('ลบไม่สำเร็จ')}});
+    setTimeout(()=>$('pRole').focus(),30);
+  };
+  const collect=()=>{document.querySelectorAll('[data-a]').forEach(el=>ans[el.dataset.a]=el.value.trim());
+    const m={};document.querySelectorAll('[data-m]').forEach(el=>{m[el.dataset.m]=m[el.dataset.m]||[];if(el.checked)m[el.dataset.m].push(el.value)});Object.assign(ans,m)};
+  const close=()=>{$('panelRoot').innerHTML='';document.removeEventListener('keydown',esck)};
+  const esck=e=>{if(e.key==='Escape'&&!document.querySelector('.dlg'))close()};document.addEventListener('keydown',esck);
+  draw();
+}
+function confirmDlg(msg,ok){
+  const d=document.createElement('div');d.className='dlg';d.innerHTML=`<div role="alertdialog" aria-modal="true"><p>${esc(msg)}</p><div class="row"><button id="dNo">ยกเลิก</button><button class="go" id="dYes">ลบ</button></div></div>`;
+  document.body.appendChild(d);$('dNo').focus();$('dNo').onclick=()=>d.remove();$('dYes').onclick=()=>{d.remove();ok()};
+}
+
+/* toolbar */
+$('fRole').innerHTML+=Object.entries(ROLES).map(([k,r])=>`<option value="${k}">${esc(r.name)}</option>`).join('');
+$('q').oninput=render;$('fRole').onchange=render;
+$('fTarget').onclick=()=>{onlyTarget=!onlyTarget;$('fTarget').setAttribute('aria-pressed',onlyTarget);render()};
+$('add').onclick=()=>openPanel(null);
+$('reload').onclick=load;
+$('csv').onclick=()=>{
+  const v=visible(),qq=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
+  const csv='﻿'+['id',...COLS.map(c=>c.l)].map(qq).join(',')+'\n'+v.map(r=>[r.id,...COLS.map(c=>plain(r,c))].map(qq).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='siang-khon-doolae-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+};
+
+async function load(){
+  $('gateErr').textContent=code?'กำลังโหลด…':'';
+  try{rows=await rpc('care_survey_results',{p_code:code});rows.forEach(r=>r.answers=r.answers||{});
+    try{sessionStorage.setItem('care_code',code)}catch(e){}
+    $('gate').hidden=true;$('app').hidden=false;render();
+  }catch(e){try{sessionStorage.removeItem('care_code')}catch(_){};$('gate').hidden=false;$('app').hidden=true;$('gateErr').textContent=code?'รหัสไม่ถูกต้อง หรือเชื่อมต่อไม่ได้':''}
+}
+$('gateForm').onsubmit=e=>{e.preventDefault();code=$('code').value.trim();load()};
+if(code)load();
+}
+</script>
+</body>
+</html>
