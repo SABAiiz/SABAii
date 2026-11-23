@@ -14,4 +14,5 @@ rm -rf dist/assets/vendor   # ตัวตามมือ (~17MB) มีชุ�
 cp index.html manifest.webmanifest sw.js icon.svg dist/app/
 cp -R src assets dist/app/
 rm -rf dist/app/src/landing
+mkdir -p dist/care && cp care/index.html dist/care/   # แบบสอบถาม "เสียงคนดูแล" (SPU AI Hackathon) → /care/
 echo "built dist/ ($(find dist -type f | wc -l | tr -d ' ') files)"

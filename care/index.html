@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เสียงคนดูแล</title>
+<meta name="description" content="แบบสอบถามสั้นเรื่องการดูแลผู้สูงอายุที่บ้าน ใช้เวลาประมาณ 5 นาที ไม่ต้องใส่ชื่อ">
+<meta property="og:title" content="เสียงคนดูแล — ช่วยเล่าเรื่องการดูแลผู้สูงอายุที่บ้าน">
+<meta property="og:description" content="5 นาที ไม่ต้องใส่ชื่อ ตอบได้ทั้งคนดูแล ผู้สูงอายุ ผู้ดูแลอาชีพ และลูกหลาน">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm, calm, respectful — a kind volunteer with a clipboard
+   IDEA: a weekly pill organizer — compartments fill as you answer
+   PICTURE: one question per screen, big tappable answers
+   COLOUR and TYPE: white ground, lacquer red, soft rose; Anuphan + IBM Plex Sans Thai Looped
+   LAYOUT: one calm column; elder mode scales everything up */
+:root{color-scheme:light dark;
+--bg:light-dark(#ffffff,#161213);--ink:light-dark(#1f1a1a,#f3ecec);--mute:light-dark(#6b6060,#b8aaaa);
+--soft:light-dark(#f7eeee,#2a2022);--line:light-dark(#e3d4d4,#3d3133);--red:light-dark(#b3261e,#f0716a);
+--redink:light-dark(#ffffff,#1a0c0b);--card:light-dark(#ffffff,#1e1819);--fs:17px;--opt:56px}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+html.big{--fs:21px;--opt:68px}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:var(--fs)/1.6 "IBM Plex Sans Thai Looped",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:Anuphan,system-ui,sans-serif;line-height:1.22;text-wrap:balance;margin:0 0 .35em}
+h1{font-size:clamp(30px,6.4vw,44px)}h2{font-size:calc(var(--fs) * 1.5)}h3{font-size:19px}
+.wrap{max-width:620px;margin:0 auto;padding:clamp(16px,4vw,36px) 18px 130px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;min-height:44px}
+.brand{font-family:Anuphan;font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px}
+.brand i{width:14px;height:14px;border-radius:50%;background:var(--red)}
+.aa{min-height:40px;font-size:15px;padding:0 14px;border-radius:99px}
+.small{font-size:14px;color:var(--mute)}
+.pills{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0 0 26px;height:14px}
+.pills span{border-radius:7px;background:var(--soft);border:1px solid var(--line);position:relative;overflow:hidden}
+.pills span i{position:absolute;inset:0;background:var(--red);transform-origin:left;transform:scaleX(0);transition:transform .3s}
+.hero{background:var(--soft);border-radius:22px;padding:clamp(22px,5vw,34px);margin-bottom:18px}
+.hero p{margin:.4em 0}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 2px;padding:0;list-style:none}
+.facts li{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:5px 14px;font-size:15px}
+.kick{font-size:14px;color:var(--red);font-weight:600;margin:0 0 6px}
+.hint{font-size:calc(var(--fs) * .88);color:var(--mute);margin:-4px 0 14px}
+.opts{display:grid;gap:9px}
+.opt{position:relative;display:block}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer;width:100%;height:100%}
+.opt>span{display:flex;align-items:center;gap:12px;min-height:var(--opt);padding:10px 16px;border:1.5px solid var(--line);border-radius:16px;background:var(--card);transition:border-color .15s,background .15s}
+.opt>span::before{content:"";flex:none;width:22px;height:22px;border:2px solid var(--line);border-radius:50%}
+.opt input[type=checkbox]+span::before{border-radius:7px}
+.opt input:checked+span{border-color:var(--red);background:var(--soft)}
+.opt input:checked+span::before{background:var(--red);border-color:var(--red);box-shadow:inset 0 0 0 3px var(--card)}
+.opt input:focus-visible+span{outline:3px solid var(--red);outline-offset:2px}
+.opt input:disabled+span{opacity:.4}
+@media (hover:hover){.opt:hover>span{border-color:var(--red)}}
+.roles{display:grid;gap:10px}
+.roles .opt>span{min-height:86px;align-items:center}
+.roles .opt>span::before{display:none}
+.roles svg{flex:none;width:44px;height:44px;color:var(--red)}
+.roles b{display:block;font-family:Anuphan;font-size:calc(var(--fs) * 1.12)}
+.roles em{display:block;font-style:normal;font-size:calc(var(--fs) * .84);color:var(--mute);line-height:1.4}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.scale .opt>span{justify-content:center;font-family:Anuphan;font-weight:600;font-size:22px;min-height:64px;padding:0}
+.scale .opt>span::before{display:none}
+.scale .opt input:checked+span{background:var(--red);color:var(--redink)}
+.ends{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--mute);margin-top:6px}
+textarea,input[type=text],input[type=password]{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:13px 15px}
+input{font-size:max(16px,var(--fs))!important}
+textarea{min-height:150px;resize:vertical}
+textarea:focus,input:focus{outline:3px solid var(--red);outline-offset:1px;border-color:var(--red)}
+.mt{margin-top:10px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 18px calc(12px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{max-width:620px;margin:0 auto;display:flex;gap:10px}
+button{font:inherit;font-family:Anuphan;font-weight:600;font-size:18px;min-height:54px;border-radius:16px;padding:0 22px;cursor:pointer;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+button.go{flex:1;background:var(--red);border-color:var(--red);color:var(--redink)}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+button:disabled{opacity:.6;cursor:wait}
+.err{color:var(--red);font-size:15px;min-height:1.4em;margin:12px 0 0}
+#screen{animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#screen{animation:none}.pills span i{transition:none}}
+.done{text-align:center;padding-top:24px}
+.done .big{width:96px;height:96px;margin:0 auto 18px;border-radius:50%;background:var(--soft);display:grid;place-items:center}
+.share{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+.share a{display:inline-flex;align-items:center;min-height:54px;padding:0 22px;border-radius:16px;background:#06c755;color:#fff;font-family:Anuphan;font-weight:600;text-decoration:none}
+/* team */
+.team{max-width:1120px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 18px}
+.tabs button{min-height:44px;font-size:16px;border-radius:99px}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 20px}
+.kpi{background:var(--soft);border-radius:16px;padding:14px 16px;font-size:15px}
+.kpi b{display:block;font-family:Anuphan;font-size:clamp(26px,5vw,34px);line-height:1.1}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:14px}
+.panel{border:1px solid var(--line);border-radius:18px;padding:16px 18px;background:var(--card)}
+.panel h3{font-size:17px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 40px;gap:8px;align-items:end;margin:9px 0;font-size:15px}
+.row .lab{display:flex;flex-direction:column;gap:4px}
+.track{height:10px;background:var(--soft);border-radius:5px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--red);border-radius:5px}
+.row .n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.quote{border-left:4px solid var(--red);background:var(--soft);border-radius:0 14px 14px 0;padding:12px 16px;margin:10px 0;font-size:16px}
+.quote small{display:block;color:var(--mute);margin-top:6px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px}
+.tools button{font-size:16px;min-height:46px}
+table{width:100%;border-collapse:collapse;font-size:15px}td,th{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.scroll{overflow-x:auto}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+
+.head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+.head .tools{margin:0 0 14px}
+.kpi.goal{background:var(--red);color:var(--redink)}
+.kpi b span{font-size:.55em;opacity:.8}
+.kpi .track{background:color-mix(in srgb,var(--redink) 30%,transparent);margin:8px 0 4px}.kpi .track i{background:var(--redink)}
+.kpi small{display:block;font-size:13px;opacity:.85}
+.sec{margin:30px 0 0}
+.sec h2{font-size:24px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:14px}
+.hl{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.hl li{background:var(--soft);border-radius:12px;padding:10px 14px;font-size:16px}
+.mx th,.mx td{vertical-align:middle}
+.mx .num{text-align:center}
+.mx small.sub{display:block;color:var(--mute);font-size:13px}
+.hm{text-align:center;background:color-mix(in srgb,var(--red) calc(var(--p) * .5),var(--card));min-width:84px}
+.hm b{display:block;font-family:Anuphan;font-size:17px}
+.hm small{font-size:12px;opacity:.8}
+.hm.na{background:none;color:var(--mute);font-size:13px}
+.gh{margin:20px 0 4px;display:flex;align-items:center;gap:8px}.gh span{background:var(--ink);color:var(--bg);border-radius:99px;padding:0 10px;font-size:14px}
+.why{margin-top:8px;font-size:15px}
+.chip{display:inline-block;background:var(--soft);border-radius:99px;padding:4px 12px;margin:2px;font-size:15px}
+</style>
+</head>
+<body>
+
+<div id="survey" class="wrap">
+  <div class="top"><div class="brand"><i></i>เสียงคนดูแล</div><button type="button" class="aa" id="aa" aria-pressed="false">ตัวหนังสือใหญ่</button></div>
+  <div class="pills" id="pills" aria-hidden="true"></div>
+  <div id="screen"></div>
+  <p class="err" id="err" role="alert"></p>
+</div>
+<div class="bar" id="bar"><div class="in"><button type="button" id="back">ย้อนกลับ</button><button type="button" class="go" id="next">เริ่มเลย</button></div></div>
+
+<div id="team" class="wrap team" hidden>
+  <div class="top"><div class="brand"><i></i>เสียงคนดูแล · ผลสำหรับทีม</div><a class="small" href="#">ไปหน้าแบบสอบถาม</a></div>
+  <div id="gate">
+    <h2>ใส่รหัสทีม</h2>
+    <form id="gateForm" style="display:flex;gap:10px;max-width:440px"><input type="password" id="code" autocomplete="off" placeholder="รหัสทีม"><button class="go" style="flex:none">ดูผล</button></form>
+    <p class="err" id="gateErr"></p>
+  </div>
+  <div id="dash" hidden></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+const SB_URL='https://yunbytxtgghizrdqftvj.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1bmJ5dHh0Z2doaXpyZHFmdHZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0MjA2ODksImV4cCI6MjA5OTk5NjY4OX0.DQbwU3hklRbuWEyqBPDw6jqnjmfB5wt91XzoV3PIH0o';
+const H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const VERSION=3;
+
+/* ---------- questions ---------- */
+/* One shared pain list for every group so groups can be compared. null = not shown to that group. */
+const PAIN={
+ meds:  {family:'จัดยา เตือนกินยา',elder:'ลืมกินยา หรือจำยาไม่ได้',pro:'ผู้สูงอายุไม่ยอมกินยา หรือข้อมูลยาไม่ครบ',relative:'ไม่รู้ว่าท่านกินยาอะไร กินครบไหม',_:'ยา'},
+ appt:  {family:'นัดหมอ พาไปโรงพยาบาล',elder:'ไปหาหมอลำบาก เดินทาง รอคิว',pro:null,relative:'ไม่รู้นัดหมอ ไปช่วยพาไม่ได้',_:'หาหมอ'},
+ blind: {family:'ไม่รู้ว่าท่านเป็นยังไงตอนไม่ได้อยู่ด้วย',elder:null,pro:'ต้องรายงานอาการให้ญาติ ตอบคำถามซ้ำๆ',relative:'รู้ข่าวท่านช้า ไม่มีใครบอก',_:'ข้อมูลไม่ถึงกัน'},
+ emerg: {family:'กลัวเหตุฉุกเฉิน เช่น หกล้ม',elder:'กลัวล้มแล้วไม่มีใครรู้',pro:'เหตุฉุกเฉินต้องตัดสินใจคนเดียว',relative:'กลัวเกิดเหตุตอนไม่มีใครอยู่',_:'เหตุฉุกเฉิน'},
+ coord: {family:'แบ่งงานกับพี่น้องและญาติไม่ลงตัว',elder:null,pro:'ญาติแต่ละคนสั่งไม่ตรงกัน',relative:'ไม่รู้ว่าต้องช่วยอะไร ไม่อยากขัดคนที่ดูแลหลัก',_:'ประสานงานในครอบครัว'},
+ lonely:{family:'ท่านเหงา หรืออารมณ์ไม่ดี',elder:'เหงา ไม่ค่อยมีคนคุยด้วย',pro:'ผู้สูงอายุเหงา หรืออารมณ์ไม่ดี',relative:'ท่านเหงา',_:'ความเหงา อารมณ์'},
+ body:  {family:'อาบน้ำ ขับถ่าย พยุงเดิน',elder:'ทำงานบ้าน ทำอาหารเองลำบาก',pro:'งานดูแลร่างกายหนัก ไม่ได้พัก',relative:null,_:'ดูแลร่างกาย'},
+ know:  {family:'ไม่แน่ใจว่าดูแลถูกวิธีไหม',elder:'เรื่องสุขภาพ ไม่รู้จะถามใคร',pro:'ขาดความรู้หรือการอบรมบางเรื่อง',relative:null,_:'ความรู้การดูแล'},
+ burden:{family:null,elder:'ไม่อยากเป็นภาระลูกหลาน',pro:null,relative:null,_:'กลัวเป็นภาระ'},
+ time:  {family:'ตัวฉันเองเหนื่อย ไม่มีเวลา',elder:null,pro:null,relative:'งานยุ่ง อยู่ไกล ไม่มีเวลา',_:'เวลาและความเหนื่อยของคนดูแล'},
+ money: {family:'ค่าใช้จ่าย',elder:'ค่าใช้จ่าย',pro:'ค่าตอบแทนไม่คุ้ม',relative:'ค่าใช้จ่าย',_:'เงิน'}
+};
+const painOpts=role=>Object.fromEntries(Object.entries(PAIN).filter(([k,v])=>v[role]).map(([k,v])=>[k,v[role]]));
+const FREQ={day:'ทุกวัน',wk:'หลายครั้งต่อสัปดาห์',w1:'สัปดาห์ละครั้ง',mo:'เดือนละครั้งหรือน้อยกว่า'};
+const WTP={w0:'ไม่จ่าย อยากใช้ฟรี',w99:'ไม่เกิน 99 บาท',w199:'100–199 บาท',w499:'200–499 บาท',w500:'500 บาทขึ้นไป'};
+const PAINS=role=>({id:'pains',t:'many',max:3,q:role==='elder'?'เรื่องไหนที่ลำบากใจหรือกังวลที่สุด':role==='relative'?'เรื่องไหนที่ทำให้คุณกังวลหรือช่วยได้ไม่เต็มที่':'เรื่องไหนเหนื่อย เสียเวลา หรือกังวลที่สุด',hint:'เลือกได้ไม่เกิน 3 ข้อ',o:painOpts(role)});
+const TOP={id:'top',t:'top',from:'pains',q:'จากที่เลือก ข้อไหนหนักที่สุด'};
+const FREQQ={id:'freq',t:'one',q:'เรื่องที่หนักที่สุดนี้เกิดบ่อยแค่ไหน',o:FREQ};
+const WHY={id:'why',t:'text',q:'คิดว่าทำไมเรื่องนี้ถึงยังแก้ไม่ได้',hint:'ไม่บังคับ แต่ช่วยเราได้มาก'};
+const WTPQ={id:'wtp',t:'one',q:'ถ้ามีบริการที่ช่วยเรื่องนี้ได้จริง ยอมจ่ายเดือนละเท่าไร',o:WTP};
+const AGEQ={id:'age',t:'one',q:'อายุของคุณ',o:{u30:'ต่ำกว่า 30',a30:'30–45',a46:'46–59',a60:'60 ขึ้นไป'}};
+const WORKQ={id:'work',t:'one',q:'ตอนนี้คุณทำงานแบบไหน',o:{full:'ทำงานประจำเต็มเวลา',flex:'ฟรีแลนซ์ หรือเวลายืดหยุ่น',none:'ไม่ได้ทำงาน'}};
+const CONTACT={id:'contact',t:'contact',q:'ยินดีให้ทีมติดต่อมาให้ลองใช้ต้นแบบไหม',hint:'ไม่บังคับ ใช้ติดต่อเรื่องนี้เรื่องเดียว'};
+
+const ROLES={
+ family:{name:'คนดูแลในครอบครัว',short:'ครอบครัว',desc:'ดูแลพ่อแม่ ปู่ย่าตายาย หรือคู่สมรสที่อายุ 60+',icon:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',qs:[
+  AGEQ,WORKQ,
+  {id:'live',t:'one',q:'ตอนนี้คุณดูแลท่านแบบไหน',o:{same:'อยู่บ้านเดียวกัน',near:'อยู่ใกล้ แวะไปบ่อย',far:'อยู่ไกล ดูแลทางโทรศัพท์เป็นหลัก'}},
+  {id:'helpers',t:'one',q:'มีใครช่วยแบ่งงานดูแลไหม',o:{one:'ฉันดูแลคนเดียว',some:'มีคนช่วยบ้าง แต่ส่วนใหญ่เป็นฉัน',shared:'แบ่งกันพอๆ กัน'}},
+  PAINS('family'),TOP,FREQQ,
+  {id:'story',t:'text',req:1,q:'ครั้งล่าสุดที่การดูแลวุ่นวายหรือหนักใจที่สุด เกิดอะไรขึ้น',hint:'เล่าสั้นๆ ก็ได้ เกิดอะไรขึ้น แล้วคุณทำยังไง'},
+  WHY,WTPQ,CONTACT]},
+ elder:{name:'ผู้สูงอายุ (60 ปีขึ้นไป)',short:'ผู้สูงอายุ',desc:'ตอบเรื่องชีวิตของตัวเอง หรือให้ลูกหลานช่วยอ่านให้ฟัง',big:1,icon:'<circle cx="12" cy="7" r="3"/><path d="M6 21v-3a6 6 0 0 1 12 0v3"/><path d="M19 13v8"/>',qs:[
+  {id:'s_live',t:'one',q:'ตอนนี้อยู่กับใคร',o:{alone:'อยู่คนเดียว',spouse:'อยู่กับคู่สมรส',kids:'อยู่กับลูกหลาน'}},
+  PAINS('elder'),TOP,
+  {id:'story',t:'text',req:1,q:'ครั้งล่าสุดที่อยากให้มีคนช่วย เกิดอะไรขึ้น',hint:'เล่าสั้นๆ ก็ได้ หรือให้ลูกหลานพิมพ์ให้'},
+  {id:'s_watch',t:'one',q:'ถ้าลูกหลานรู้ได้ทุกวันว่าคุณสบายดี โดยคุณไม่ต้องทำอะไรมาก รู้สึกยังไง',o:{warm:'ดี อุ่นใจ',ok:'เฉยๆ',depends:'แล้วแต่ว่าทำแบบไหน',no:'ไม่ชอบ เหมือนถูกจับตา'}},
+  CONTACT]},
+ pro:{name:'ผู้ดูแลอาชีพ หรือบุคลากรสุขภาพ',short:'ผู้ดูแลอาชีพ',desc:'ผู้ดูแลรับจ้าง CG อสม. พยาบาล หรือศูนย์ดูแลผู้สูงอายุ',icon:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M12 9v7M8.5 12.5h7"/><path d="M9 5V3h6v2"/>',qs:[
+  {id:'p_type',t:'one',q:'คุณทำงานแบบไหน',o:{home:'ผู้ดูแลรับจ้างตามบ้าน',cg:'Caregiver (CG) หรือ อสม.',nurse:'พยาบาลหรือบุคลากรสุขภาพ',center:'ศูนย์ดูแล หรือเนอร์สซิ่งโฮม'}},
+  PAINS('pro'),TOP,FREQQ,
+  {id:'story',t:'text',req:1,q:'ครั้งล่าสุดที่งานดูแลวุ่นวายที่สุด เกิดอะไรขึ้น',hint:'เล่าสั้นๆ ก็ได้ เกิดอะไรขึ้น แก้ยังไง'},
+  WHY,CONTACT]},
+ relative:{name:'ลูกหลานหรือญาติที่ไม่ได้ดูแลหลัก',short:'ลูกหลาน',desc:'มีคนอื่นดูแลเป็นหลัก แต่คุณช่วยบ้างหรือเป็นห่วงอยู่',icon:'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20v-1.5A5 5 0 0 1 13 18.5V20"/><path d="M14.5 15.5a4 4 0 0 1 6.5 3V20"/>',qs:[
+  AGEQ,WORKQ,
+  {id:'r_know',t:'many',q:'เรื่องไหนที่คุณตอบได้ทันที โดยไม่ต้องถามใคร',hint:'เลือกได้หลายข้อ',o:{meds:'ท่านกินยาอะไรบ้าง',next:'นัดหมอครั้งถัดไปวันไหน',recent:'อาการล่าสุดเป็นยังไง',none:'ตอบไม่ได้สักข้อ'}},
+  PAINS('relative'),TOP,FREQQ,
+  {id:'story',t:'text',req:1,q:'ครั้งล่าสุดที่คุณกังวลเรื่องท่าน เกิดอะไรขึ้น',hint:'รู้เรื่องนั้นจากใคร รู้เร็วหรือช้า'},
+  WTPQ,CONTACT]}
+};
+const ROLE_Q={id:'role',t:'role',q:'คุณคือใครในเรื่องการดูแลผู้สูงอายุ',hint:'เลือกข้อที่ตรงที่สุด คำถามจะปรับตามที่เลือก'};
+
+/* ---------- state ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const src=(new URLSearchParams(location.search).get('src')||'').slice(0,40)||null;
+let a={},i=-1,flow=[],sending=false;
+const screen=$('screen'),err=$('err'),next=$('next'),back=$('back'),bar=$('bar'),pills=$('pills');
+pills.innerHTML='<span><i></i></span>'.repeat(7);
+
+const build=()=>{flow=[ROLE_Q,...(a.role?ROLES[a.role].qs:[])].filter(q=>!q.cond||q.cond(a))};
+const qAt=k=>flow[k];
+function save(){try{localStorage.setItem('care_v3',JSON.stringify({a,i}))}catch(e){}}
+function restore(){try{const d=JSON.parse(localStorage.getItem('care_v3')||'null');if(d&&d.a){a=d.a;i=d.i??-1}}catch(e){}}
+function setBig(on){document.documentElement.classList.toggle('big',!!on);$('aa').setAttribute('aria-pressed',on?'true':'false');$('aa').textContent=on?'ตัวหนังสือปกติ':'ตัวหนังสือใหญ่'}
+$('aa').onclick=()=>{a._big=!document.documentElement.classList.contains('big');setBig(a._big);save()};
+
+const optHtml=(type,name,k,v,on,dis)=>`<label class="opt"><input type="${type}" name="${name}" value="${esc(k)}"${on?' checked':''}${dis?' disabled':''}><span>${v}</span></label>`;
+function topOpts(q){const r=a.role,src=ROLES[r].qs.find(x=>x.id===q.from);return (a[q.from]||[]).map(k=>[k,src.o[k]])}
+function needsTop(q){return topOpts(q).length>1}
+
+function progress(){
+  const total=flow.length,done=Math.max(0,i);
+  const frac=i>=total?1:(a.role?done/total:0);
+  [...pills.children].forEach((p,k)=>{const f=Math.min(1,Math.max(0,frac*7-k));p.firstChild.style.transform=`scaleX(${f})`});
+}
+function render(){
+  err.textContent='';build();
+  if(i>=flow.length){renderDone();return}
+  bar.hidden=false;
+  if(i<0){
+    screen.innerHTML=`<div class="hero"><h1>ช่วยเล่าให้เราฟังหน่อย ว่าการดูแลผู้สูงอายุที่บ้านหนักตรงไหน</h1>
+    <p>เราเป็นทีมนักศึกษากำลังออกแบบบริการช่วยครอบครัวดูแลผู้สูงอายุ ก่อนจะสร้างอะไร เราอยากฟังจากคนที่เจอเรื่องนี้จริง</p>
+    <ul class="facts"><li>ประมาณ 5 นาที</li><li>ไม่ต้องใส่ชื่อ</li><li>ไม่มีคำตอบผิด</li></ul></div>
+    <p class="small">ตอบได้ทั้งคนดูแล ผู้สูงอายุเอง ผู้ดูแลอาชีพ และลูกหลาน ข้อมูลใช้เพื่อการศึกษาในการแข่งขัน SPU AI Hackathon เท่านั้น ไม่เผยแพร่เป็นรายบุคคล และจะลบหลังจบการแข่งขัน การกด "เริ่มเลย" ถือว่ายินยอมตามนี้</p>`;
+    back.style.display='none';next.textContent='เริ่มเลย';progress();return;
+  }
+  const q=qAt(i),n=flow.length;
+  if(q.t==='top'&&!needsTop(q)){a.top=topOpts(q)[0]?.[0]||null;i+=goingBack?-1:1;save();render();return}
+  let body='';
+  if(q.t==='role')body=`<div class="opts roles">${Object.entries(ROLES).map(([k,r])=>optHtml('radio','role',k,`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${r.icon}</svg><span><b>${r.name}</b><em>${r.desc}</em></span>`,a.role===k)).join('')}</div>`;
+  else if(q.t==='one')body=`<div class="opts">${Object.entries(q.o).map(([k,v])=>optHtml('radio',q.id,k,esc(v),a[q.id]===k)).join('')}</div>`;
+  else if(q.t==='top')body=`<div class="opts">${topOpts(q).map(([k,v])=>optHtml('radio',q.id,k,esc(v),a.top===k)).join('')}</div>`;
+  else if(q.t==='many'){const sel=a[q.id]||[];body=`<div class="opts">${Object.entries(q.o).map(([k,v])=>optHtml('checkbox',q.id,k,esc(v),sel.includes(k),q.max&&!sel.includes(k)&&sel.length>=q.max)).join('')}</div>`}
+  else if(q.t==='scale')body=`<div class="scale">${[1,2,3,4,5].map(k=>optHtml('radio',q.id,k,k,a[q.id]===k)).join('')}</div><div class="ends"><span>${q.lo}</span><span>${q.hi}</span></div>`;
+  else if(q.t==='text')body=`<textarea id="txt" maxlength="3000" placeholder="พิมพ์ที่นี่">${esc(a[q.id]||'')}</textarea>`;
+  else if(q.t==='short')body=`<input type="text" id="txt" maxlength="300" value="${esc(a[q.id]||'')}">`;
+  else if(q.t==='contact')body=`<input type="text" id="cname" maxlength="80" placeholder="ชื่อเล่น" value="${esc(a.contact_name||'')}"><input type="text" id="cval" class="mt" maxlength="120" placeholder="LINE ID หรือเบอร์โทร" value="${esc(a.contact||'')}">`;
+  screen.innerHTML=`${q.t==='role'?'':`<p class="kick">ข้อ ${i} จาก ${n-1}</p>`}<h2>${esc(q.q)}</h2>${q.hint?`<p class="hint">${esc(q.hint)}</p>`:''}${body}`;
+  screen.style.animation='none';void screen.offsetWidth;screen.style.animation='';
+  back.style.display='';
+  setNextLabel();progress();
+  const t=$('txt');if(t&&matchMedia('(hover:hover)').matches)t.focus();
+}
+function setNextLabel(){
+  const q=qAt(i);if(!q)return;
+  const last=q.t!=='role'&&i===flow.length-1;
+  if(last){next.textContent='ส่งคำตอบ';return}
+  const optional=(q.t==='text'||q.t==='short')&&!q.req;
+  next.textContent=optional&&!(a[q.id]||'').trim()?'ข้าม':'ต่อไป';
+}
+let goingBack=false,adv=null;
+screen.addEventListener('change',e=>{
+  const q=qAt(i),t=e.target;if(!q)return;err.textContent='';
+  if(q.t==='role'){if(a.role!==t.value){const big=a._big;a={role:t.value};if(big!=null)a._big=big}if(ROLES[a.role].big&&a._big==null)setBig(true);else if(!ROLES[a.role].big&&a._big==null)setBig(false);build()}
+  else if(q.t==='one'||q.t==='top')a[q.id]=t.value;
+  else if(q.t==='scale')a[q.id]=+t.value;
+  else if(q.t==='many'){
+    let sel=[...screen.querySelectorAll('input:checked')].map(x=>x.value);
+    const excl=['none'];
+    if(excl.includes(t.value)&&t.checked)sel=[t.value];else sel=sel.filter(x=>!excl.includes(x));
+    a[q.id]=sel;
+    if(q.id==='pains'&&a.top&&!sel.includes(a.top))delete a.top;
+    screen.querySelectorAll('input').forEach(x=>{x.checked=sel.includes(x.value);x.disabled=!!q.max&&!x.checked&&sel.length>=q.max});
+  }
+  save();
+  if(['role','one','top','scale'].includes(q.t)){clearTimeout(adv);adv=setTimeout(go,260)}
+});
+screen.addEventListener('input',e=>{
+  const q=qAt(i);if(!q)return;
+  if(e.target.id==='txt')a[q.id]=e.target.value;
+  if(e.target.id==='cname')a.contact_name=e.target.value;
+  if(e.target.id==='cval')a.contact=e.target.value;
+  save();setNextLabel();
+});
+screen.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();go()}});
+
+function valid(q){
+  if(!q)return '';
+  if(['role','one','top','scale'].includes(q.t)&&(a[q.id]==null||a[q.id]===''))return 'แตะเลือกคำตอบก่อนนะ';
+  if(q.t==='many'&&!(a[q.id]||[]).length)return 'เลือกอย่างน้อย 1 ข้อ';
+  if(q.t==='text'&&q.req&&(a[q.id]||'').trim().length<4)return 'ช่วยเล่าสั้นๆ สักประโยคก็ได้';
+  return '';
+}
+function go(){
+  clearTimeout(adv);goingBack=false;
+  if(i<0){i=0;save();render();return}
+  build();const q=qAt(i),m=valid(q);if(m){err.textContent=m;return}
+  if(i===flow.length-1){submit();return}
+  i++;save();render();window.scrollTo({top:0});
+}
+next.onclick=go;
+back.onclick=()=>{clearTimeout(adv);goingBack=true;if(i>=0){i--;save();render();window.scrollTo({top:0})}goingBack=false};
+
+async function submit(){
+  if(sending)return;sending=true;next.disabled=true;next.textContent='กำลังส่ง…';
+  build();
+  const ans={v:VERSION,role:a.role};
+  flow.forEach(q=>{if(q.t==='contact'||q.t==='role')return;const v=a[q.id];if(v!=null&&v!==''&&!(Array.isArray(v)&&!v.length))ans[q.id]=typeof v==='string'?v.trim():v});
+  if(a.top)ans.top=a.top;
+  const body={source:src,answers:ans,contact_name:(a.contact_name||'').trim().slice(0,80)||null,contact:(a.contact||'').trim().slice(0,120)||null,consent:true};
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/care_survey_responses',{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error(r.status);
+    try{localStorage.removeItem('care_v3')}catch(e){}
+    i=flow.length;renderDone();
+  }catch(e){err.textContent='ส่งไม่สำเร็จ ลองกดอีกครั้ง หรือตรวจสอบอินเทอร์เน็ต คำตอบยังอยู่ ไม่หาย';next.textContent='ส่งคำตอบ'}
+  next.disabled=false;sending=false;
+}
+const shareUrl=location.origin+location.pathname;
+function renderDone(){
+  bar.hidden=true;progress();
+  [...pills.children].forEach(p=>p.firstChild.style.transform='scaleX(1)');
+  screen.innerHTML=`<div class="done"><div class="big"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red)"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></div>
+  <h2>ขอบคุณมากครับ/ค่ะ</h2><p>เรื่องที่คุณเล่าช่วยให้เราสร้างสิ่งที่ลดภาระการดูแลได้จริง<br>ถ้ารู้จักใครที่ดูแลผู้สูงอายุ หรือเป็นผู้สูงอายุเอง ช่วยส่งต่อให้หน่อยนะ</p>
+  <div class="share"><a href="https://line.me/R/share?text=${encodeURIComponent('ช่วยตอบแบบสอบถามสั้นๆ (5 นาที) เรื่องการดูแลผู้สูงอายุที่บ้านหน่อยนะ ไม่ต้องใส่ชื่อ ตอบได้ทั้งคนดูแล ผู้สูงอายุ และลูกหลาน\n'+shareUrl+(src?'?src='+encodeURIComponent(src):''))}" target="_blank" rel="noopener">ส่งต่อทาง LINE</a><button type="button" id="copyLink">คัดลอกลิงก์</button></div>
+  <p class="small" style="margin-top:22px"><a href="#" id="again">ตอบอีกครั้ง (สำหรับคนถัดไปในเครื่องนี้)</a></p></div>`;
+  $('copyLink').onclick=()=>copy(shareUrl+(src?'?src='+encodeURIComponent(src):''));
+  $('again').onclick=e=>{e.preventDefault();a={};i=-1;setBig(false);save();render()};
+}
+const toast=t=>{const el=$('toast');el.textContent=t;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1800)};
+async function copy(t){try{await navigator.clipboard.writeText(t);toast('คัดลอกแล้ว')}catch(e){toast('คัดลอกไม่ได้')}}
+
+/* ---------- team dashboard ---------- */
+let rows=[],allRows=[],qf='all',onlyTarget=false;
+const isTarget=r=>r.answers.age==='a30'&&['full','flex'].includes(r.answers.work);
+const RK=Object.keys(ROLES);
+const roleOf=r=>ROLES[r.answers?.role]?r.answers.role:'family';
+const lab=(role,id,k)=>{if(id==='pains'||id==='top')return PAIN[k]?.[role]||PAIN[k]?._||k;const q=ROLES[role].qs.find(x=>x.id===id);return q?.o?.[k]??k};
+const ofRole=k=>rows.filter(r=>roleOf(r)===k);
+const cnt=(set,fn)=>set.filter(fn).length;
+const frac=(a,n)=>n?`${a} ใน ${n}`:'—';
+const pctN=(a,n)=>n?Math.round(a/n*100):0;
+function highlights(){
+  const out=[],F=ofRole('family'),E=ofRole('elder'),R=ofRole('relative'),P=ofRole('pro');
+  const all=rows.length;
+  const pay0=allRows.filter(r=>r.answers.age);if(!onlyTarget&&pay0.length)out.push(`${frac(cnt(pay0,isTarget),pay0.length)} คนที่เป็นคนดูแลหรือลูกหลาน อยู่ในกลุ่มเป้าหมาย (อายุ 30–45 และทำงานอยู่)`);
+  const pt=painStats()[0];
+  if(pt)out.push(`เรื่องที่ถูกเลือกมากที่สุดคือ "${PAIN[pt.k]._}" — ${frac(pt.n,all)} คนจากทุกกลุ่ม`);
+  if(F.length){out.push(`${frac(cnt(F,r=>r.answers.helpers==='one'),F.length)} คนดูแลในครอบครัว ดูแลอยู่คนเดียว`);
+    const far=cnt(F,r=>r.answers.live==='far');if(far)out.push(`${frac(far,F.length)} คนดูแลในครอบครัว อยู่ไกลและดูแลทางโทรศัพท์เป็นหลัก`)}
+  const fq=rows.filter(r=>r.answers.freq);if(fq.length)out.push(`${frac(cnt(fq,r=>['day','wk'].includes(r.answers.freq)),fq.length)} คนบอกว่าเรื่องที่หนักที่สุดเกิดทุกวันหรือหลายครั้งต่อสัปดาห์`);
+  if(E.length){const w=E.filter(r=>r.answers.s_watch);if(w.length)out.push(`ผู้สูงอายุ ${frac(cnt(w,r=>r.answers.s_watch==='warm'),w.length)} คนรู้สึกอุ่นใจถ้าลูกหลานรู้ว่าสบายดีทุกวัน · ${cnt(w,r=>r.answers.s_watch==='no')} คนไม่ชอบเพราะรู้สึกถูกจับตา`)}
+  if(R.length){const k=R.filter(r=>r.answers.r_know);if(k.length)out.push(`ลูกหลานที่ไม่ได้ดูแลหลัก ${frac(cnt(k,r=>r.answers.r_know.includes('none')||r.answers.r_know.length<=1),k.length)} คนตอบเรื่องยา นัดหมอ อาการของท่านได้ไม่เกิน 1 เรื่อง`)}
+  const pay=rows.filter(r=>r.answers.wtp);if(pay.length)out.push(`${frac(cnt(pay,r=>['w199','w499','w500'].includes(r.answers.wtp)),pay.length)} คนที่เป็นผู้จ่าย (ครอบครัว + ลูกหลาน) ยอมจ่าย 100 บาทขึ้นไปต่อเดือน`);
+  if(P.length){const b=cnt(P,r=>(r.answers.pains||[]).includes('blind')||(r.answers.pains||[]).includes('coord'));if(b)out.push(`ผู้ดูแลอาชีพ ${frac(b,P.length)} คนเจอปัญหาสื่อสารกับญาติ`)}
+  return out;
+}
+function painStats(){
+  return Object.keys(PAIN).map(k=>{
+    const by={};let n=0,top=0;
+    RK.forEach(rk=>{const s=ofRole(rk),c=cnt(s,r=>(r.answers.pains||[]).includes(k));by[rk]={c,n:s.length,shown:!!PAIN[k][rk]};n+=c});
+    top=cnt(rows,r=>r.answers.top===k);
+    return {k,n,top,by,score:n+top*2};
+  }).filter(p=>p.n>0).sort((a,b)=>b.score-a.score);
+}
+const heat=(c,n)=>{const p=pctN(c,n);return `<td class="hm" style="--p:${p}%"><b>${n?p+'%':'—'}</b><small>${n?c+'/'+n:''}</small></td>`};
+function matrix(){
+  const ps=painStats();
+  if(!ps.length)return '<p class="hint">ยังไม่มีข้อมูล</p>';
+  return `<div class="scroll"><table class="mx"><thead><tr><th>เรื่อง</th><th class="num">หนักสุด</th>${RK.map(k=>`<th class="num">${ROLES[k].short}</th>`).join('')}</tr></thead><tbody>
+  ${ps.map(p=>`<tr><td><b>${esc(PAIN[p.k]._)}</b><small class="sub">${p.n} คนเลือก</small></td><td class="num"><b>${p.top}</b></td>${RK.map(k=>p.by[k].shown?heat(p.by[k].c,p.by[k].n):'<td class="hm na">ไม่ได้ถาม</td>').join('')}</tr>`).join('')}</tbody></table></div>
+  <p class="hint mt">ตัวเลขในช่อง = % ของคนในกลุ่มนั้นที่เลือกเรื่องนี้ (เลือกได้ไม่เกิน 3 ข้อ) · "หนักสุด" = จำนวนคนที่เลือกเป็นข้อที่หนักที่สุด</p>`;
+}
+function bars(title,list){
+  const max=Math.max(1,...list.map(x=>x[1]));const tot=list.reduce((s,x)=>s+x[1],0);
+  return `<div class="panel"><h3>${title}</h3>${tot?list.map(([k,v])=>`<div class="row"><div class="lab">${esc(k)}<div class="track"><i style="width:${v/max*100}%"></i></div></div><div class="n">${v}</div></div>`).join(''):'<p class="hint">ยังไม่มีข้อมูล</p>'}</div>`;
+}
+const dist=(set,id,o)=>Object.entries(o).map(([k,v])=>[v,cnt(set,r=>{const x=r.answers[id];return Array.isArray(x)?x.includes(k):x===k})]);
+function context(){
+  const F=ofRole('family'),E=ofRole('elder'),P=ofRole('pro'),R=ofRole('relative'),payers=rows.filter(r=>r.answers.wtp);
+  const qo=(role,id)=>ROLES[role].qs.find(q=>q.id===id).o;
+  return `<div class="grid2">
+   ${bars('ยอมจ่ายต่อเดือน (ครอบครัว + ลูกหลาน)',dist(payers,'wtp',WTP))}
+   ${bars('ความถี่ของเรื่องที่หนักที่สุด',dist(rows,'freq',FREQ))}
+   ${F.length?bars('ครอบครัว · ใครแบกงาน',dist(F,'helpers',qo('family','helpers'))):''}
+   ${F.length?bars('ครอบครัว · ดูแลแบบไหน',dist(F,'live',qo('family','live'))):''}
+   ${E.length?bars('ผู้สูงอายุ · ถ้าลูกหลานรู้ว่าสบายดีทุกวัน',dist(E,'s_watch',qo('elder','s_watch'))):''}
+   ${E.length?bars('ผู้สูงอายุ · อยู่กับใคร',dist(E,'s_live',qo('elder','s_live'))):''}
+   ${R.length?bars('ลูกหลาน · เรื่องที่ตอบได้ทันที',dist(R,'r_know',qo('relative','r_know'))):''}
+   ${P.length?bars('ผู้ดูแลอาชีพ · ประเภทงาน',dist(P,'p_type',qo('pro','p_type'))):''}
+  </div>`;
+}
+function stories(){
+  const set=(qf==='all'?rows:ofRole(qf)).filter(r=>r.answers.story);
+  if(!set.length)return '<p class="hint">ยังไม่มี</p>';
+  const order=painStats().map(p=>p.k);
+  const groups={};set.forEach(r=>{const k=r.answers.top||'_none';(groups[k]=groups[k]||[]).push(r)});
+  return [...order,'_none'].filter(k=>groups[k]).map(k=>`<h3 class="gh">${k==='_none'?'ไม่ได้ระบุเรื่องที่หนักที่สุด':esc(PAIN[k]._)} <span>${groups[k].length}</span></h3>`+groups[k].map(r=>{const x=r.answers,role=roleOf(r);
+    return `<div class="quote">${esc(x.story)}${x.why?`<div class="why"><b>ทำไมยังแก้ไม่ได้:</b> ${esc(x.why)}</div>`:''}<small>${esc(ROLES[role].short)}${x.freq?' · '+esc(FREQ[x.freq]):''}${x.wtp?' · ยอมจ่าย '+esc(WTP[x.wtp]):''}${r.source?' · '+esc(r.source):''}</small></div>`}).join('')).join('');
+}
+function toText(set){
+  return set.map((r,n)=>{const x=r.answers,role=roleOf(r);
+    return `### ผู้ตอบ ${n+1} — ${ROLES[role].name}\n`+ROLES[role].qs.filter(q=>q.t!=='contact'&&x[q.id]!=null).map(q=>{const v=x[q.id];
+      const s=q.t==='text'?`"${v}"`:Array.isArray(v)?v.map(k=>lab(role,q.id,k)).join(', '):lab(role,q.id,v);return `- ${q.t==='top'?'หนักที่สุด':q.q}: ${s}`}).join('\n')}).join('\n\n');
+}
+function toCSV(){
+  const cols=['created_at','source','role','age','work','live','helpers','s_live','s_watch','p_type','r_know','pains','top','freq','story','why','wtp','contact_name','contact'];
+  const qq=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  return cols.join(',')+'\n'+rows.map(r=>{const x=r.answers,role=roleOf(r);return cols.map(c=>{
+    if(['created_at','source','contact_name','contact'].includes(c))return qq(r[c]);
+    if(c==='role')return qq(ROLES[role].name);
+    const v=x[c];if(v==null)return '""';if(c==='story'||c==='why')return qq(v);
+    return qq(Array.isArray(v)?v.map(k=>lab(role,c,k)).join('; '):lab(role,c,v))}).join(',')}).join('\n');
+}
+const AI_PROMPT=`คุณคือนักวิจัยผู้ใช้ (UX Researcher) ที่เข้มงวดและไม่เข้าข้างไอเดียของทีม
+บริบท: ทีมแข่ง Hackathon โจทย์ "ธุรกิจ AI ช่วยครอบครัวดูแลผู้สูงอายุ 60+ ที่บ้าน" เป้าหมาย (A) ลดเวลาจัดการงานดูแล (B) เพิ่มประสิทธิภาพ (C) ยกระดับคุณภาพการดูแล
+กลุ่มเป้าหมายหลักของทีม: ผู้ใหญ่วัยทำงานอายุ 30–45 ที่อยากดูแลพ่อแม่หรือผู้สูงอายุ แต่ไม่มีเวลา ให้วิเคราะห์โดยแยกกลุ่มนี้ออกมาให้ชัด
+ด้านล่างคือคำตอบจริง [X] ราย จาก 4 กลุ่ม (คนดูแลในครอบครัว ผู้สูงอายุ ผู้ดูแลอาชีพ ลูกหลานที่ไม่ได้ดูแลหลัก) ใช้เฉพาะข้อมูลที่ให้ ทุกข้อสรุปต้องอ้างคำพูดหรือตัวเลขจริง ถ้าข้อมูลไม่พอให้บอกว่าไม่พอ
+1) Top 3 pain point พร้อมจำนวนคน ความถี่ กลุ่มที่เจอ และคำพูดยืนยัน แยก "เจ็บจนยอมจ่าย" กับ "แค่บ่น"
+2) จุดที่หลายกลุ่มพูดตรงกัน และจุดที่ขัดกัน
+3) ต้นเหตุของ Top 3 ด้วยวิธี 5 Whys จากเรื่องเล่าและคำตอบ "ทำไม"
+4) ตรวจสมมติฐานของทีม: [ใส่สมมติฐาน] → สนับสนุน/ขัดแย้ง/ไม่พอสรุป
+5) จุดที่ AI ช่วยได้จริงซึ่งแอปธรรมดาหรือกลุ่ม LINE ทำไม่ได้ และจุดที่ AI ไม่ควรยุ่ง
+6) สำหรับกรรมการ: problem statement 1 ประโยค, ตัวเลขเด่น 3 ตัว, คำพูดทรงพลัง 2 ประโยค, ราคาที่น่าตั้ง, คำถามที่ควรถามเพิ่ม`;
+function renderDash(){
+  const d=$('dash'),F=ofRole('family').length,hl=highlights(),contacts=rows.filter(r=>r.contact);
+  const srcC={};rows.forEach(r=>{const s=r.source||'(ไม่ระบุ)';srcC[s]=(srcC[s]||0)+1});
+  d.innerHTML=`
+  <div class="head"><div><h1>${rows.length} คำตอบ</h1><p class="small">อัปเดต ${new Date().toLocaleString('th-TH')}</p></div>
+   <div class="tools"><button id="reload">รีเฟรช</button><button id="cpAI">คัดลอกให้ AI วิเคราะห์</button><button id="cpCSV">คัดลอก CSV</button></div></div>
+  <div class="tabs"><button id="tgAll" aria-pressed="${!onlyTarget}">ทุกคน (${allRows.length})</button><button id="tgT" aria-pressed="${onlyTarget}">เฉพาะกลุ่มเป้าหมาย: วัยทำงาน 30–45 (${allRows.filter(isTarget).length})</button></div>
+  <div class="kpis">
+   <div class="kpi goal"><b>${F}<span>/5</span></b>คนดูแลในครอบครัว<div class="track"><i style="width:${Math.min(100,F/5*100)}%"></i></div><small>${F>=5?'ครบขั้นต่ำของโจทย์แล้ว':'ขั้นต่ำของโจทย์ 5 ราย'}</small></div>
+   ${RK.filter(k=>k!=='family').map(k=>`<div class="kpi"><b>${ofRole(k).length}</b>${ROLES[k].name}</div>`).join('')}
+   <div class="kpi"><b>${contacts.length}</b>ยินดีลองต้นแบบ</div>
+  </div>
+  <section class="sec"><h2>1. ตัวเลขพร้อมขึ้นสไลด์</h2>${hl.length?`<ul class="hl">${hl.map(h=>`<li>${esc(h)}</li>`).join('')}</ul><button id="cpHL" class="mt">คัดลอกทั้งหมด</button>`:'<p class="hint">ยังไม่มีข้อมูล</p>'}</section>
+  <section class="sec"><h2>2. Pain point เทียบทุกกลุ่ม</h2>${matrix()}</section>
+  <section class="sec"><h2>3. บริบทและราคา</h2>${context()}</section>
+  <section class="sec"><h2>4. เรื่องเล่า จัดตามเรื่องที่หนักที่สุด</h2>
+   <div class="tabs">${[['all','ทุกกลุ่ม'],...RK.map(k=>[k,ROLES[k].short])].map(([k,t])=>`<button data-f="${k}" aria-pressed="${qf===k}">${esc(t)} (${k==='all'?rows.filter(r=>r.answers.story).length:ofRole(k).filter(r=>r.answers.story).length})</button>`).join('')}</div>
+   <div id="stories">${stories()}</div></section>
+  <section class="sec"><h2>5. ติดต่อเพื่อลองต้นแบบ (${contacts.length})</h2>
+   <div class="scroll"><table><thead><tr><th>ชื่อเล่น</th><th>ติดต่อ</th><th>กลุ่ม</th><th>หนักสุด</th></tr></thead><tbody>${contacts.map(r=>`<tr><td>${esc(r.contact_name)}</td><td>${esc(r.contact)}</td><td>${esc(ROLES[roleOf(r)].short)}</td><td>${esc(r.answers.top?PAIN[r.answers.top]?._:'')}</td></tr>`).join('')||'<tr><td colspan="4">ยังไม่มี</td></tr>'}</tbody></table></div></section>
+  <section class="sec"><h2>มาจากช่องทางไหน</h2><p>${Object.entries(srcC).sort((x,y)=>y[1]-x[1]).map(([k,v])=>`<span class="chip">${esc(k)} · ${v}</span>`).join(' ')||'—'}</p></section>`;
+  d.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{qf=b.dataset.f;d.querySelectorAll('[data-f]').forEach(x=>x.setAttribute('aria-pressed',x===b));$('stories').innerHTML=stories()});
+  $('reload').onclick=load;
+  $('tgAll').onclick=()=>{onlyTarget=false;rows=allRows;renderDash()};$('tgT').onclick=()=>{onlyTarget=true;rows=allRows.filter(isTarget);renderDash()};
+  $('cpAI').onclick=()=>copy(AI_PROMPT.replace('[X]',rows.length)+'\n\n--- ตัวเลขสรุป ---\n'+hl.join('\n')+'\n\n--- คำตอบ ---\n'+toText(rows));
+  $('cpCSV').onclick=()=>copy(toCSV());
+  if($('cpHL'))$('cpHL').onclick=()=>copy(hl.join('\n'));
+}
+async function load(){
+  let code='';try{code=sessionStorage.getItem('care_code')||''}catch(e){}
+  code=$('code').value.trim()||code;
+  const ge=$('gateErr');ge.textContent='กำลังโหลด…';
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/rpc/care_survey_results',{method:'POST',headers:H,body:JSON.stringify({p_code:code})});
+    if(!r.ok)throw new Error('code');
+    allRows=(await r.json()).map(x=>({...x,answers:x.answers||{}}));rows=onlyTarget?allRows.filter(isTarget):allRows;
+    try{sessionStorage.setItem('care_code',code)}catch(e){}
+    ge.textContent='';$('gate').hidden=true;$('dash').hidden=false;renderDash();
+  }catch(e){try{sessionStorage.removeItem('care_code')}catch(_){};$('gate').hidden=false;$('dash').hidden=true;ge.textContent='รหัสไม่ถูกต้อง หรือเชื่อมต่อไม่ได้'}
+}
+$('gateForm').addEventListener('submit',e=>{e.preventDefault();load()});
+
+function route(){
+  const t=location.hash==='#team';
+  $('survey').hidden=t;bar.style.display=t?'none':'';$('team').hidden=!t;
+  if(t){document.title='เสียงคนดูแล · ทีม';let c=null;try{c=sessionStorage.getItem('care_code')}catch(e){}if(c)load()}
+  else{document.title='เสียงคนดูแล';render()}
+}
+restore();if(a._big!=null)setBig(a._big);else if(a.role&&ROLES[a.role]?.big)setBig(true);
+window.addEventListener('hashchange',route);route();
+}
+</script>
+</body>
+</html>
