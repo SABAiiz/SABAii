@@ -2,6 +2,11 @@
 import { h, ic, put, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
 import { app } from './shared.js';
 
+/** เคยกด "ใช้ต่อโดยไม่เข้าสู่ระบบ" ในเครื่องนี้แล้ว → ไม่ขึ้นหน้าเข้าสู่ระบบตอนเปิดแอปอีก */
+export const LOGIN_SKIP = 'sabaii-login-skip';
+export const loginSkipped = () => { try { return localStorage.getItem(LOGIN_SKIP) === '1'; } catch { return false; } };
+export const skipLogin = () => { try { localStorage.setItem(LOGIN_SKIP, '1'); } catch {} };
+
 const hhmm = iso => new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
 /** ข้อความสั้นของสถานะ — ใช้ทั้งในแถวหน้าฉันและในกล่องบัญชี */
@@ -17,15 +22,18 @@ export function syncLabel(st = app.sync?.status()) {
 
 export function openAccount() { app.cloud.user() ? accountModal() : signInModal(); }
 
-function signInModal() {
+/**
+ * ขั้นเข้าสู่ระบบ (ใช้ทั้งในกล่องหน้าฉันและหน้าเข้าสู่ระบบตอนเปิดแอป): อีเมล → รหัส 6 หลัก
+ * intro(step, email) = ข้อความหัวของแต่ละขั้น · onSignedIn(user) = เข้าสู่ระบบสำเร็จ
+ */
+export function signInSteps(body, { intro, onSignedIn, inputCls = '.field', btnCls = '.btn.primary.full' }) {
   let email = '';
-  const body = h('div');
   const err = h('p.ferr', { role: 'alert' });
   const busy = (btn, on, label) => { btn.disabled = on; btn.textContent = on ? 'รอสักครู่…' : label; };
 
   const stepEmail = () => {
-    const inp = h('input.field', { id: 'acc-email', type: 'email', inputmode: 'email', autocomplete: 'email', placeholder: 'อีเมลของคุณ', 'aria-label': 'อีเมล', value: email });
-    const go = h('button.btn.primary.full', { id: 'acc-send' }, 'ส่งรหัสเข้าอีเมล');
+    const inp = h('input' + inputCls, { id: 'acc-email', type: 'email', inputmode: 'email', autocomplete: 'email', placeholder: 'อีเมลของคุณ', 'aria-label': 'อีเมล', value: email });
+    const go = h('button' + btnCls, { id: 'acc-send' }, 'ส่งรหัสเข้าอีเมล');
     const send = async () => {
       err.textContent = ''; busy(go, true, 'ส่งรหัสเข้าอีเมล');
       try { email = await app.cloud.sendCode(inp.value); stepCode(); }
@@ -34,35 +42,41 @@ function signInModal() {
     go.onclick = send;
     inp.onkeydown = e => { if (e.key === 'Enter') send(); };
     inp.oninput = () => { err.textContent = ''; };
-    put(body,
-      h('p', 'เข้าสู่ระบบแล้วงานจะไม่หายเมื่อเปลี่ยนเครื่อง และเปิดได้ทุกเครื่อง'),
-      h('p.muted', 'ไม่ต้องตั้งรหัสผ่าน — เราส่งรหัส 6 หลักไปที่อีเมล · งานที่มีในเครื่องนี้จะขึ้นบัญชีไปด้วย'),
-      inp, err, go);
-    setTimeout(() => inp.focus(), 300);
+    put(body, intro('email', email), inp, err, go);
+    setTimeout(() => inp.focus({ preventScroll: true }), 300);
   };
 
   const stepCode = () => {
-    const inp = h('input.field.code', { id: 'acc-code', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 8, placeholder: '••••••', 'aria-label': 'รหัส 6 หลักจากอีเมล' });
-    const go = h('button.btn.primary.full', { id: 'acc-verify' }, 'เข้าสู่ระบบ');
+    const inp = h('input' + inputCls + '.code', { id: 'acc-code', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 8, placeholder: '••••••', 'aria-label': 'รหัส 6 หลักจากอีเมล' });
+    const go = h('button' + btnCls, { id: 'acc-verify' }, 'เข้าสู่ระบบ');
     const verify = async () => {
+      if (go.disabled) return;
       err.textContent = ''; busy(go, true, 'เข้าสู่ระบบ');
-      try { const u = await app.cloud.verifyCode(email, inp.value); closeModal(); await afterSignIn(u); }
+      try { await onSignedIn(await app.cloud.verifyCode(email, inp.value)); }
       catch (e) { err.textContent = e.message; busy(go, false, 'เข้าสู่ระบบ'); }
     };
     go.onclick = verify;
+    inp.onkeydown = e => { if (e.key === 'Enter') verify(); };
     inp.oninput = () => { err.textContent = ''; if (inp.value.replace(/\D/g, '').length === 6) verify(); };
-    put(body,
-      h('p', 'ส่งรหัสไปที่ ', h('b', email), ' แล้ว'),
-      h('p.muted', 'ดูในกล่องจดหมาย (หรือจดหมายขยะ) · จะกดลิงก์ในอีเมลแทนก็ได้'),
-      inp, err, go,
+    put(body, intro('code', email), inp, err, go,
       h('div.accrow',
         h('button.linkbtn', { onclick: stepEmail }, 'เปลี่ยนอีเมล'),
         h('button.linkbtn', { onclick: async e => { e.target.disabled = true; try { await app.cloud.sendCode(email); toast('ส่งรหัสใหม่แล้ว'); } catch (x) { err.textContent = x.message; } setTimeout(() => { e.target.disabled = false; }, 30000); } }, 'ส่งรหัสอีกครั้ง')));
-    setTimeout(() => inp.focus(), 50);
+    setTimeout(() => inp.focus({ preventScroll: true }), 50);
   };
-
-  openModal({ title: 'เข้าสู่ระบบ', body, isDirty: () => false });
   stepEmail();
+}
+
+function signInModal() {
+  const body = h('div');
+  openModal({ title: 'เข้าสู่ระบบ', body });
+  signInSteps(body, {
+    intro: (step, email) => step === 'email'
+      ? [h('p', 'เข้าสู่ระบบแล้วงานจะไม่หายเมื่อเปลี่ยนเครื่อง และเปิดได้ทุกเครื่อง'),
+         h('p.muted', 'ไม่ต้องตั้งรหัสผ่าน — เราส่งรหัส 6 หลักไปที่อีเมล · งานที่มีในเครื่องนี้จะขึ้นบัญชีไปด้วย')]
+      : [h('p', 'ส่งรหัสไปที่ ', h('b', email), ' แล้ว'), h('p.muted', 'ดูในกล่องจดหมาย (หรือจดหมายขยะ) · จะกดลิงก์ในอีเมลแทนก็ได้')],
+    onSignedIn: async u => { closeModal(); await afterSignIn(u); },
+  });
 }
 
 /** หลังเข้าสู่ระบบ: เครื่องนี้เคยเป็นของบัญชีอื่น → ล้างเครื่องก่อน (ไม่ให้งานของคนอื่นปนเข้าบัญชีนี้) · ไม่งั้นซิงก์เลย */
@@ -118,6 +132,7 @@ async function deleteAccount() {
 /** ล้างข้อมูลในเครื่องทั้งหมดแล้วเปิดแอปใหม่ (บัญชีบนคลาวด์ไม่ถูกแตะ) */
 async function wipeDevice() {
   closeModal();
+  try { localStorage.removeItem(LOGIN_SKIP); } catch {} // ออกจากระบบแล้ว เปิดแอปครั้งหน้าเจอหน้าเข้าสู่ระบบอีก
   await new Promise(res => { const r = indexedDB.deleteDatabase('sabaii'); r.onsuccess = r.onerror = r.onblocked = () => res(); });
   location.hash = '#/me';
   location.reload();

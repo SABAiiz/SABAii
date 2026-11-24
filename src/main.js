@@ -4,7 +4,8 @@ import { openBestDB } from './data/db.js';
 import { createStore } from './data/store.js';
 import { createCloud } from './data/cloud.js';
 import { createSync } from './data/sync.js';
-import { afterSignIn } from './features/account.js';
+import { afterSignIn, loginSkipped } from './features/account.js';
+import { openLogin } from './features/login.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { tasksView, subjectView } from './features/tasks.js';
@@ -12,7 +13,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.10.0';
+globalThis.SABAII_VERSION = '0.10.1';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', me: 'ฉัน', subject: 'วิชา' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -77,10 +78,14 @@ async function boot() {
   addEventListener('hashchange', renderPage);
   sync.onStatus(() => { if (route().name === 'me') renderPage(); });
   app.refresh();
-  // ครั้งแรก: แบบสอบถามก่อนเข้าแอป · กดมาจากหน้าแนะนำ (?from=landing) ข้ามหน้าต้อนรับไปข้อ 1 เลย
+  // เปิดแอป: หน้าเข้าสู่ระบบ (ถ้ายังไม่เข้าและยังไม่เคยกดใช้ต่อโดยไม่เข้า) → แบบสอบถามครั้งแรก
+  // ผ่านหน้าเข้าสู่ระบบมาแล้ว หรือกดมาจากหน้าแนะนำ (?from=landing) = เห็นภาพรวมแล้ว แบบสอบถามเริ่มข้อ 1 เลย
   const fromLanding = new URLSearchParams(location.search).get('from') === 'landing';
   if (location.search) history.replaceState(history.state, '', location.pathname + location.hash);
-  if (needsOnboarding()) openOnboarding({ start: fromLanding ? 1 : 0 });
+  const startOnboard = sawIntro => { if (needsOnboarding()) openOnboarding({ start: fromLanding || sawIntro ? 1 : 0 }); };
+  const gate = !cloud.user() && !loginSkipped();
+  if (gate) openLogin({ onDone: () => startOnboard(true) });
+  else if (!linked) startOnboard(false);
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
   addEventListener('offline', () => toast(cloud.user() ? 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ต่อเน็ตแล้วจะซิงก์เอง' : 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง'));
@@ -90,7 +95,7 @@ async function boot() {
   document.addEventListener('visibilitychange', syncIfIn);
   setInterval(syncIfIn, 60_000);
   if (linkErr) toast(linkErr);
-  if (linked) afterSignIn(cloud.user()); else syncIfIn();
+  if (linked) afterSignIn(cloud.user()).then(() => startOnboard(true)); else syncIfIn();
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }

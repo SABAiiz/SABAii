@@ -48,14 +48,12 @@ async function newDevice(browser) {
     r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) });
   });
   await ctx.route('https://*.supabase.co/**', supa);
-  await ctx.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ status: 200, body: '' }));
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error' && !/Failed to load resource/.test(m.text())) errors.push(m.text()); });
   await page.goto(BASE + '#/me');
-  await page.waitForSelector('#onboard');
-  await page.locator('#ob-skip').click(); await wait(400);
+  await page.waitForSelector('#login');
   return { ctx, page, errors };
 }
 const shot = async (page, n) => { if (SHOTS) { await wait(350); await page.screenshot({ path: `${SHOTS}/${n}.png` }); } };
@@ -65,22 +63,26 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
   const browser = await chromium.launch();
 
-  // ----- เครื่อง A -----
+  // ----- เครื่อง A: เปิดแอปครั้งแรก → หน้าเข้าสู่ระบบ → ใช้ต่อโดยไม่เข้า -----
   const A = await newDevice(browser);
+  check('เปิดแอปครั้งแรก: หน้าเข้าสู่ระบบก่อนแบบสอบถาม · ปุ่มใช้ต่อโดยไม่เข้า', await A.page.locator('#login #acc-email').isVisible() && await A.page.locator('#login-skip').isVisible() && (await A.page.locator('#onboard').count()) === 0);
+  await shot(A.page, 'acc-0-gate');
+  await A.page.click('#login-skip'); await wait(500);
+  check('ใช้ต่อโดยไม่เข้า → แบบสอบถามเริ่มข้อ 1 (ไม่ซ้ำหน้าต้อนรับ)', await A.page.locator('#onboard').isVisible() && await A.page.evaluate(() => document.getElementById('onboard').dataset.step === 'name'));
+  await A.page.locator('#ob-skip').click(); await wait(400);
+  await A.page.reload(); await A.page.waitForSelector('.tiles'); await wait(400);
+  check('เปิดใหม่: ไม่ขึ้นหน้าเข้าสู่ระบบซ้ำ', (await A.page.locator('#login').count()) === 0 && (await A.page.locator('#onboard').count()) === 0);
   await A.page.evaluate(() => window.__sabaii.addTasks([{ title: 'ทำการบ้านเลขบทที่ 3', subject_name: 'คณิตศาสตร์' }]));
   await A.page.goto(BASE + '#/me'); await wait(300);
   check('ยังไม่เข้าสู่ระบบ: แถวบัญชีบอกสถานะ · ไม่ยิงไปเซิร์ฟเวอร์', (await A.page.locator('#me-sync').textContent()) === 'ยังไม่เข้าสู่ระบบ' && calls.length === 0);
-  await shot(A.page, 'acc-1-me');
   await A.page.getByText('บัญชีและซิงก์').click(); await wait(400);
   await A.page.fill('#acc-email', 'ไม่ใช่อีเมล'); await A.page.click('#acc-send'); await wait(200);
   check('อีเมลผิด → บอกเป็นภาษาไทย ไม่ยิงเซิร์ฟเวอร์', (await A.page.locator('.ferr').textContent()) === 'อีเมลไม่ถูกต้อง' && calls.length === 0);
   await A.page.fill('#acc-email', EMAIL);
-  await shot(A.page, 'acc-2-email');
+  check('พิมพ์ใหม่ → ข้อความผิดหายไป', (await A.page.locator('.ferr').textContent()) === '');
   await A.page.click('#acc-send'); await A.page.waitForSelector('#acc-code');
-  check('ส่งรหัสแล้ว → ช่องใส่รหัส', await A.page.locator('#acc-code').isVisible());
   await A.page.fill('#acc-code', '000000'); await wait(400);
   check('รหัสผิด → ข้อความไทย', /หมดอายุ|ไม่ถูกต้อง/.test(await A.page.locator('.ferr').textContent()));
-  await shot(A.page, 'acc-3-code');
   await A.page.fill('#acc-code', '123456'); await wait(1200);
   check('รหัสถูก → เข้าสู่ระบบ · งานในเครื่องขึ้นบัญชี', await A.page.evaluate(() => !document.querySelector('#acc-code')) && [...rows.values()].some(r => r.kind === 'task' && r.data.title === 'ทำการบ้านเลขบทที่ 3'));
   check('แถวบัญชีแสดงอีเมล + "ซิงก์แล้ว"', /ซิงก์แล้ว/.test(await A.page.locator('#me-sync').textContent()) && await A.page.getByText(EMAIL).isVisible());
@@ -89,28 +91,30 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   check('กล่องบัญชี: อีเมล · สถานะ · ออกจากระบบ · ลบบัญชี', await A.page.locator('.accuser').getByText(EMAIL).isVisible() && await A.page.locator('#acc-out').isVisible() && await A.page.locator('#acc-del').isVisible());
   await shot(A.page, 'acc-5-account');
   await A.page.keyboard.press('Escape'); await wait(300);
-  // แก้งานแล้วซิงก์เอง (หน่วง ~1.5 วินาที)
   await A.page.evaluate(() => { const t = window.__sabaii.state.tasks.find(t => t.title.startsWith('ทำการบ้าน')); return window.__sabaii.patchTask(t.id, { status: 'done' }); });
   await wait(2500);
   check('แก้งานแล้วส่งขึ้นบัญชีเองภายในไม่กี่วินาที', [...rows.values()].some(r => r.kind === 'task' && r.data.status === 'done'));
 
-  // ----- เครื่อง B -----
+  // ----- เครื่อง B: เข้าสู่ระบบจากหน้าแรกเลย -----
   const B = await newDevice(browser);
-  await B.page.getByText('บัญชีและซิงก์').click(); await wait(400);
-  await B.page.fill('#acc-email', EMAIL); await B.page.click('#acc-send'); await B.page.waitForSelector('#acc-code');
+  await B.page.fill('#acc-email', EMAIL); await B.page.click('#acc-send'); await B.page.waitForSelector('#login #acc-code');
+  await shot(B.page, 'acc-0b-gate-code');
   await B.page.fill('#acc-code', '123456'); await wait(1500);
+  check('หน้าเข้าสู่ระบบ → เข้าแล้วปิดเอง · บัญชีนี้เคยตอบแบบสอบถามแล้ว ไม่ถามซ้ำ', (await B.page.locator('#login').count()) === 0 && (await B.page.locator('#onboard').count()) === 0);
   const bt = await B.page.evaluate(() => window.__sabaii.state.tasks.filter(t => !t.deleted_at).map(t => ({ title: t.title, status: t.status, subj: window.__sabaii.state.subjects.find(s => s.id === t.subject_id)?.name })));
-  check('เครื่อง B เข้าบัญชีเดียวกัน → เห็นงาน (สถานะ + วิชาตรง)', bt.length === 1 && bt[0].title === 'ทำการบ้านเลขบทที่ 3' && bt[0].status === 'done' && bt[0].subj === 'คณิตศาสตร์', JSON.stringify(bt));
+  check('เครื่อง B เห็นงานของบัญชี (สถานะ + วิชาตรง)', bt.length === 1 && bt[0].title === 'ทำการบ้านเลขบทที่ 3' && bt[0].status === 'done' && bt[0].subj === 'คณิตศาสตร์', JSON.stringify(bt));
   const subjCount = await B.page.evaluate(() => window.__sabaii.state.subjects.length);
   check('วิชาตั้งต้นไม่ซ้ำเป็น 2 ชุด', subjCount === 8, String(subjCount));
+  await B.page.reload(); await B.page.waitForSelector('.tiles'); await wait(400);
+  check('เปิดใหม่ตอนเข้าสู่ระบบอยู่: ไม่ขึ้นหน้าเข้าสู่ระบบ', (await B.page.locator('#login').count()) === 0);
 
-  // B ออกจากระบบ → ล้างเครื่อง
+  // B ออกจากระบบ → ล้างเครื่อง → กลับมาหน้าเข้าสู่ระบบ
+  await B.page.goto(BASE + '#/me'); await wait(300);
   await B.page.getByText('บัญชีและซิงก์').click(); await wait(400);
   await B.page.click('#acc-out'); await wait(600);
-  await shot(B.page, 'acc-6-signout-confirm');
   await B.page.locator('.confirm button').last().click();
-  await B.page.waitForSelector('#onboard', { timeout: 8000 }).catch(() => {});
-  check('ออกจากระบบ → เครื่องถูกล้าง · ไม่ได้เข้าสู่ระบบแล้ว', (await liveTitles(B.page)).length === 0 && await B.page.evaluate(() => !localStorage.getItem('sabaii-auth')));
+  await B.page.waitForSelector('#login', { timeout: 8000 }).catch(() => {});
+  check('ออกจากระบบ → เครื่องถูกล้าง · กลับมาหน้าเข้าสู่ระบบ', (await liveTitles(B.page)).length === 0 && await B.page.evaluate(() => !localStorage.getItem('sabaii-auth')) && await B.page.locator('#login').isVisible());
 
   check('ไม่มี error ใน console', !A.errors.length && !B.errors.length, [...A.errors, ...B.errors].join(' | '));
   await browser.close();

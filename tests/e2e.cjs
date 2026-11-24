@@ -17,6 +17,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const browser = await chromium.launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] }); // กล้องปลอม (ภาพทดสอบ ไม่มีมือ) สำหรับโหมดโบกมือ
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: REAL ? 'allow' : 'block' });
+  await ctx.addInitScript(() => { try { localStorage.setItem('sabaii-login-skip', '1'); } catch {} });
   await ctx.clock.setFixedTime(new Date('2026-11-16T09:40:00Z')); // จ. 16 พ.ย. 69 16:40 เวลาไทย — ตรึงวัน ผลจะไม่เปลี่ยนตามวันที่รัน
   if (!REAL) await ctx.route('http://sabaii.test/**', r => {
     let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname));
@@ -241,6 +242,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   // นิ้ว (จอสัมผัสจริงผ่าน CDP): แผ่นตามนิ้ว · แตะเฉย ๆ ไม่ขยับ · ดันขึ้นสุดชิดขอบจอบน · เต็มจอแล้วดึงลงจากรายการได้
   {
     const tctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block' });
+  await tctx.addInitScript(() => { try { localStorage.setItem('sabaii-login-skip', '1'); } catch {} });
     if (!REAL) await tctx.route('http://sabaii.test/**', r => { let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html'; if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); });
     const tp = await tctx.newPage();
     tp.on('pageerror', e => errors.push('touch: ' + e.message));
@@ -349,6 +351,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   // 0.5: แบบสอบถามเต็ม (เครื่องใหม่) → ค่าที่ตอบลงข้อมูลจริงของแอป · หน้าโน้ต 6 แบบ
   {
     const octx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block' });
+  await octx.addInitScript(() => { try { localStorage.setItem('sabaii-login-skip', '1'); } catch {} });
     await octx.clock.setFixedTime(new Date('2026-11-16T09:40:00Z'));
     if (!REAL) await octx.route('http://sabaii.test/**', r => { let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html'; if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); });
     const op = await octx.newPage();
@@ -414,6 +417,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   // 0.7: โหมดโบกมือ — โมเดลจริงจาก assets/vendor + กล้องปลอม · กล้องต้องใช้ https จึงเสิร์ฟผ่าน https://sabaii-hand.test
   {
     const hctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block', permissions: ['camera'] });
+  await hctx.addInitScript(() => { try { localStorage.setItem('sabaii-login-skip', '1'); } catch {} });
     await hctx.route('https://sabaii-hand.test/**', r => { let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html'; if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' }); r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) }); });
     const hp = await hctx.newPage();
     hp.on('pageerror', e => errors.push('hand: ' + e.message));

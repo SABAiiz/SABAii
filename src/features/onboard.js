@@ -16,7 +16,7 @@ const STEPS = ['welcome', 'name', 'subjects', 'listen', 'style', 'samples', 'don
 let root = null;
 
 /** หน้าต้อนรับ (แนวเดียวกับหน้าแนะนำ 0.8): การ์ดรูปถ่ายจริงวางกองรอบ ๆ เข้าฉากทีละใบ · ลอยเบา ๆ · ขยับตามเมาส์บนคอม */
-function welcomeHero() {
+export function welcomeHero() {
   const P = 'assets/landing/photos/';
   const card = (cls, depth, i, src, bdg, c, title, meta, red) => h('div.obf.' + cls, { style: { '--i': i }, 'data-depth': depth },
     h('div.obf-fl', h('figure.obf-c', h('img', { src, alt: '' }),
