@@ -170,8 +170,18 @@ export function createStore(db, { now = () => new Date() } = {}) {
     return { added, skipped };
   }
 
+  /** ระบบซิงก์เขียนลงเครื่องเองแล้ว (ไม่ผ่านที่นี่ จะได้ไม่วนกลับไปเข้าคิวส่ง) — อัปเดตสถานะในหน่วยความจำแล้วแจ้งจอครั้งเดียว */
+  function applyRemote(changes) {
+    for (const { store: name, key, value } of changes) {
+      if (name === 'prefs') { if (value) state.prefs[key] = value.value; else delete state.prefs[key]; continue; }
+      const list = state[name], i = list.findIndex(x => x.id === key);
+      if (value) { if (i >= 0) list[i] = value; else list.push(value); } else if (i >= 0) list.splice(i, 1);
+    }
+    if (changes.length) emit();
+  }
+
   return {
-    state, load, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
+    state, load, applyRemote, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
     addTasks, patchTask, removeTask, restoreTask, purgeTask,
     addAttachment, removeAttachment, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
     ensureSubject, updateSubject, deleteSubject, setPref, exportJSON, restoreBackup, addSamples, removeSamples,

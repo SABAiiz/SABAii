@@ -7,6 +7,7 @@ import { app, S, subj, today } from './shared.js';
 import { MODES, listenMode } from './listen.js';
 import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
 import { openOnboarding } from './onboard.js';
+import { openAccount, syncLabel } from './account.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
@@ -46,6 +47,7 @@ export function meView(root) {
         h('div.stat', h('b', String(sum.open)), h('small', 'งานค้าง')),
         h('div.stat', h('b', String(sum.soon)), h('small', 'ใกล้ส่ง')),
         h('div.stat.r', h('b', exam ? String(Math.max(0, daysBetween(td, exam.due_date))) : '—'), h('small', exam ? `วันถึงสอบ${subj(exam.subject_id).id ? ' ' + subj(exam.subject_id).name.replace(/^ภาษา/, '') : ''}` : 'ยังไม่มีสอบ')))),
+    h('div.mlist', row('cloud', 'บัญชีและซิงก์', null, openAccount, app.cloud?.user()?.email || 'งานไม่หายเมื่อเปลี่ยนเครื่อง', h('span.lv', { id: 'me-sync' }, syncLabel()))),
     h('div.mlist',
       row('layout', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, null, h('img.mthumb', { src: stylePreview(noteStyle()), alt: '' })),
       row('mic', 'ปุ่มพูด เริ่มที่', MODES[listenMode()], toggleListen),
@@ -55,10 +57,10 @@ export function meView(root) {
     h('div.mlist',
       row('save', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData),
       row('restore', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
-      row('lock', 'ข้อมูลและความเป็นส่วนตัว', s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal),
+      row('lock', 'ข้อมูลและความเป็นส่วนตัว', app.cloud?.user() ? 'เครื่อง + บัญชี' : s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal),
       row('info', 'เกี่ยวกับ SABAii.com', `รุ่น ${globalThis.SABAII_VERSION || ''}`, () => openModal({ title: 'เกี่ยวกับ SABAii.com', body: h('div',
         h('p', 'แอปจัดการงานเรียน: เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง'),
-        h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง ยังไม่มีบัญชี การซิงก์ การอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) }))),
+        h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง มีบัญชีและซิงก์แล้ว · ยังไม่มีการอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) }))),
     // ยังไม่เปิด: อยู่ล่างสุด จาง ๆ
     h('p.msoon', 'เร็ว ๆ นี้'),
     h('div.mlist.soon',
@@ -115,8 +117,13 @@ function restoreModal() {
 }
 function privacyModal() {
   openModal({ title: 'ข้อมูลและความเป็นส่วนตัว', body: h('div',
-    h('p', 'งาน วิชา รูป และโน้ตทั้งหมดเก็บอยู่ในเบราว์เซอร์ของเครื่องนี้เท่านั้น ยังไม่มีการส่งขึ้นเซิร์ฟเวอร์'),
-    h('p.muted', 'ถ้าล้างข้อมูลเบราว์เซอร์หรือลบแอป ข้อมูลจะหาย — สำรองเป็นไฟล์ไว้ก่อน'),
+    ...(app.cloud?.user() ? [
+      h('p', `งาน วิชา รูป และโน้ตเก็บในเครื่องนี้ และซิงก์ขึ้นบัญชี ${app.cloud.user().email} (เซิร์ฟเวอร์ในสิงคโปร์ · เห็นได้เฉพาะเจ้าของบัญชี)`),
+      h('p.muted', 'ปุ่มด้านล่างล้างเฉพาะเครื่องนี้ งานในบัญชียังอยู่ · ลบบัญชีถาวรได้ที่ "บัญชีและซิงก์"'),
+    ] : [
+      h('p', 'งาน วิชา รูป และโน้ตทั้งหมดเก็บอยู่ในเบราว์เซอร์ของเครื่องนี้เท่านั้น ยังไม่มีการส่งขึ้นเซิร์ฟเวอร์ (จนกว่าจะเข้าสู่ระบบ)'),
+      h('p.muted', 'ถ้าล้างข้อมูลเบราว์เซอร์หรือลบแอป ข้อมูลจะหาย — เข้าสู่ระบบ หรือสำรองเป็นไฟล์ไว้ก่อน'),
+    ]),
     h('button.btn.danger.full', { onclick: async () => {
       if (!await confirmBox({ title: 'ลบข้อมูลทั้งหมด?', body: 'งาน วิชา รูป และโน้ตในเครื่องนี้จะหายถาวร แนะนำให้สำรองข้อมูลก่อน', ok: 'ลบทั้งหมด', danger: true })) return;
       indexedDB.deleteDatabase('sabaii'); location.reload();

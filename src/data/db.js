@@ -1,8 +1,10 @@
 // ที่เก็บข้อมูลในเครื่อง — IndexedDB เป็นหลัก ถ้าเบราว์เซอร์ไม่ให้ใช้ (โหมดส่วนตัวบางตัว) ตกไปใช้หน่วยความจำ
 // แล้วแจ้งผู้ใช้ตรง ๆ ว่าปิดแอปแล้วข้อมูลจะหาย
 export const DB_NAME = 'sabaii';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 export const STORES = ['tasks', 'subjects', 'attachments', 'prefs'];
+// ของระบบซิงก์ (ไม่ใช่ข้อมูลผู้ใช้): outbox = รายการที่ยังไม่ขึ้นคลาวด์ · meta = ตำแหน่งที่ดึงล่าสุด เจ้าของเครื่อง
+export const SYNC_STORES = ['outbox', 'meta'];
 
 function req(r) {
   return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -24,6 +26,7 @@ export async function openIDB(idb = globalThis.indexedDB) {
       s.createIndex('task_id', 'task_id');
     }
     if (!db.objectStoreNames.contains('prefs')) db.createObjectStore('prefs', { keyPath: 'key' });
+    for (const n of SYNC_STORES) if (!db.objectStoreNames.contains(n)) db.createObjectStore(n, { keyPath: 'key' });
   };
   const db = await req(r);
   return {
@@ -44,8 +47,8 @@ export async function openIDB(idb = globalThis.indexedDB) {
 
 /** ที่เก็บในหน่วยความจำ — ใช้ในเทสต์ และเป็นทางสำรองเมื่อ IndexedDB ใช้ไม่ได้ */
 export function memoryDB() {
-  const data = Object.fromEntries(STORES.map(s => [s, new Map()]));
-  const key = (store, v) => store === 'prefs' ? v.key : v.id;
+  const data = Object.fromEntries([...STORES, ...SYNC_STORES].map(s => [s, new Map()]));
+  const key = (store, v) => store === 'prefs' || SYNC_STORES.includes(store) ? v.key : v.id;
   return {
     kind: 'memory',
     async all(store) { return [...data[store].values()].map(v => structuredClone(v)); },

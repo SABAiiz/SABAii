@@ -2,6 +2,9 @@
 import { h, ic, toast, $ } from './ui/kit.js';
 import { openBestDB } from './data/db.js';
 import { createStore } from './data/store.js';
+import { createCloud } from './data/cloud.js';
+import { createSync } from './data/sync.js';
+import { afterSignIn } from './features/account.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { tasksView, subjectView } from './features/tasks.js';
@@ -9,7 +12,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.9.8';
+globalThis.SABAII_VERSION = '0.10.0';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', me: 'ฉัน', subject: 'วิชา' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -19,10 +22,23 @@ export function route() {
 }
 
 async function boot() {
-  let store;
-  try { store = createStore(await openBestDB()); await store.load(); }
+  let store, sync;
+  const cloud = createCloud();
+  // กดลิงก์เข้าสู่ระบบในอีเมล → กลับมาพร้อม #access_token=… (ต้องอ่านก่อนตัวเลือกหน้า แล้วลบออกจากแถบที่อยู่)
+  let linked = false, linkErr = '';
+  if (/(access_token|error_description)=/.test(location.hash)) {
+    try { linked = await cloud.takeLinkSession(location.hash); } catch (e) { linkErr = e.message; }
+    history.replaceState(history.state, '', location.pathname + location.search + '#/me');
+  }
+  try {
+    const db = await openBestDB();
+    sync = createSync({ db, cloud });
+    store = createStore(sync.trackedDB);
+    sync.attach(store);
+    await store.load();
+  }
   catch (e) { document.body.append(h('div.fatal', h('b', 'เปิดข้อมูลในเครื่องไม่ได้'), h('p', String(e.message || e)))); return; }
-  app.store = store;
+  app.store = store; app.cloud = cloud; app.sync = sync;
   applyTheme();
   if (store.state.dbKind !== 'indexeddb') document.body.append(h('div.storage-warn', 'เบราว์เซอร์นี้เก็บข้อมูลถาวรไม่ได้ (โหมดส่วนตัว?) — งานจะหายเมื่อปิดหน้า'));
 
@@ -59,6 +75,7 @@ async function boot() {
   initHome();
   store.subscribe(() => { gcUrls(); app.refresh(); });
   addEventListener('hashchange', renderPage);
+  sync.onStatus(() => { if (route().name === 'me') renderPage(); });
   app.refresh();
   // ครั้งแรก: แบบสอบถามก่อนเข้าแอป · กดมาจากหน้าแนะนำ (?from=landing) ข้ามหน้าต้อนรับไปข้อ 1 เลย
   const fromLanding = new URLSearchParams(location.search).get('from') === 'landing';
@@ -66,7 +83,14 @@ async function boot() {
   if (needsOnboarding()) openOnboarding({ start: fromLanding ? 1 : 0 });
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
-  addEventListener('offline', () => toast('ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง'));
+  addEventListener('offline', () => toast(cloud.user() ? 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ต่อเน็ตแล้วจะซิงก์เอง' : 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง'));
+  // ซิงก์: ตอนเปิดแอป · ต่อเน็ตได้ · กลับมาที่แอป · ทุก 1 นาทีที่เปิดดูอยู่ (แก้งานแล้วส่งเองภายใน 2 วินาที)
+  const syncIfIn = () => { if (cloud.user() && document.visibilityState === 'visible') sync.syncNow(); };
+  addEventListener('online', syncIfIn);
+  document.addEventListener('visibilitychange', syncIfIn);
+  setInterval(syncIfIn, 60_000);
+  if (linkErr) toast(linkErr);
+  if (linked) afterSignIn(cloud.user()); else syncIfIn();
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }

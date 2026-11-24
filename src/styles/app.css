@@ -1090,3 +1090,20 @@ body.note-mode .pane-home *, body:has(#page:not([hidden])) .pane-home * { animat
 #page::after, #sheet.full .pane-home::after { background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,.85) 80%, #fff); }
 /* เห็นเนื้อหาผ่านกระจกทุกหน้า (แบบหน้างานที่เจ้าของชอบ): ม่านขาวเหลือแค่ใต้แถบเมนู ตรงแถบโฮมของ iPhone */
 #page::after, #sheet.full .pane-home::after { background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) calc(100% - 22px - var(--safe-b)), rgba(255,255,255,.9) calc(100% - 10px - var(--safe-b)), #fff); }
+
+/* 0.10 บัญชีและซิงก์ */
+.ferr { color: var(--error); font-size: 14px; min-height: 0; margin: 6px 0 0; }
+.ferr:empty { display: none; }
+.field.code { font: 600 26px var(--disp); letter-spacing: .4em; text-align: center; }
+.accrow { display: flex; justify-content: space-between; margin-top: 12px; }
+.linkbtn { color: var(--blue); font-weight: 600; font-size: 14px; padding: 8px 2px; }
+.linkbtn:disabled { opacity: .45; }
+.accuser { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.accuser b { display: block; word-break: break-all; } .accuser small { color: var(--text-2); font-size: 13px; }
+.accsync { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; font-weight: 600; }
+.accsync small { flex-basis: 100%; color: var(--text-2); font-weight: 500; font-size: 13px; }
+.accsync .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--text-2); }
+.accsync .dot.ok { background: #16B76A; } .accsync .dot.busy { background: var(--blue); animation: accpulse 1s infinite alternate; } .accsync .dot.warn { background: #F4A340; }
+@keyframes accpulse { to { opacity: .3; } }
+.btn .i, .btn span svg { width: 18px; height: 18px; vertical-align: -3px; }
+.list-btn.dangertext .lk { color: var(--error); }
