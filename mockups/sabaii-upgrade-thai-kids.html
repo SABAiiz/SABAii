@@ -1,0 +1,320 @@
+<title>SABAii สมุดเด็กไทย</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Mali:wght@500;600&display=swap">
+<style>
+/* VOICE everyday product proposal for the owner, Thai
+   IDEA SABAii's own screens: the proposal is shown as the shipped app would look
+   PICTURE five phone screens in a row, one per upgrade, real sample content
+   COLOUR white ground, SABAii navy #0B1B4D ink, blue #0A6CF1 accent, the app's pastel card fields
+   TYPE Anuphan display + Noto Sans Thai Looped text, Mali for chalk/handwriting
+   LAYOUT laptop: title row with before/after on the right, phones across full width; phone: stacked, phones in a snap strip */
+:root{color-scheme:light dark;--bg:light-dark(#fff,#0A1230);--ink:light-dark(#0B1B4D,#E6EBF8);--t2:light-dark(#55627E,#A9B4CF);--blue:light-dark(#0A6CF1,#6BA6FF);--line:light-dark(#E1E7F2,#26335A);--sf:light-dark(#F3F6FB,#111C40);--lav:light-dark(#EFE9FF,#2A2457);--mint:light-dark(#E3F6EE,#173D35);--peach:light-dark(#FFEFE1,#45301F);--sky:light-dark(#E7F0FE,#16295A);--rose:light-dark(#FDECEE,#47222A)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 "Noto Sans Thai Looped","Inter",sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
+.band{padding-block:clamp(28px,4vw,56px);padding-left:max(5vw,16px,env(safe-area-inset-left,0px));padding-right:max(5vw,16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto}
+h1,h2,h3{font-family:"Anuphan","Noto Sans Thai Looped",sans-serif;letter-spacing:-.01em;line-height:1.2}
+h1{font-size:clamp(32px,4.4vw,50px);font-weight:700}
+h2{font-size:clamp(24px,2.8vw,32px);font-weight:700;margin-bottom:6px}
+.lead{font-size:17px;color:var(--t2);max-width:62ch;margin-top:12px}
+.top{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:40px;align-items:end;padding-top:clamp(28px,4vw,52px)}
+.ba{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:10px;font-size:14.5px}
+.ba>div{border-radius:18px;padding:14px 16px}
+.ba .was{background:var(--sf)}
+.ba .will{background:var(--sky)}
+.ba b{display:block;font-size:13.5px;color:var(--t2);font-weight:600;margin-bottom:8px}
+.drw{display:flex;flex-direction:column;gap:6px}
+.drw span{background:var(--bg);border-radius:10px;padding:5px 10px;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.drw span i{font-style:normal;font-weight:500;color:var(--t2);font-size:13px;white-space:nowrap}
+.was .drw span{opacity:.9}
+/* gallery */
+.strip{overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;margin-top:28px}
+.gal{display:grid;grid-template-columns:repeat(5,236px);gap:15px;justify-content:space-between;width:max(100%,1240px)}
+.item{scroll-snap-align:start}
+.phone{width:236px;height:500px;border-radius:34px;background:#F7F9FD;box-shadow:0 0 0 7px #10141f,0 18px 36px rgba(11,27,77,.16);overflow:hidden;position:relative;color:#0B1B4D;font-size:13px;line-height:1.45;margin:7px 0 0 7px;width:222px}
+.sb{display:flex;justify-content:space-between;padding:9px 18px 4px;font:600 12.5px Inter,sans-serif}
+.sb i{width:20px;height:10px;border:1.4px solid #0B1B4D;border-radius:3px;position:relative}
+.sb i::after{content:"";position:absolute;inset:1.4px 5px 1.4px 1.4px;background:#0B1B4D;border-radius:1px}
+.pi{padding:4px 12px 0}
+.ph{font:700 19px/1.2 Anuphan,sans-serif;margin:4px 0 8px}
+.mut{color:#5E6B85}
+.inp{background:#fff;border:1.5px solid #0A6CF1;border-radius:14px;padding:8px 10px;font-weight:500;box-shadow:0 0 0 4px #E7F0FE}
+.inp::after{content:"";display:inline-block;width:1.5px;height:14px;background:#0A6CF1;margin-left:2px;vertical-align:-2px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:10px 0 8px;text-align:center}
+.tabs span{border-radius:10px;padding:4px 0;font-weight:600;line-height:1.25}
+.tabs em{display:block;font-style:normal;font:700 15px Inter,sans-serif}
+.ent{background:#fff;border-radius:13px;padding:7px 9px;margin-bottom:6px;box-shadow:0 1px 3px rgba(11,27,77,.06)}
+.ent p{font-weight:600}
+.tag{display:inline-block;border-radius:7px;padding:0 6px;font-size:12.5px;font-weight:600;margin-top:2px}
+.k1{background:#E7F0FE;color:#0A55C2}.k2{background:#FFEFE1;color:#A4520E}.k3{background:#E3F6EE;color:#0E7A52}.k4{background:#EFE9FF;color:#5B3DC4}
+.sort{font-size:12.5px;color:#5E6B85;text-align:center;margin-top:4px}
+/* phone 2 */
+.night{background:linear-gradient(180deg,#0B1B4D,#18307A);color:#fff}
+.night .sb{color:#fff}.night .sb i{border-color:#fff}.night .sb i::after{background:#fff}
+.tt{display:flex;gap:4px;margin:8px 0 10px}
+.tt span{flex:1;background:rgba(255,255,255,.12);border-radius:8px;text-align:center;padding:4px 0;font-size:12.5px;line-height:1.3}
+.tt span b{display:block;font:600 12.5px Inter,sans-serif;opacity:.7}
+.tt .hot{background:#fff;color:#0B1B4D}
+.chk{background:#fff;color:#0B1B4D;border-radius:16px;padding:6px 10px}
+.chk div{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #EEF1F7;align-items:flex-start}
+.chk div:last-child{border:0}
+.chk u{flex:none;width:18px;height:18px;border-radius:6px;border:1.8px solid #B9C4D8;margin-top:1px;text-decoration:none;display:grid;place-items:center;color:#fff;font-size:12px}
+.chk .ok u{background:#14A06B;border-color:#14A06B}
+.chk .ok p{text-decoration:line-through;color:#8A96AE}
+.chk p{font-weight:600;line-height:1.3}.chk small{display:block;font-weight:500;color:#5E6B85;font-size:12.5px}
+.pill{display:block;text-align:center;background:#0A6CF1;color:#fff;border-radius:999px;padding:8px;font-weight:600;margin-top:10px}
+/* phone 3 */
+.board{background:#22413A;border-radius:14px;padding:12px 12px 14px;color:#EEF3EA;font:500 14.5px/1.7 Mali,cursive;position:relative;transform:rotate(-1deg);box-shadow:inset 0 0 0 5px #6B4A2B}
+.board mark{background:none;color:inherit;outline:2px dashed #FFD84D;outline-offset:2px;border-radius:4px}
+.found{font-weight:700;margin:12px 0 6px;display:flex;justify-content:space-between}
+.found i{font-style:normal;color:#0A6CF1;font-weight:600}
+.srch{display:flex;gap:6px;align-items:center;border:1.5px solid #E1E7F2;background:#fff;border-radius:12px;padding:6px 9px;margin-top:8px}
+.srch svg{width:14px;height:14px;flex:none}
+.thumbs{display:flex;gap:5px;margin-top:6px}
+.thumbs span{flex:1;height:38px;border-radius:8px;background:#22413A;position:relative;overflow:hidden}
+.thumbs span::after{content:"";position:absolute;left:8px;top:14px;width:22px;height:9px;outline:1.6px solid #FFD84D;border-radius:2px}
+/* phone 4 */
+.exam{background:linear-gradient(135deg,#D9443A,#B3261E);color:#fff;border-radius:16px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
+.exam b{font:700 30px/1 Inter,sans-serif}.exam small{display:block;font-size:12.5px;opacity:.85}
+.plan{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:10px 0}
+.plan span{border-radius:7px;background:#EEF1F7;text-align:center;font-size:12px;padding:3px 0;line-height:1.25}
+.plan span b{display:block;height:5px;border-radius:3px;margin:3px 5px 0;background:#C8D2E3}
+.plan .dn b{background:#14A06B}.plan .td{background:#0B1B4D;color:#fff}.plan .td b{background:#6BA6FF}
+.today{font-weight:600;margin-bottom:8px}
+.card{background:#fff;border-radius:18px;padding:14px 12px;text-align:center;box-shadow:0 6px 16px rgba(11,27,77,.1);position:relative}
+.card::before{content:"";position:absolute;left:10px;right:10px;top:-6px;height:12px;border-radius:12px 12px 0 0;background:#E4E9F3;z-index:-1}
+.card q{display:block;font:700 15.5px/1.4 Anuphan,sans-serif;margin:4px 0 8px;quotes:none}
+.card .ans{border-top:1.5px dashed #D3DBE8;padding-top:7px;color:#0E7A52;font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.two span{border-radius:12px;padding:7px 0;text-align:center;font-weight:600;background:#EEF1F7}
+.two span:last-child{background:#E3F6EE;color:#0E7A52}
+/* phone 5 */
+.cnt{display:flex;gap:5px;margin:2px 0 10px}
+.cnt span{flex:1;border-radius:10px;background:#fff;text-align:center;padding:4px 0;font-size:12.5px;line-height:1.3;box-shadow:0 1px 3px rgba(11,27,77,.06)}
+.cnt b{display:block;font:700 16px Inter,sans-serif}
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.pg div{border-radius:13px;height:84px;padding:7px 8px;display:flex;flex-direction:column;justify-content:flex-end;font-weight:600;line-height:1.3;color:#fff;position:relative;overflow:hidden}
+.pg div small{font-weight:500;font-size:12px;opacity:.9}
+.pg div::before{content:"";position:absolute;right:-14px;top:-14px;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.16)}
+.g1{background:linear-gradient(140deg,#2A9D8F,#1D6F66)}.g2{background:linear-gradient(140deg,#5B3DC4,#3B2590)}.g3{background:linear-gradient(140deg,#E9A23B,#C47A14)}.g4{background:linear-gradient(140deg,#0A6CF1,#0B48A8)}
+.cert::after{content:"★";position:absolute;right:9px;top:6px;font-size:16px}
+.pdf{display:flex;justify-content:space-between;align-items:center;background:#0B1B4D;color:#fff;border-radius:999px;padding:8px 8px 8px 14px;font-weight:600;margin-top:10px}
+.pdf i{font-style:normal;background:#fff;color:#0B1B4D;border-radius:999px;padding:1px 9px;font-size:12.5px}
+.cap{margin-top:16px;padding-right:4px}
+.cap h3{font-size:18px;display:flex;gap:8px;align-items:baseline}
+.cap h3 i{font:700 13px Inter,sans-serif;font-style:normal;color:#fff;background:var(--ink);border-radius:7px;width:22px;height:22px;display:inline-grid;place-items:center;flex:none;transform:translateY(-2px)}
+:root[data-theme=dark] .cap h3 i{color:#0A1230}
+.cap p{font-size:15px;color:var(--t2);margin-top:4px}
+.cap p.why{color:var(--ink);font-size:14.5px;border-left:3px solid var(--blue);padding-left:9px;margin-top:8px}
+.hint{font-size:13.5px;color:var(--t2);margin-top:8px}
+/* levels */
+.lv{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:40px;align-items:start}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--t2);font-size:14px}
+td.d{white-space:nowrap;text-align:center;width:1%}
+th.d{text-align:center;white-space:nowrap}
+.dot{display:inline-block;width:13px;height:13px;border-radius:50%;background:var(--blue)}
+.dot.h{background:none;border:2px solid var(--blue)}
+.dash{color:var(--t2)}
+.key{font-size:13.5px;color:var(--t2);margin-top:8px;display:flex;gap:16px;flex-wrap:wrap}
+.key span{display:flex;gap:6px;align-items:center}
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+.st{border-radius:20px;padding:18px 18px 16px}
+.st:nth-child(1){background:var(--mint)}.st:nth-child(2){background:var(--sky)}.st:nth-child(3){background:var(--lav)}
+.st b{font:700 13.5px Inter,sans-serif;color:var(--t2)}
+.st h3{font-size:20px;margin:2px 0 4px}
+.st .need{font-size:14px;color:var(--t2);margin-bottom:10px}
+.st ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.st li{background:var(--bg);border-radius:12px;padding:8px 11px;font-size:15px;line-height:1.45}
+.st li small{display:block;color:var(--t2);font-size:13.5px}
+/* principles */
+.navy{background:#0B1B4D;color:#fff}
+.navy h2{color:#fff}
+.pr{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-top:18px}
+.pr div{border-top:2px solid rgba(255,255,255,.3);padding-top:10px}
+.pr b{display:block;font:700 17px/1.3 Anuphan,sans-serif;margin-bottom:4px}
+.pr p{font-size:14.5px;color:#C5CFE8}
+.ms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
+.ms div{background:rgba(255,255,255,.07);border-radius:16px;padding:14px 16px}
+.ms b{font:700 28px/1.1 Inter,sans-serif;display:block}
+.ms p{font-size:14.5px;color:#C5CFE8;margin-top:4px}
+.foot{font-size:13.5px;color:#9FB0D6;margin-top:22px}
+@media(max-width:900px){.top,.lv{grid-template-columns:minmax(0,1fr);gap:20px}.pr{grid-template-columns:repeat(2,minmax(0,1fr))}.road{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1290px){.gal{width:max-content}}
+@media(max-width:600px){.ba{grid-template-columns:minmax(0,1fr)}.ms{grid-template-columns:minmax(0,1fr)}.pr{grid-template-columns:minmax(0,1fr)}table{font-size:14px}th,td{padding:8px 4px}}
+</style>
+
+<section class="band" style="padding-bottom:20px">
+<div class="wrap">
+ <div class="top">
+  <div>
+   <h1>จากแอปจดการบ้าน<br>เป็นสมุดที่เด็กไทยทุกคนควรมี</h1>
+   <p class="lead">เด็กไม่ได้ลืมแค่การบ้าน แต่ลืมชุดพละ ลืมเงินค่าทัศนศึกษา หาโน้ตก่อนสอบไม่เจอ และพอถึง ม.6 ก็จำไม่ได้ว่าเคยทำผลงานอะไรไว้ ข้อเสนอนี้ให้ SABAii เก็บทุกอย่างนี้ไว้ในกล่องเดียว ไม่ต้องสมัคร และไม่มีโฆษณา</p>
+  </div>
+  <div class="ba">
+   <div class="was"><b>ตอนนี้ (0.9.8)</b><div class="drw"><span>การบ้าน <i>มีวันส่ง</i></span></div></div>
+   <div class="will"><b>ต่อไป</b><div class="drw">
+    <span>การบ้าน <i>มีวันส่ง</i></span>
+    <span>ของต้องเตรียม <i>ตามตารางเรียน</i></span>
+    <span>โน้ตเรียน <i>ค้นในรูปได้</i></span>
+    <span>อ่านสอบ <i>แผน + การ์ด</i></span>
+    <span>ผลงาน <i>เข้าพอร์ต TCAS</i></span>
+   </div></div>
+  </div>
+ </div>
+
+ <div class="strip" tabindex="0" aria-label="หน้าจอที่เสนอ 5 แบบ">
+ <div class="gal">
+
+  <div class="item">
+   <div class="phone"><div class="sb"><span>16:42</span><i></i></div><div class="pi">
+    <div class="ph">จดอะไรก็ได้</div>
+    <div class="inp">พรุ่งนี้เอาเงินทัศนศึกษา 350</div>
+    <div class="tabs"><span class="k1"><em>4</em>การบ้าน</span><span class="k2"><em>3</em>เตรียม</span><span class="k3"><em>12</em>โน้ต</span><span class="k4"><em>5</em>อยากจำ</span></div>
+    <div class="ent"><p>คณิต ใบงาน 8 ส่ง ศ.</p><span class="tag k1">การบ้าน · ศ. 27 พ.ย.</span></div>
+    <div class="ent"><p>เงินทัศนศึกษา 350 บาท</p><span class="tag k2">ของต้องเตรียม · พฤ.</span></div>
+    <div class="ent"><p>ความเร่ง a = Δv / Δt</p><span class="tag k3">โน้ต · ฟิสิกส์</span></div>
+    <div class="ent"><p>หนังสือที่พี่รหัสแนะนำ</p><span class="tag k4">อยากจำ</span></div>
+    <p class="sort">แอปแยกให้เอง แตะป้ายเพื่อเปลี่ยนได้</p>
+   </div></div>
+   <div class="cap"><h3><i>1</i>กล่องเดียว จดได้ทุกอย่าง</h3>
+    <p>พิมพ์ พูด หรือถ่ายรูปลงช่องเดียว แอปดูว่ามีวันส่งไหม เป็นของที่ต้องเอาไปไหม หรือเป็นโน้ต แล้วแยกให้เอง</p>
+    <p class="why">เด็กไม่ต้องคิดก่อนว่าจะจดไว้ตรงไหน ใช้ตัวแกะข้อความไทยที่มีอยู่แล้วต่อยอด</p></div>
+  </div>
+
+  <div class="item">
+   <div class="phone night"><div class="sb"><span>20:00</span><i></i></div><div class="pi">
+    <div class="ph" style="color:#fff">เตรียมกระเป๋า<br><span style="font-size:14px;font-weight:500;opacity:.8">พรุ่งนี้ พฤ. 26 พ.ย.</span></div>
+    <div class="tt"><span><b>1</b>คณิต</span><span class="hot"><b>2</b>เคมี</span><span><b>3</b>อังกฤษ</span><span><b>4</b>ไทย</span><span class="hot"><b>5</b>พละ</span></div>
+    <div class="chk">
+     <div class="ok"><u>✓</u><p>ใบงานคณิต 8<small>ทำเสร็จแล้ว</small></p></div>
+     <div><u></u><p>เสื้อกาวน์<small>แลปเคมี คาบ 2</small></p></div>
+     <div><u></u><p>ชุดพละ + รองเท้า<small>คาบ 5</small></p></div>
+     <div><u></u><p>เงินทัศนศึกษา 350 บาท<small>ส่งครูประจำชั้น</small></p></div>
+    </div>
+    <span class="pill">ครบแล้ว นอนได้</span>
+   </div></div>
+   <div class="cap"><h3><i>2</i>รู้ว่าพรุ่งนี้ต้องเอาอะไร</h3>
+    <p>ถ่ายรูปตารางสอนครั้งเดียว แอปรู้ว่าพรุ่งนี้มีคาบอะไร แล้วรวมของที่ต้องเอาไปให้ทุกคืนตอน 2 ทุ่ม</p>
+    <p class="why">สิ่งที่โรงเรียนไทยต้องใช้ เช่น ชุดพละ ชุดลูกเสือ เงินค่ากิจกรรม ไม่มีแอปจดงานเจ้าไหนทำให้</p></div>
+  </div>
+
+  <div class="item">
+   <div class="phone"><div class="sb"><span>11:05</span><i></i></div><div class="pi">
+    <div class="ph">อ่านรูปกระดาน</div>
+    <div class="board"><mark>แบบฝึกหัด 3.2 ข้อ 1–10</mark><br>ส่ง วันจันทร์<br><mark>สอบย่อยบท 3 พุธหน้า</mark><br>a = Δv / Δt</div>
+    <div class="found">เจอ 2 งาน <i>เพิ่มทั้งคู่</i></div>
+    <div class="ent"><p>ฟิสิกส์ แบบฝึกหัด 3.2</p><span class="tag k1">ส่ง จ. 30 พ.ย.</span></div>
+    <div class="ent"><p>สอบย่อยบท 3</p><span class="tag" style="background:#FDECEE;color:#B3261E">สอบ พ. 2 ธ.ค.</span></div>
+    <div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke="#0B1B4D" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>ความเร่ง <span class="mut" style="margin-left:auto">เจอ 3 รูป</span></div>
+    <div class="thumbs"><span></span><span></span><span></span></div>
+   </div></div>
+   <div class="cap"><h3><i>3</i>รูปกระดานอ่านออก ค้นเจอ</h3>
+    <p>ถ่ายกระดานหรือใบงาน แอปอ่านตัวหนังสือไทยในเครื่อง ดึงงานกับวันส่งออกมา และค้นคำในรูปเก่าได้</p>
+    <p class="why">ตอนนี้แอปยังอ่านรูปไม่ได้ ผู้ใช้ต้องพิมพ์ชื่องานเอง ข้อนี้ช่วยปิดช่องนี้</p></div>
+  </div>
+
+  <div class="item">
+   <div class="phone"><div class="sb"><span>19:30</span><i></i></div><div class="pi">
+    <div class="exam"><div>สอบปลายภาค เคมี<small>จ. 7 ธ.ค. · 09:00</small></div><b>12<span style="font-size:13px;font-weight:600"> วัน</span></b></div>
+    <div class="plan"><span class="dn">จ<b></b></span><span class="dn">อ<b></b></span><span class="td">พ<b></b></span><span>พฤ<b></b></span><span>ศ<b></b></span><span>ส<b></b></span><span>อา<b></b></span></div>
+    <p class="today">วันนี้: สมดุลเคมี · 25 นาที<br><span class="mut" style="font-weight:500">จากโน้ตของมิ้นท์ 6 รูป · 8 การ์ด</span></p>
+    <div class="card"><span class="mut">การ์ด 3 / 8</span><q>ค่าคงที่สมดุล K เปลี่ยนเมื่อไหร่?</q><div class="ans">เมื่ออุณหภูมิเปลี่ยนเท่านั้น</div></div>
+    <div class="two"><span>ยังไม่แน่ใจ</span><span>จำได้แล้ว</span></div>
+   </div></div>
+   <div class="cap"><h3><i>4</i>ติวจากโน้ตตัวเอง</h3>
+    <p>ใส่วันสอบ แอปแบ่งบทให้อ่านวันละนิดจนถึงวันสอบ และทำการ์ดทบทวนจากโน้ตที่จดไว้ทั้งเทอม</p>
+    <p class="why">โน้ตที่จดมาทั้งเทอมได้ใช้ตอนสอบจริง ไม่มีแต้มหรือเหรียญตามสเปกเดิม</p></div>
+  </div>
+
+  <div class="item">
+   <div class="phone"><div class="sb"><span>21:15</span><i></i></div><div class="pi">
+    <div class="ph">แฟ้มสะสมผลงาน<br><span style="font-size:14px;font-weight:500" class="mut">ม.4 – ม.6 · มิ้นท์</span></div>
+    <div class="cnt"><span><b>8</b>ผลงาน</span><span><b>5</b>กิจกรรม</span><span><b>3</b>เกียรติบัตร</span></div>
+    <div class="pg">
+     <div class="g1">โครงงานเครื่องกรองน้ำ<small>ม.5 · ชีวะ</small></div>
+     <div class="g2 cert">ตอบปัญหาวิทย์ ระดับเขต<small>เหรียญเงิน</small></div>
+     <div class="g3">จิตอาสา 24 ชม.<small>ม.4 – ม.5</small></div>
+     <div class="g4">ค่ายวิทยาศาสตร์<small>ปิดเทอม ม.4</small></div>
+    </div>
+    <p class="hint" style="margin-top:8px;font-size:12.5px">กด "เก็บเข้าพอร์ต" จากงานไหนก็ได้ รูปกับวันที่มาด้วย</p>
+    <div class="pdf">ทำไฟล์พอร์ต PDF <i>10 หน้า</i></div>
+   </div></div>
+   <div class="cap"><h3><i>5</i>พอร์ตโตไปพร้อมการบ้าน</h3>
+    <p>งานไหนภูมิใจ กดเก็บไว้ตั้งแต่ ม.4 พอถึงรอบพอร์ตก็เลือกแล้วออกเป็น PDF 10 หน้าตามรูปแบบ TCAS ได้เลย</p>
+    <p class="why">เด็ก ม.6 ต้องย้อนไปหารูปผลงานเก่าเกือบทุกคน ข้อนี้เป็นเหตุผลให้ใช้แอปต่อไปทั้ง 3 ปี</p></div>
+  </div>
+
+ </div>
+ </div>
+ <p class="hint">ข้อมูลในหน้าจอเป็นตัวอย่าง · บนมือถือเลื่อนซ้าย-ขวาเพื่อดูหน้าจอทั้ง 5</p>
+</div>
+</section>
+
+<section class="band" style="background:var(--sf)">
+<div class="wrap lv">
+ <div>
+  <h2>เด็กแต่ละช่วงชั้นได้อะไร</h2>
+  <p class="lead" style="font-size:16px">"เด็กไทยทุกคน" มีตั้งแต่ ป.4 ถึง ม.6 แต่ละช่วงได้ประโยชน์จากคนละข้อ เปิดครั้งแรกให้เลือกระดับชั้น แล้วแอปเปิดเฉพาะข้อที่เหมาะ ส่วนที่เหลือซ่อนไว้ หน้าจอจะได้ไม่รก</p>
+  <div class="key"><span><i class="dot"></i>หัวใจของช่วงนี้</span><span><i class="dot h"></i>มีประโยชน์</span><span><i class="dash">–</i>ยังไม่จำเป็น</span></div>
+ </div>
+ <div class="tbl"><table>
+  <thead><tr><th>ข้อ</th><th class="d">ป.4–6</th><th class="d">ม.1–3</th><th class="d">ม.4–6</th><th>เพราะอะไร</th></tr></thead>
+  <tbody>
+   <tr><td>1 กล่องเดียว</td><td class="d"><i class="dot"></i></td><td class="d"><i class="dot"></i></td><td class="d"><i class="dot"></i></td><td>ทุกคนต้องจด ยิ่งจดง่ายยิ่งใช้</td></tr>
+   <tr><td>2 เตรียมกระเป๋า</td><td class="d"><i class="dot"></i></td><td class="d"><i class="dot"></i></td><td class="d"><i class="dot h"></i></td><td>เด็กเล็กลืมของบ่อยสุด และผู้ปกครองช่วยดูได้</td></tr>
+   <tr><td>3 อ่านรูปกระดาน</td><td class="d"><i class="dot h"></i></td><td class="d"><i class="dot"></i></td><td class="d"><i class="dot"></i></td><td>ยิ่งโตงานบนกระดานยิ่งยาว</td></tr>
+   <tr><td>4 ติวจากโน้ต</td><td class="d"><span class="dash">–</span></td><td class="d"><i class="dot h"></i></td><td class="d"><i class="dot"></i></td><td>สอบกลางภาค ปลายภาค และสอบเข้า</td></tr>
+   <tr><td>5 พอร์ต</td><td class="d"><span class="dash">–</span></td><td class="d"><i class="dot h"></i></td><td class="d"><i class="dot"></i></td><td>ม.ต้นใช้ตอนสอบเข้า ม.4 ส่วน ม.ปลายใช้ยื่น TCAS</td></tr>
+  </tbody>
+ </table></div>
+</div>
+</section>
+
+<section class="band">
+<div class="wrap">
+ <h2>ทำอะไรก่อน</h2>
+ <p class="lead" style="font-size:16px;margin-top:4px">เรียงตามว่าต้องมีเซิร์ฟเวอร์หรือไม่ ขั้นแรกทำบนโค้ดที่มีอยู่ได้เลย ข้อมูลยังอยู่ในเครื่องเหมือนเดิม</p>
+ <div class="road">
+  <div class="st"><b>ขั้น 1</b><h3>ใช้ของที่มีอยู่</h3><p class="need">ทำในเครื่อง ไม่ต้องมีเซิร์ฟเวอร์</p><ul>
+   <li>กล่องเดียว + ป้าย 4 ประเภท<small>ต่อจาก thai-parse ให้รู้จักคำแบบ "เอา" "เตรียม" "ค่า...บาท"</small></li>
+   <li>ตารางเรียน + เตรียมกระเป๋า<small>ให้พิมพ์ตารางเองไปก่อน แล้วค่อยอ่านจากรูปในขั้น 2</small></li>
+   <li>ป้าย "เก็บเข้าพอร์ต" + ออก PDF<small>สร้างไฟล์ในเครื่อง ไม่ต้องอัปโหลด</small></li>
+  </ul></div>
+  <div class="st"><b>ขั้น 2</b><h3>โหลดเพิ่มตอนกดใช้</h3><p class="need">ยังอยู่ในเครื่อง แต่ไฟล์ใหญ่ขึ้น</p><ul>
+   <li>อ่านตัวหนังสือไทยจากรูป<small>โหลดตอนกดครั้งแรก แบบเดียวกับ MediaPipe ของโหมดโบกมือ</small></li>
+   <li>แผนอ่านสอบ + การ์ดทบทวน<small>รอบแรกยังไม่ใช้ AI: เด็กเขียน "คำถาม :: คำตอบ" ในโน้ต แล้วแอปทำเป็นการ์ด</small></li>
+   <li>เตือนตอน 2 ทุ่ม<small>ต้องติดตั้งแอปลงหน้าจอก่อน (iPhone ต้องเป็น iOS 16.4 ขึ้นไป)</small></li>
+  </ul></div>
+  <div class="st"><b>ขั้น 3</b><h3>มีบัญชี</h3><p class="need">ต้องมีเซิร์ฟเวอร์และขอความยินยอมตาม PDPA</p><ul>
+   <li>AI สรุปโน้ตและทำการ์ดให้เอง<small>ถ้าเปิดให้ใช้ AI แล้ว AI ใช้ไม่ได้ ส่วนอื่นของแอปต้องยังใช้ได้ปกติ</small></li>
+   <li>ห้องเรียน + ซิงก์หลายเครื่อง<small>ต่อจากข้อเสนอเดิมใน sabaii-growth-students</small></li>
+   <li>ผู้ปกครองดูได้เฉพาะที่เด็กเลือกแชร์<small>ผู้ใช้อายุต่ำกว่า 20 ปีเป็นผู้เยาว์ จึงต้องให้ผู้ปกครองยินยอมก่อน</small></li>
+  </ul></div>
+ </div>
+</div>
+</section>
+
+<section class="band navy">
+<div class="wrap">
+ <h2>ทำไมเด็กไทยควรมีแอปนี้ ไม่ใช่แอปอื่น</h2>
+ <div class="pr">
+  <div><b>ไม่ต้องสมัคร</b><p>เปิดแล้วใช้ได้เลย เด็ก ป.4 ที่ไม่มีอีเมลก็ใช้ได้</p></div>
+  <div><b>ไม่มีโฆษณา</b><p>ไม่ขายข้อมูล และไม่มีอะไรล่อให้กดออกไปที่อื่น</p></div>
+  <div><b>ข้อมูลอยู่ในเครื่อง</b><p>ใช้ได้แม้ไม่มีเน็ต รูปโน้ตไม่ถูกส่งไปไหน</p></div>
+  <div><b>มือถือรุ่นเก่าก็ใช้ได้</b><p>เป็นเว็บแอปขนาดเล็ก ไฟล์ใหญ่โหลดเฉพาะตอนกดใช้</p></div>
+  <div><b>ไม่ทำให้ติดจอ</b><p>ไม่มีแต้ม เหรียญ หรือการไล่สถิติ จดเสร็จแล้วปิดแอปไปทำงานได้</p></div>
+ </div>
+ <div class="ms">
+  <div><b>≥ 30%</b><p>ของที่จดในแอปเป็นอย่างอื่นนอกจากการบ้าน แปลว่าเด็กใช้เป็นสมุดจริง</p></div>
+  <div><b>4 ใน 10</b><p>เปิดหน้าเตรียมกระเป๋าตอนกลางคืน อย่างน้อย 3 คืนต่อสัปดาห์</p></div>
+  <div><b>≤ 10 วิ</b><p>จากเปิดแอปถึงจดเสร็จ ต้องเร็วกว่าการแคปจอ</p></div>
+ </div>
+ <p class="foot">ตัวเลขเป้าหมายเป็นค่าเริ่มต้นไว้ปรับทีหลัง เพราะยังไม่มีข้อมูลผู้ใช้จริง · ควรลองกับเด็ก 2–3 ห้องก่อนปล่อยให้ทุกคนใช้</p>
+</div>
+</section>
