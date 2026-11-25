@@ -34,6 +34,7 @@ const P = {
   home: '<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>', tasks: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7M9 7h3"/>', me: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18a6.5 6.5 0 0111 0"/>',
   check: '<path d="M5 12l5 5 9-10"/>', moon: '<path d="M20 14A8 8 0 1110 4a6.5 6.5 0 0010 10z"/>', reset: '<path d="M4 12a8 8 0 108-8 8.5 8.5 0 00-6 2.5L4 8"/><path d="M4 3v5h5"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', img: '<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
+  notebook: '<path d="M3.5 5.5c2.7-1 5.6-1 8.5.6v13.4c-2.9-1.6-5.8-1.6-8.5-.6zM20.5 5.5c-2.7-1-5.6-1-8.5.6v13.4c2.9-1.6 5.8-1.6 8.5-.6z"/>',
   pin: '<path d="M9 3h6l-1 6 4 4H6l4-4z"/><path d="M12 13v8"/>', book: '<path d="M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2z"/><path d="M4 19V5"/>',
   save: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/>', restore: '<path d="M12 21V9M7 14l5-5 5 5"/><path d="M4 7V4h16v3"/>',
   spark: '<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>', lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
@@ -46,6 +47,8 @@ const P = {
   eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', eyeoff: '<path d="M3 3l18 18M10.6 6.1A10 10 0 0112 6c6 0 10 6 10 6a17 17 0 01-3.2 3.8M6.6 7.6A17 17 0 002 12s4 7 10 7a9.6 9.6 0 004.4-1"/>',
 };
 export const ic = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+
+export { subjIcon } from './subject-icon.js';
 
 // ภาพประกอบปุ่มเพิ่มงาน 4 แบบ · เส้นเข้ม = สีตัวอักษร พื้นขาว = สีแผ่น (ธีมมืดจะไม่หาย)
 const W = 'style="fill:var(--sheet-bg)" stroke="currentColor"';

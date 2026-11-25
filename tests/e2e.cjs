@@ -160,7 +160,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator('#nav a[data-r="tasks"]').click();
   await page.waitForSelector('.cal');
   check('E ปฏิทินย่อ = สัปดาห์เดียว (7 วัน)', (await page.locator('.day').count()) === 7);
-  check('การ์ดวิชา (5 วิชา) + งานเรียงตามวัน', (await page.locator('.proj:not(.new)').count()) === 5 && (await page.locator('.tl .ti').count()) >= 5);
+  check('0.9.9 หน้างาน: งานเรียงตามวัน · ไม่มีการ์ดวิชาแล้ว (ย้ายไปสมุด)', (await page.locator('.proj:not(.new)').count()) === 0 && (await page.locator('.tl .ti').count()) >= 5);
   await shot('05-tasks');
   await page.locator('.monthchip').click();
   const nDays = await page.locator('.day').count();
@@ -174,7 +174,17 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator(`.day:not(.out)`, { hasText: new RegExp(`^${+fri.slice(8)}$`) }).first().click();
   check('E แตะวัน → เห็นงานของวันนั้น', await page.locator('.daylist', { hasText: 'หน้า 20' }).isVisible());
   await shot('06-tasks-month');
-  await page.locator('.proj', { hasText: 'ฟิสิกส์' }).click();
+  // 0.9.9: แท็บสมุด — การ์ดวิชาแบบ B (ไอคอนวิชา) · ค้นในโน้ต · แตะการ์ด = หน้าวิชา
+  await page.locator('#nav a[data-r="notebook"]').click();
+  await page.waitForSelector('.nb-cards');
+  const nVis = await page.evaluate(() => window.__sabaii.state.subjects.filter(s => !s.hidden).length);
+  check('0.9.9 สมุด: การ์ดวิชาครบทุกวิชาที่ไม่ได้ซ่อน + มีไอคอน', (await page.locator('.nb-card').count()) === nVis && (await page.locator('.nb-card .si').count()) === nVis, String(nVis));
+  check('0.9.9 เมนูล่าง 4 ช่อง · อยู่ที่ "สมุด"', (await page.locator('#nav a').count()) === 4 && (await page.locator('#nav a[data-r="notebook"][aria-current="page"]').count()) === 1);
+  await page.locator('#nb-q').fill('4.1');
+  check('0.9.9 ค้นในสมุด → เจองานที่มีคำนั้น · การ์ดวิชาซ่อน', (await page.locator('.nb-hit').count()) >= 1 && !(await page.locator('.nb-grid').isVisible()));
+  await page.locator('#nb-q').fill(''); await page.locator('#nb-q').dispatchEvent('input');
+  await shot('06b-notebook');
+  await page.locator('.nb-card', { hasText: 'ฟิสิกส์' }).click();
   await page.waitForSelector('#page .tcard');
   check('หน้าวิชาฟิสิกส์: ภาพย่อจากรูปที่ถ่าย', (await page.locator('.tcard .strip .mini').count()) === 1 && (await page.locator('.tcard .strip .mini .nitem.photo').count()) === 1);
   await shot('07-subject');
@@ -284,11 +294,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
     // 0.9.6: ลากนิ้วบนเมนูล่าง → เม็ดตามนิ้ว ปล่อยตรงไหนไปหน้านั้น · แตะเฉย ๆ ยังใช้ได้
     await tp.evaluate(() => window.__ui.setSnap(2)); await wait(500);
     const nb = await tp.locator('#nav').boundingBox(), ny = nb.y + nb.height / 2;
-    await touch('touchStart', nb.x + nb.width / 6, ny);
-    for (let i = 1; i <= 12; i++) { await touch('touchMove', nb.x + nb.width / 6 + nb.width * .62 * i / 12, ny); await wait(16); }
-    const midDrag = await tp.evaluate(() => document.getElementById('nav').classList.contains('drag') && document.querySelector('#nav a[data-r="me"]').classList.contains('over'));
+    await touch('touchStart', nb.x + nb.width / 8, ny);
+    for (let i = 1; i <= 12; i++) { await touch('touchMove', nb.x + nb.width / 8 + nb.width * .5 * i / 12, ny); await wait(16); }
+    const midDrag = await tp.evaluate(() => document.getElementById('nav').classList.contains('drag') && document.querySelector('#nav a[data-r="notebook"]').classList.contains('over'));
     await touch('touchEnd'); await wait(600);
-    check('นิ้ว: ลากบนเมนูล่างจากหน้าหลักไปช่อง "ฉัน" → เม็ดตามนิ้ว ปล่อยแล้วไปหน้าฉัน', midDrag && await tp.evaluate(() => location.hash === '#/me'));
+    check('นิ้ว: ลากบนเมนูล่างจากหน้าหลักไปช่อง "สมุด" → เม็ดตามนิ้ว ปล่อยแล้วไปหน้าสมุด', midDrag && await tp.evaluate(() => location.hash === '#/notebook'));
     await tp.locator('#nav a[data-r="tasks"]').tap(); await wait(500);
     check('นิ้ว: แตะเมนูเฉย ๆ ยังเปลี่ยนหน้าได้', await tp.evaluate(() => location.hash === '#/tasks'));
     await tctx.close();

@@ -1,9 +1,10 @@
-// หน้า "งาน" (0.9) — แถบสัปดาห์ (ขยายเป็นทั้งเดือนได้) → งานเรียงตามวัน (รูปย่อจากโน้ตจริง · สอบเป็นการ์ดแดงนับถอยหลัง) → วิชาเลื่อนข้าง (ปก = รูปโน้ตจริง)
-// หน้าวิชา — ทุกงานของวิชา + แถบโน้ต (ภาพย่อจากโน้ตจริง) + เพิ่มโน้ต/งาน
-import { h, ic, put, badge, tintOf, nameOf, NONE } from '../ui/kit.js';
+// หน้า "งาน" (0.9.9) — แถบสัปดาห์ (ขยายเป็นทั้งเดือนได้) → งานเรียงตามวัน (รูปย่อจากโน้ตจริง ไม่มีรูป = ไอคอนวิชา · สอบเป็นการ์ดแดงนับถอยหลัง)
+// การ์ดวิชาย้ายไปแท็บ "สมุด" แล้ว (features/notebook.js)
+// หน้าวิชา — ทุกงานของวิชา + แถบโน้ต (ภาพย่อจากโน้ตจริง) + เพิ่มโน้ต/งาน · ย้อนกลับไปสมุด
+import { h, ic, put, nameOf, subjIcon, NONE } from '../ui/kit.js';
 import { toYMD, fromYMD, addDaysYMD, daysBetween, dueSortKey, relDay, DOW_SHORT, DOW_LONG, MONTH_SHORT, MONTH_LONG, beYear } from '../domain/dates.js';
 import { isLive } from '../domain/tasks.js';
-import { app, S, subj, today, dueInfo, dueLine, fullTitle, notesOf, visibleSubjects, urlOf } from './shared.js';
+import { app, S, subj, today, dueInfo, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
 import { addTask, addNote, editTask, miniOf } from './add.js';
 import { finish, focusSearch } from './home.js';
 
@@ -69,22 +70,10 @@ export function tasksView(root) {
           h('span.tx', h('b', x.title), h('small', [nameOf(s), x.due_time, x.location].filter(Boolean).join(' · ') || 'สอบ')));
       }
       return h('button.ti' + (x.status === 'done' ? '.done' : ''), { onclick: () => open(x) },
-        img ? h('span.th', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : h('span.th.sub', { style: { '--c': s.color || '#69778F' } }, shortName(s)),
+        img ? h('span.th', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : h('span.th.sub', { style: { '--c': s.color || '#69778F' }, html: subjIcon(s) }),
         h('span.tx', h('b', x.title), h('small', x.status === 'done' ? 'เสร็จแล้ว' : [nameOf(s) ? nameOf(s) + ' · ' : '', ...dueLine(x)])));
     })]));
 
-  // วิชา: เลื่อนข้าง · ปกเป็นรูปโน้ตจริง ไม่มีรูปก็เป็นสีวิชากับชื่อตัวใหญ่
-  const cards = [...visibleSubjects(), ...S().subjects.filter(s => s.hidden), NONE].map(s => {
-    const all = live().filter(x => (x.subject_id || '') === s.id && (s.id || !subjExists(x.subject_id)));
-    const list = all.filter(pick);
-    if (!list.length) return null;
-    const notes = all.flatMap(x => notesOf(x.id)), img = [...notes].reverse().find(n => n.kind === 'image' && n.blob);
-    const name = nameOf(s) || 'ไม่ระบุวิชา';
-    return h('button.proj' + (img ? '' : '.plain'), { onclick: () => { location.hash = '#/subject/' + (s.id || 'none'); }, 'aria-label': `${s.name || name} ${list.length} งาน`,
-      style: img ? { backgroundImage: `url("${urlOf(img)}")` } : { '--c': s.color || '#69778F' } },
-      img ? '' : h('span.big', { 'aria-hidden': 'true' }, name),
-      h('b', name), h('small', `${list.length} งาน${notes.length ? ' · โน้ต ' + notes.length : ''}`));
-  }).filter(Boolean);
 
   put(root,
     h('div.phead', h('h1', 'งาน'),
@@ -93,10 +82,8 @@ export function tasksView(root) {
     cal,
     h('div.filters', Object.entries(FILTERS).map(([k, v]) => h('button', { 'aria-pressed': String(tv.filter === k), onclick: () => { tv.filter = k; tv.sel = null; app.refresh(); } }, v))),
     items.length ? timeline : h('div.empty-note', tv.sel ? 'วันนี้ว่าง ไม่มีงาน' : tv.filter === 'done' ? 'ยังไม่มีงานที่เสร็จ' : tv.filter === 'all' ? 'ยังไม่มีงาน เพิ่มจากหน้าแรกได้เลย' : 'ไม่มีงานในหมวดนี้'),
-    cards.length ? [h('h2.sec2', 'วิชา'), h('div.subrow', cards, h('button.proj.new', { onclick: () => addTask('text') }, h('span', { html: ic('plus') }), 'งานใหม่'))] : '',
   );
 }
-const shortName = s => (nameOf(s) || '?').slice(0, 3);
 const subjExists = id => !!id && S().subjects.some(s => s.id === id);
 
 export function subjectView(root, id) {
@@ -105,8 +92,8 @@ export function subjectView(root, id) {
     .sort((a, b) => (a.status === 'done') - (b.status === 'done') || dueSortKey(a) - dueSortKey(b));
   const nNotes = list.reduce((n, x) => n + notesOf(x.id).length, 0);
   put(root,
-    h('div.phead', h('button.iconbtn', { 'aria-label': 'กลับหน้างาน', html: ic('back'), onclick: () => { location.hash = '#/tasks'; } }),
-      badge(s), h('h1.mid', s.name)),
+    h('div.phead', h('button.iconbtn', { 'aria-label': 'กลับสมุด', html: ic('back'), onclick: () => { location.hash = '#/notebook'; } }),
+      h('span.si-box', { style: { '--c': s.color || '#69778F' }, html: subjIcon(s) }), h('h1.mid', s.name)),
     h('p.muted', { style: { marginBottom: '12px' } }, `${list.filter(x => x.status !== 'done').length} งานค้าง · โน้ต ${nNotes} รายการ`),
     h('div.board', list.map(t => h('article.tcard' + (t.status === 'done' ? '.done' : ''),
       h('div.top', h('div', h('b', t.title), h('small.muted.block', t.status === 'done' ? 'เสร็จแล้ว' : dueLine(t))),
