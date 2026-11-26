@@ -1,0 +1,608 @@
+<meta charset="utf-8">
+<title>SABAii จดไว</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Mali:wght@500;600&display=swap">
+<style>
+/* ภาพเสนอ: หน้าแรกที่เปิดมาแล้วจดได้ทันที 5 แบบ + สมุดแบบเรียบ (ฐาน CSS เดียวกับ sabaii-tasks-flow.html) · หน้าตาชุดเดียวกับ 0.9.9 · ข้อมูลชุดเดียวกับงานตัวอย่างในแอป · วันนี้ = พฤ. 26 พ.ย. 69 */
+:root{color-scheme:light dark;--bg:light-dark(#EEF1F6,#0A1230);--ink:light-dark(#0B1B4D,#E6EBF8);--t2:light-dark(#55627E,#A9B4CF);--card:light-dark(#fff,#121D44);--blue:light-dark(#0A6CF1,#6BA6FF);--s:.7436}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans Thai Looped",Inter,sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
+.band{padding-block:clamp(28px,4vw,52px);padding-left:max(5vw,16px);padding-right:max(5vw,16px)}
+.band.w{background:var(--card)}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font:700 clamp(30px,4vw,46px)/1.15 Anuphan,sans-serif;letter-spacing:-.015em}
+.lead{color:var(--t2);font-size:17px;margin-top:10px;max-width:72ch}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:44px 26px;margin-top:30px}
+.cell{display:flex;flex-direction:column;align-items:center}
+.ph{width:calc(390px*var(--s));height:calc(844px*var(--s));border-radius:calc(52px*var(--s));overflow:hidden;position:relative;box-shadow:0 0 0 7px #121726,0 30px 50px -28px rgba(11,27,77,.6);background:#fff;flex:none}
+.cell.ref .ph{box-shadow:0 0 0 7px #121726,0 0 0 12px #0A6CF1,0 30px 50px -28px rgba(11,27,77,.6)}
+.in{position:absolute;left:0;top:0;width:390px;height:844px;transform:scale(var(--s));transform-origin:0 0;background:#fff;overflow:hidden;color:#0B1B4D;font:15px/1.45 Inter,"Noto Sans Thai Looped",sans-serif}
+.cap{width:calc(390px*var(--s));margin-top:18px}
+.cap h3{font:700 18px/1.3 Anuphan,sans-serif;display:flex;gap:8px;align-items:baseline}
+.cap h3 i{font:700 13px Inter,sans-serif;font-style:normal;background:var(--ink);color:var(--bg);border-radius:7px;min-width:22px;height:22px;padding:0 5px;display:inline-grid;place-items:center;flex:none;transform:translateY(-2px)}
+.cell.ref .cap h3 i{background:var(--blue);color:#fff}
+.cap .fl{display:block;margin-top:7px;font-size:14.5px;font-weight:600;color:var(--blue);line-height:1.45}
+.cap p{font-size:15px;color:var(--t2);margin-top:4px}
+@media (max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.grid{grid-template-columns:1fr}}
+
+/* ---------- app ---------- */
+.sb{height:50px;display:flex;justify-content:space-between;align-items:center;padding:6px 30px 0 34px;font:600 15px Inter,sans-serif;position:relative;z-index:5}
+.sb i{width:24px;height:11px;border-radius:3px;border:1.4px solid currentColor;position:relative}
+.sb i::after{content:"";position:absolute;inset:1.5px 6px 1.5px 1.5px;background:currentColor;border-radius:1px}
+.pad{padding:0 20px}
+.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.pt{font:700 32px/1.2 "Noto Sans Thai Looped",sans-serif;letter-spacing:-.01em}
+.hrow{display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:8px}
+.pill{display:flex;align-items:center;gap:6px;border-radius:14px;padding:6px 11px;font-size:13.5px;font-weight:600;box-shadow:0 0 0 1.5px #E1E7F2;color:#33405E;white-space:nowrap}
+.pill .ic{width:17px;height:17px}
+.round{width:42px;height:42px;border-radius:50%;box-shadow:0 0 0 1.5px #E1E7F2;display:grid;place-items:center;flex:none}
+.si{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;flex:none;color:var(--c);background:color-mix(in srgb,var(--c) 14%,#fff)}
+.si svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.si.sm{width:36px;height:36px;border-radius:11px}.si.sm svg{width:18px;height:18px}
+.phy{--c:#6A4BE0}.eng{--c:#16A36A}.mat{--c:#2F6FDB}.tha{--c:#DB4B5B}.bio{--c:#D04C8E}.che{--c:#1596A8}
+.th{width:48px;height:48px;border-radius:14px;background:center/cover;flex:none}
+.sec{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:19px;margin:16px 0 9px}
+.sec small{font-size:14px;color:#5E6B85;font-weight:600}
+.sec a{font-size:14px;color:#0A6CF1;font-weight:600}
+.dh{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:#5E6B85;margin:14px 0 8px}
+.dh::after{content:"";flex:1;height:1px;background:#E6EAF2}
+.dh.red{color:#C62F35}
+.tag{display:inline-block;border-radius:7px;padding:0 7px;font-size:12.5px;font-weight:600;line-height:20px;white-space:nowrap}
+.k1{background:#E7F0FE;color:#0A55C2}.k2{background:#FFEFE1;color:#A4520E}.k3{background:#E3F6EE;color:#0E7A52}.k4{background:#EFE9FF;color:#5B3DC4}.k5{background:#FDECEE;color:#B3261E}.k6{background:#F1F4FA;color:#55627E}
+.row{display:flex;gap:12px;align-items:center;background:#fff;border-radius:20px;padding:9px 10px 9px 9px;box-shadow:0 0 0 1px #E9EDF4,0 10px 20px -18px rgba(11,27,77,.5);margin-bottom:8px}
+.row .tx{flex:1}
+.row b{display:block;font-size:15.5px;font-weight:600;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row small{font-size:13.5px;color:#5E6B85;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row small .r{color:#D9443A;font-weight:600}
+.row.mute{box-shadow:none;background:#F4F6FA}
+.row.mute b{color:#55627E}
+.row.ex{background:#FFF3F2;box-shadow:0 0 0 1.5px #F7C6C8}
+.cd{width:48px;height:48px;border-radius:14px;background:#E5484D;color:#fff;display:grid;place-items:center;text-align:center;line-height:1;flex:none}
+.cd b{display:block;font:800 19px Inter,sans-serif;color:#fff}
+.cd small{font-size:11px;color:#fff}
+.play{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 1.5px #DCE3EE;display:grid;place-items:center;flex:none}
+.play::before{content:"";border-left:11px solid #0B1B4D;border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px}
+.chk{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 2px #C3CCDC;flex:none}
+.chk.on{background:#14A06B;box-shadow:none;display:grid;place-items:center}
+.chk.on::before{content:"";width:10px;height:5px;border-left:2.4px solid #fff;border-bottom:2.4px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.nav{position:absolute;left:18px;right:18px;bottom:26px;height:72px;border-radius:36px;background:rgba(255,255,255,.66);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 1px rgba(11,27,77,.06),0 14px 30px -12px rgba(11,27,77,.3);display:grid;grid-template-columns:repeat(4,1fr);padding:6px;z-index:9}
+.nav span{border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;gap:1px}
+.nav span.on{background:linear-gradient(110deg,#FFE3CF,#F7DDF0 50%,#DCD9FF);box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(255,255,255,.7)}
+.fade{position:absolute;left:0;right:0;bottom:0;height:130px;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 70%);z-index:8}
+.go{height:50px;border-radius:25px;background:#0B1B4D;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:16px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:#F1F4FA;border-radius:14px;padding:4px;margin-top:12px}
+.seg span{border-radius:11px;text-align:center;padding:6px 0;font-size:14px;font-weight:600;color:#55627E}
+.seg span.on{background:#fff;color:#0B1B4D;box-shadow:0 2px 6px -2px rgba(11,27,77,.25)}
+.seg span em{font-style:normal;font:700 12.5px Inter,sans-serif;color:#8B96AD;margin-left:3px}
+.chips{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden}
+.chips span{border-radius:12px;padding:5px 12px;font-size:14px;font-weight:600;background:#F1F4FA;white-space:nowrap}
+.chips span.on{background:#0B1B4D;color:#fff}
+
+/* หน้าแรก */
+.date{font-size:15px;color:#5E6B85}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 17px Anuphan,sans-serif;background:conic-gradient(from 210deg,#0A6CF1,#7C4DFF,#E0457B,#F08A24,#0A6CF1)}
+.hi{font:700 32px/1.25 "Noto Sans Thai Looped",sans-serif;letter-spacing:-.02em;margin-top:2px}
+.cap4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.cap4 div{height:104px;border-radius:24px;padding:12px 14px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
+.cap4 b{font-size:19px;font-weight:700;position:relative}
+.cap4 small{font-size:12.5px;opacity:.8;position:relative}
+.c1{background:linear-gradient(140deg,#0B1B4D,#1C3A8C);color:#fff}
+.c2{background:linear-gradient(140deg,#EFE9FF,#F6F1FF);color:#2E1F66}
+.c3{background:linear-gradient(140deg,#E3F6EE,#F1FBF6);color:#0E5A3C}
+.c4{background:center/cover;color:#fff}
+.c4::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 20%,rgba(255,255,255,.95) 85%)}
+.c4 b,.c4 small{color:#0B1B4D}
+.c1 .mic{position:absolute;top:10px;left:12px;width:34px;height:34px;border-radius:50%;background:#0A6CF1;display:grid;place-items:center}
+.c1 .mic .ic{width:19px;height:19px}
+.c1 .wv{position:absolute;top:18px;left:60px;display:flex;gap:3px;align-items:center}
+.c1 .wv i{width:3px;border-radius:2px;background:#fff;opacity:.85}
+.c2 .stk{position:absolute;top:6px;left:16px;right:16px;height:50px;transform:scale(.8);transform-origin:0 0}
+.c2 .stk i{position:absolute;width:52px;height:56px;border-radius:7px;border:3px solid #fff;background:center/cover;box-shadow:0 6px 12px -6px rgba(0,0,0,.4)}
+.c3 .typ{position:absolute;top:10px;left:12px;right:12px;background:#fff;border-radius:12px;padding:7px 10px;font-size:14px;font-weight:600;color:#0B1B4D}
+.c3 .typ::after{content:"";display:inline-block;width:2px;height:15px;background:#0A6CF1;margin-left:2px;vertical-align:-2px}
+.srch{display:flex;gap:9px;align-items:center;border:1.5px solid #E1E7F2;border-radius:18px;padding:10px 12px;margin-top:12px;color:#8B96AD;font-size:15.5px}
+.srch .ic{color:#0B1B4D}
+.srch span{flex:1}
+.srch em{font-style:normal;font-size:13.5px;font-weight:600;color:#0B1B4D;background:#F4F6FA;border-radius:10px;padding:3px 9px}
+.more{display:flex;align-items:center;justify-content:center;gap:6px;color:#0A6CF1;font-weight:700;font-size:15px;border-radius:16px;padding:9px 0;box-shadow:0 0 0 2.5px #0A6CF1;margin-top:2px;background:#F1F6FF}
+.more .ic{width:18px;height:18px}
+
+/* A */
+.onhome{border-radius:20px;border:1.5px dashed #C9D3E4;padding:10px 10px 4px;margin-top:12px}
+.onhome .lb{font-size:13px;font-weight:700;color:#7A87A2;display:flex;align-items:center;gap:6px;margin:0 2px 8px}
+.onhome .lb .ic{width:16px;height:16px}
+.onhome .row{padding:6px 8px;border-radius:14px;margin-bottom:6px;box-shadow:none;background:#F6F8FC}
+.onhome .row b{font-size:14px}
+.onhome .row small{font-size:12.5px}
+.onhome .si{width:34px;height:34px;border-radius:10px}.onhome .si svg{width:17px;height:17px}
+.onhome .th{width:34px;height:34px;border-radius:10px}
+.contd{display:flex;align-items:center;gap:8px;margin:16px 0 4px;font-size:14px;font-weight:700;color:#0A6CF1}
+.contd::before,.contd::after{content:"";flex:1;height:1.5px;background:#BFD6FB}
+.fold{display:flex;justify-content:space-between;align-items:center;border-radius:16px;background:#F4F6FA;padding:11px 14px;font-weight:600;font-size:14.5px;color:#55627E;margin-top:12px}
+
+/* B */
+.navytop{background:linear-gradient(160deg,#0B1B4D,#1C3A8C);color:#fff;height:270px;position:absolute;left:0;right:0;top:0}
+.minicap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.minicap span{border-radius:16px;background:rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 7px;font-size:13px;font-weight:600}
+.minicap span .ic{width:20px;height:20px}
+.minicap span.m{background:#0A6CF1}
+.sheet2{position:absolute;left:0;right:0;top:196px;bottom:0;background:#fff;border-radius:28px 28px 0 0;padding:10px 20px 0;box-shadow:0 -10px 30px -12px rgba(0,0,0,.35)}
+.grip{width:44px;height:5px;border-radius:3px;background:#D3DBE8;margin:0 auto 10px}
+.hint{position:absolute;right:16px;top:150px;font-size:12.5px;font-weight:600;color:#C8D2EA;display:flex;align-items:center;gap:4px}
+
+/* C */
+.inbox{border-radius:22px;background:linear-gradient(135deg,#FFF4E5,#FFF9F0);padding:12px 12px 4px;margin-top:12px}
+.inbox .lb{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:16px;margin:0 2px 9px}
+.inbox .lb small{font-size:13px;color:#A4520E;font-weight:600}
+.icard{background:#fff;border-radius:18px;padding:11px 12px;margin-bottom:9px;box-shadow:0 8px 18px -14px rgba(120,70,10,.5)}
+.icard .t{display:flex;gap:10px;align-items:center}
+.icard .t b{font-size:15.5px;font-weight:600;display:block;line-height:1.3}
+.icard .t small{font-size:12.5px;color:#5E6B85}
+.icard .src{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;background:#F1F4FA;color:#33405E}
+.icard .src .ic{width:18px;height:18px}
+.icard .q{font-size:12.5px;font-weight:700;color:#A4520E;margin:9px 0 5px}
+.icard .opts{display:flex;gap:6px}
+.icard .opts span{border-radius:10px;padding:4px 10px;font-size:13.5px;font-weight:600;box-shadow:0 0 0 1.5px #E1E7F2;white-space:nowrap}
+
+/* D */
+.doing{margin-top:12px;border-radius:24px;background:linear-gradient(150deg,#0B1B4D,#1C3A8C);color:#fff;padding:14px 16px 14px}
+.doing .lb{font-size:12.5px;font-weight:700;letter-spacing:.02em;color:#9FB6EA;display:flex;align-items:center;gap:6px}
+.doing .lb i{width:8px;height:8px;border-radius:50%;background:#3DDC97;box-shadow:0 0 0 4px rgba(61,220,151,.25)}
+.doing b{display:block;font-size:18px;font-weight:700;margin-top:4px;line-height:1.3}
+.doing small{font-size:13px;color:#C8D2EA}
+.doing .tm{font:700 44px/1 Inter,sans-serif;letter-spacing:-.02em;margin-top:10px}
+.doing .tm span{font-size:15px;font-weight:600;color:#9FB6EA;margin-left:6px;letter-spacing:0}
+.doing .acts{display:flex;gap:8px;margin-top:12px}
+.doing .acts span{flex:1;height:42px;border-radius:21px;display:grid;place-items:center;font-weight:600;font-size:14.5px;background:rgba(255,255,255,.14)}
+.doing .acts span.ok{background:#fff;color:#0B1B4D}
+
+/* E */
+.wkh{font-size:14px;color:#5E6B85;margin-top:2px}
+.cols{display:flex;gap:10px;margin-top:14px;margin-right:-20px}
+.col{width:136px;flex:none;border-radius:22px;background:#F4F6FA;padding:10px 9px 8px;min-height:300px}
+.col.today{background:#EEF3FF;box-shadow:inset 0 0 0 2px #0B1B4D}
+.col h5{font-size:14px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline;margin:0 3px 9px}
+.col h5 span{font:600 12px Inter,"Noto Sans Thai Looped",sans-serif;color:#7A87A2}
+.col.today h5 span{color:#0A6CF1}
+.vc{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:8px;box-shadow:0 6px 14px -10px rgba(11,27,77,.4);color:#0B1B4D}
+.vc .im{height:78px;background:center/cover}
+.vc .ib{height:58px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c)}
+.vc .ib svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.vc .t{padding:8px 9px 9px}
+.vc b{display:block;font-size:13.5px;font-weight:600;line-height:1.35}
+.vc small{font-size:12px;color:#5E6B85}
+.vc.ex{background:#E5484D;color:#fff}
+.vc.ex small{color:#FFDADB}
+.vc.ex .big{font:800 30px/1 Inter,sans-serif;padding:12px 10px 0}
+.free{border-radius:14px;border:1.5px dashed #B9C6E0;padding:16px 8px;text-align:center;font-size:13px;color:#55627E}
+.dots{display:flex;gap:5px;justify-content:center;margin-top:10px}
+.dots i{width:6px;height:6px;border-radius:3px;background:#C9D3E4}.dots i.on{width:18px;background:#0B1B4D}
+
+/* F */
+.monthchip{display:flex;align-items:center;gap:4px;border-radius:14px;padding:6px 11px;font-size:14px;font-weight:600;box-shadow:0 0 0 1.5px #E1E7F2}
+.monthchip .ic{width:16px;height:16px}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-top:12px}
+.wk span{font-size:12.5px;color:#7A87A2}
+.wk b{display:grid;place-items:center;height:44px;width:44px;margin:4px auto 0;border-radius:14px;font:600 17px Inter,sans-serif;position:relative}
+.wk b.t{background:#0B1B4D;color:#fff}
+.wk b u{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);display:flex;gap:3px}
+.wk b u i{width:5px;height:5px;border-radius:50%;background:#0A6CF1}.wk b u i.r{background:#E5484D}
+.wk b.t u i{background:#fff}
+.barg{width:36px;height:4px;border-radius:2px;background:#D3DBE8;margin:8px auto 0}
+
+/* G */
+.tl{position:relative;margin-top:14px;padding-left:34px}
+.tl::before{content:"";position:absolute;left:10px;top:8px;bottom:-200px;width:2.5px;background:linear-gradient(180deg,#0A6CF1,#C9D3E4 40%)}
+.tn{position:relative;margin-bottom:12px}
+.tn::before{content:"";position:absolute;left:-30px;top:8px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 0 2.5px #C9D3E4}
+.tn.now::before{background:#0A6CF1;box-shadow:0 0 0 5px rgba(10,108,241,.2)}
+.tn.exn::before{background:#E5484D;box-shadow:0 0 0 5px rgba(229,72,77,.2)}
+.tn .when{font-size:13px;font-weight:700;color:#5E6B85;display:flex;gap:8px;align-items:baseline}
+.tn .when em{font-style:normal;font-weight:600;color:#8B96AD;font-size:12.5px}
+.tn.now .when{color:#0A6CF1}
+.tn .row{margin:6px 0 0}
+.gap{font-size:12.5px;color:#8B96AD;margin:-4px 0 10px;font-style:italic}
+
+/* H */
+.bigsrch{display:flex;gap:10px;align-items:center;border-radius:20px;background:#F1F4FA;padding:13px 14px;margin-top:12px;color:#8B96AD;font-size:16px}
+.bigsrch .ic{color:#0B1B4D}
+.sfil{display:flex;gap:8px;margin-top:12px;overflow:hidden;margin-right:-20px}
+.sfil span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#55627E;width:56px;flex:none}
+.sfil span .si{width:50px;height:50px;border-radius:16px}
+.sfil span.on .si{box-shadow:0 0 0 2.5px var(--c)}
+.sfil span.on{color:#0B1B4D}
+.sfil span.all .si{--c:#0B1B4D;background:#0B1B4D;color:#fff;font:700 13px Inter,"Noto Sans Thai Looped",sans-serif}
+.dense{margin-top:6px}
+.dr{display:flex;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid #EEF1F7}
+.dr .tx{flex:1}
+.dr b{display:block;font-size:15.5px;font-weight:600;line-height:1.3}
+.dr small{font-size:13px;color:#5E6B85}
+.dr .due{font-size:13px;font-weight:700;color:#5E6B85;text-align:right;white-space:nowrap}
+.dr .due.r{color:#D9443A}
+.dr .sd{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+
+/* สรุปท้าย */
+.pick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}
+.pick div{background:var(--bg);border-radius:20px;padding:14px 16px}
+.pick b{font:700 17px/1.3 Anuphan,sans-serif;display:flex;gap:8px;align-items:baseline}
+.pick b i{font:700 12px Inter,sans-serif;font-style:normal;background:var(--ink);color:var(--bg);border-radius:6px;min-width:20px;height:20px;display:inline-grid;place-items:center}
+.pick p{font-size:14px;color:var(--t2);margin-top:4px}
+.note{font-size:13.5px;color:var(--t2);margin-top:24px}
+@media (max-width:1000px){.pick{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.pick{grid-template-columns:1fr}}
+
+/* ---------- จดไว ---------- */
+.spd{display:inline-flex;align-items:center;gap:6px;margin-top:8px;border-radius:10px;padding:3px 10px;font:700 13.5px Inter,"Noto Sans Thai Looped",sans-serif;background:#E3F6EE;color:#0E7A52}
+.spd.slow{background:#FDECEE;color:#B3261E}
+.spd.and{background:#FFF1E3;color:#A4520E}
+.kb{position:absolute;left:0;right:0;bottom:0;height:282px;background:#D3D7E0;padding:8px 3px 30px;display:flex;flex-direction:column;gap:9px;z-index:9}
+.kb .r{display:flex;gap:5px;justify-content:center}
+.kb .r span{width:31px;height:42px;border-radius:6px;background:#fff;display:grid;place-items:center;font:500 18px "Noto Sans Thai Looped",sans-serif;color:#111;box-shadow:0 1px 0 #8E94A0}
+.kb .r span.w{width:46px;background:#ADB3BF;font-size:13px}
+.kb .r span.sp{width:180px;font-size:13px;color:#555}
+.kb .r span.go2{width:80px;background:#0A6CF1;color:#fff;font-size:14px;font-weight:600}
+.qcap{margin-top:10px;border-radius:24px;background:#fff;box-shadow:0 0 0 2px #0A6CF1,0 0 0 7px #E7F0FE,0 18px 30px -22px rgba(11,27,77,.45);padding:14px 14px 12px}
+.qcap .in1{font-size:20px;font-weight:600;line-height:1.4;color:#0B1B4D}
+.qcap .in1::after{content:"";display:inline-block;width:2px;height:22px;background:#0A6CF1;margin-left:2px;vertical-align:-4px;animation:none}
+.qcap .det{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.qcap .det span{display:inline-flex;align-items:center;gap:5px;border-radius:10px;padding:3px 9px;font-size:13.5px;font-weight:600}
+.qcap .acts{display:flex;align-items:center;gap:8px;margin-top:12px}
+.qcap .acts .b{width:44px;height:44px;border-radius:14px;background:#F1F4FA;display:grid;place-items:center;flex:none}
+.qcap .acts .b .ic{width:21px;height:21px}
+.qcap .acts .sv{flex:1;height:44px;border-radius:14px;background:#0B1B4D;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:15.5px}
+.mini3 .row{padding:6px 8px 6px 6px;border-radius:15px;margin-bottom:6px}
+.mini3 .row b{font-size:14px}.mini3 .row small{font-size:12.5px}
+.mini3 .si,.mini3 .th{width:36px;height:36px;border-radius:11px}.mini3 .si svg{width:18px;height:18px}
+/* B */
+.holdzone{position:absolute;left:0;right:0;bottom:0;height:480px;z-index:7;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(236,242,255,.96) 22%,#E7EEFF)}
+.bubble{position:absolute;left:22px;right:22px;top:40px;background:#fff;border-radius:22px 22px 22px 6px;padding:13px 15px;box-shadow:0 16px 30px -18px rgba(11,27,77,.55)}
+.bubble .lv{font-size:12px;font-weight:700;color:#0A6CF1;display:flex;align-items:center;gap:6px}
+.bubble .lv i{width:8px;height:8px;border-radius:50%;background:#E5484D;box-shadow:0 0 0 4px rgba(229,72,77,.2)}
+.bubble b{display:block;font-size:17.5px;font-weight:600;line-height:1.45;margin-top:4px}
+.bubble .det{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.bigmic{position:absolute;left:50%;bottom:156px;transform:translateX(-50%);width:108px;height:108px;border-radius:50%;background:linear-gradient(140deg,#0B1B4D,#1C3A8C);display:grid;place-items:center;color:#fff;box-shadow:0 0 0 16px rgba(10,108,241,.16),0 0 0 34px rgba(10,108,241,.08),0 18px 30px -10px rgba(11,27,77,.7)}
+.bigmic .ic{width:42px;height:42px;stroke-width:1.7}
+.holdhint{position:absolute;left:0;right:0;bottom:106px;text-align:center;font-size:13px;font-weight:600;color:#33405E}
+.holdhint2{position:absolute;left:0;right:0;bottom:266px;text-align:center;font-size:12.5px;color:#7A87A2;display:flex;justify-content:center;gap:5px;align-items:center}
+.holdhint2 .ic{width:15px;height:15px}
+/* C */
+.vf{position:absolute;inset:0;background:center/cover}
+.vf::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0) 22%,rgba(0,0,0,0) 62%,rgba(0,0,0,.8))}
+.brk{position:absolute;left:34px;right:34px;top:150px;height:330px;z-index:2}
+.brk i{position:absolute;width:34px;height:34px;border:3.5px solid #fff;border-radius:5px}
+.brk i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0}.brk i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0}
+.brk i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0}.brk i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0}
+.ctop{position:absolute;left:20px;right:20px;top:58px;z-index:3;display:flex;justify-content:space-between;align-items:center;color:#fff}
+.ctop b{font-size:15px;font-weight:600}
+.ctop .chip2{border-radius:12px;background:rgba(0,0,0,.35);padding:5px 10px;font-size:13px;font-weight:600;display:flex;gap:5px;align-items:center}
+.ctop .chip2 .ic{width:15px;height:15px}
+.modes{position:absolute;left:0;right:0;bottom:170px;z-index:3;display:flex;justify-content:center;gap:26px;font-size:15px;font-weight:600;color:rgba(255,255,255,.7)}
+.modes .on{color:#FFD54A}
+.shut{position:absolute;left:50%;bottom:72px;transform:translateX(-50%);width:80px;height:80px;border-radius:50%;border:5px solid #fff;z-index:3;display:grid;place-items:center}
+.shut::before{content:"";width:62px;height:62px;border-radius:50%;background:#fff}
+.gthumb{position:absolute;left:40px;bottom:88px;width:48px;height:48px;border-radius:12px;background:center/cover;border:2px solid #fff;z-index:3}
+.cup{position:absolute;right:30px;bottom:86px;z-index:3;width:54px;text-align:center;color:#fff;font-size:11.5px;font-weight:600;line-height:1.2}
+.cup span{display:grid;place-items:center;width:44px;height:44px;margin:0 auto 4px;border-radius:50%;background:rgba(255,255,255,.2)}
+.cup .ic{width:20px;height:20px}
+.cnext{position:absolute;left:0;right:0;bottom:22px;z-index:3;text-align:center;color:rgba(255,255,255,.8);font-size:12.5px;font-weight:600}
+/* E */
+.chat{position:absolute;inset:0;background:#B9CBE0}
+.chat .bar{height:104px;background:#2D3E57;color:#fff;padding:58px 18px 0;display:flex;gap:12px;align-items:center;font-weight:600}
+.chat .bar .ic{width:20px;height:20px}
+.chat .bar small{display:block;font-size:12px;opacity:.75;font-weight:400}
+.msgs{padding:14px 14px 0;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:78%;background:#fff;border-radius:6px 18px 18px 18px;padding:9px 12px;font-size:14.5px;line-height:1.45;color:#1B2433}
+.msg small{display:block;font-size:11.5px;color:#7A87A2;font-weight:600;margin-bottom:2px}
+.msg.me{align-self:flex-end;background:#C7F3B4;border-radius:18px 6px 18px 18px}
+.msg.sel{box-shadow:0 0 0 3px #0A6CF1}
+.share{position:absolute;left:0;right:0;bottom:0;z-index:6;background:#fff;border-radius:26px 26px 0 0;padding:10px 18px 34px;box-shadow:0 -14px 30px -10px rgba(0,0,0,.3)}
+.share h5{font-size:15px;font-weight:700;margin:2px 0 12px}
+.apps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;font-size:12px;font-weight:600;color:#33405E}
+.apps span i{display:grid;place-items:center;width:54px;height:54px;border-radius:17px;margin:0 auto 5px;background:#EEF1F6;color:#55627E;font-style:normal}
+.apps span i .ic{width:24px;height:24px}
+.apps span.me2 i{background:linear-gradient(140deg,#0B1B4D,#1C3A8C);color:#fff;font:800 22px Inter,sans-serif;box-shadow:0 0 0 3px #fff,0 0 0 5.5px #0A6CF1}
+.apps span.me2{color:#0B1B4D}
+.prev{margin-top:14px;border-radius:18px;background:#F1F6FF;padding:11px 13px;font-size:13.5px;color:#33405E;line-height:1.5}
+.prev b{display:block;color:#0B1B4D;font-size:15px}
+.prev .det{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.lp{position:absolute;right:18px;top:118px;z-index:7;width:200px;background:#fff;border-radius:18px;box-shadow:0 18px 34px -12px rgba(0,0,0,.45);padding:6px}
+.lp span{display:flex;gap:10px;align-items:center;padding:9px 10px;font-size:14px;font-weight:600;border-radius:12px}
+.lp span .ic{width:19px;height:19px;color:#0A6CF1}
+.lp small{display:block;font-size:11px;color:#7A87A2;padding:2px 10px 4px}
+/* F */
+.saved{position:absolute;left:14px;right:14px;bottom:112px;z-index:9;background:#0B1B4D;color:#fff;border-radius:24px;padding:13px 14px 12px;box-shadow:0 20px 36px -14px rgba(11,27,77,.8);overflow:hidden}
+.saved .t{display:flex;gap:10px;align-items:center}
+.saved .ok{width:30px;height:30px;border-radius:50%;background:#3DDC97;display:grid;place-items:center;flex:none}
+.saved .ok::before{content:"";width:11px;height:6px;border-left:2.6px solid #0B1B4D;border-bottom:2.6px solid #0B1B4D;transform:rotate(-45deg) translate(1px,-1px)}
+.saved b{font-size:16px;font-weight:700;display:block;line-height:1.3}
+.saved small{font-size:12.5px;color:#9FB6EA}
+.saved .det{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.saved .det span{border-radius:10px;padding:4px 10px;font-size:13.5px;font-weight:600;background:rgba(255,255,255,.14);display:inline-flex;gap:4px;align-items:center}
+.saved .det span .ic{width:14px;height:14px}
+.saved .det span.u{margin-left:auto;background:none;color:#9FB6EA}
+.saved .tm{position:absolute;left:0;bottom:0;height:3px;width:62%;background:#3DDC97}
+.row.newx{box-shadow:0 0 0 2px #3DDC97,0 10px 20px -18px rgba(11,27,77,.5)}
+.newtag{display:inline-block;border-radius:6px;padding:0 6px;font-size:11.5px;font-weight:700;line-height:18px;background:#E3F6EE;color:#0E7A52;margin-left:6px;vertical-align:1px}
+/* สมุดเรียบ */
+.exs{margin-top:12px;border-radius:24px;background:linear-gradient(150deg,#C62F35,#E5484D 55%,#F0785C);color:#fff;padding:15px 16px;display:flex;gap:12px;align-items:center}
+.exs .cdw{width:56px;height:56px;border-radius:17px;background:rgba(255,255,255,.2);display:grid;place-content:center;text-align:center;line-height:1;flex:none}
+.exs .cdw b{font:800 25px Inter,sans-serif}.exs .cdw small{font-size:11.5px}
+.exs .tx{flex:1}
+.exs .tx b{display:block;font-size:18px;font-weight:700;line-height:1.3}
+.exs .tx small{display:block;font-size:13px;opacity:.92}
+.exs .go3{font-size:13px;font-weight:700;background:#fff;color:#B3261E;border-radius:12px;padding:6px 10px;white-space:nowrap}
+.saidx{border-radius:16px;background:#FFF6E0;padding:10px 12px;margin-top:10px;font-size:14.5px;font-weight:600;line-height:1.45;display:flex;gap:9px}
+.saidx .ic{color:#B7791F;width:18px;height:18px;margin-top:2px}
+.saidx small{display:block;font-size:12px;color:#8A6A2B;font-weight:500}
+.dlab{font-size:13.5px;font-weight:700;color:#5E6B85;margin:14px 0 7px;display:flex;justify-content:space-between}
+.dlab span{font-weight:600;color:#8B96AD}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tiles span{aspect-ratio:1;border-radius:14px;background:center/cover;position:relative;overflow:hidden}
+.tiles span i{position:absolute;left:5px;bottom:5px;font-style:normal;font-size:11px;font-weight:700;border-radius:6px;padding:0 6px;line-height:17px;background:rgba(255,255,255,.93)}
+.tiles span.st{background:#FFF6E0;padding:9px;font:500 12.5px/1.45 Mali,cursive;color:#5A4614}
+.tiles span.st.red{box-shadow:inset 0 0 0 2px #F7C6C8}
+.tiles span.st em{position:absolute;left:6px;bottom:6px;font:700 10.5px "Noto Sans Thai Looped",sans-serif;font-style:normal;background:#FDECEE;color:#B3261E;border-radius:6px;padding:0 5px;line-height:16px}
+.ehs{background:linear-gradient(150deg,#C62F35,#E5484D 60%,#F0785C);color:#fff;padding:0 20px 16px;border-radius:0 0 26px 26px}
+.ehs .bk{display:flex;align-items:center;gap:4px;font-size:15px;font-weight:600;opacity:.92}
+.ehs h4{font:700 26px/1.25 "Noto Sans Thai Looped",sans-serif;margin-top:6px}
+.ehs small{font-size:13.5px;opacity:.9}
+/* ตอนนี้ (0.10) */
+.old .eh{background:linear-gradient(150deg,#C62F35,#E5484D 60%,#F0785C);color:#fff;padding:0 20px 14px;border-radius:0 0 26px 26px}
+.old .eh h4{font:700 24px/1.25 "Noto Sans Thai Looped",sans-serif;margin-top:4px}
+.old .eh small{font-size:13px;opacity:.9}
+.old .eh .pg{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;font-weight:600}
+.old .eh .pg u{flex:1;height:7px;border-radius:4px;background:rgba(255,255,255,.28);position:relative;text-decoration:none}
+.old .eh .pg u::before{content:"";position:absolute;left:0;top:0;bottom:0;width:14%;background:#fff;border-radius:4px}
+.old .rb{margin:12px 20px 4px;height:46px;border-radius:15px;background:#0A6CF1;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px}
+.old .it{display:flex;gap:11px;align-items:center;padding:7px 20px;border-bottom:1px solid #EEF1F7;position:relative}
+.old .it .th{width:50px;height:50px;border-radius:13px}
+.old .it .tx{flex:1}.old .it b{display:block;font-size:14.5px;font-weight:600}.old .it small{font-size:12.5px;color:#5E6B85}
+.old .it.dn b{color:#9AA5BB}
+.pin{position:absolute;width:24px;height:24px;border-radius:50%;background:#E5484D;color:#fff;font:800 13px/24px Inter,sans-serif;text-align:center;z-index:12;box-shadow:0 0 0 3px #fff}
+.capl{list-style:none;margin-top:6px}
+.capl li{font-size:14.5px;color:var(--t2);display:flex;gap:7px;margin-bottom:4px;line-height:1.45}
+.capl li b{flex:none;width:20px;height:20px;border-radius:50%;background:#E5484D;color:#fff;font:800 11.5px/20px Inter,sans-serif;text-align:center;margin-top:1px}
+h2.st{font:700 28px/1.2 Anuphan,sans-serif;margin-top:54px}
+.lead2{color:var(--t2);font-size:16px;margin-top:6px;max-width:72ch}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7"/></symbol>
+ <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/></symbol>
+ <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M10 11h5M10 14.5h5M10 18h3"/></symbol>
+ <symbol id="i-book" viewBox="0 0 24 24"><path d="M4.5 5.5c2.5-1 5-1 7.5.5v13c-2.5-1.5-5-1.5-7.5-.5zM19.5 5.5c-2.5-1-5-1-7.5.5v13c2.5-1.5 5-1.5 7.5-.5z"/></symbol>
+ <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.2c1.4-2 3.3-3 5.5-3s4.1 1 5.5 3"/></symbol>
+ <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V20"/></symbol>
+ <symbol id="i-img" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4 3.5"/></symbol>
+ <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+ <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+ <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+ <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></symbol>
+ <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+ <symbol id="i-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+ <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+ <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7"/></symbol>
+ <symbol id="s-phy" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
+ <symbol id="s-mat" viewBox="0 0 24 24"><path d="M17 5H7l5.5 7L7 19h10"/></symbol>
+ <symbol id="s-eng" viewBox="0 0 24 24"><text x="12" y="16.5" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="12" fill="currentColor" stroke="none">Aa</text></symbol>
+ <symbol id="s-tha" viewBox="0 0 24 24"><text x="12" y="17.5" text-anchor="middle" font-family="Noto Sans Thai Looped,sans-serif" font-weight="700" font-size="15" fill="currentColor" stroke="none">ก</text></symbol>
+ <symbol id="s-bio" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14zM5 19l8-8"/></symbol>
+ <symbol id="s-che" viewBox="0 0 24 24"><path d="M9 3.5h6M10 3.5V9L5 18.3A1.5 1.5 0 006.3 20.5h11.4a1.5 1.5 0 001.3-2.2L14 9V3.5M7.4 15h9.2"/></symbol>
+</svg>
+
+<section class="band"><div class="wrap">
+  <h1>เปิดแอปแล้วจดได้ทันที</h1>
+  <p class="lead">วัดจากหยิบมือถือขึ้นมาจนงานถูกบันทึก ป้ายเขียวใต้ภาพบอกว่าแต่ละแบบต้องแตะกี่ครั้ง แบบแรกคือหน้าแรกตอนนี้ไว้เทียบ ทุกแบบใช้ตัวแกะข้อความไทยที่มีอยู่แล้ว (วิชา · วันส่ง · "พน." "ส่งศ.") ไม่ต้องเลือกวิชาหรือวันเอง ผสมกันได้ เช่น A + B + E</p>
+  <div class="grid">
+
+    <!-- 0 ตอนนี้ -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">10:31<i></i></div>
+        <div class="pad">
+          <div class="hrow"><span class="date">พฤหัส 26 พ.ย.</span><span class="av">ฉ</span></div>
+          <div class="hi">จดงานอะไรดี?</div>
+          <div class="cap4">
+            <div class="c1"><span class="mic"><svg class="ic"><use href="#i-mic"/></svg></span><span class="wv"><i style="height:10px"></i><i style="height:22px"></i><i style="height:14px"></i><i style="height:26px"></i><i style="height:12px"></i><i style="height:20px"></i><i style="height:9px"></i></span><b>พูด</b><small>พูดเอง หรือฟังครู</small></div>
+            <div class="c2"><span class="stk"><i style="left:0;top:6px;transform:rotate(-8deg);background-image:url(../assets/landing/photos/class.jpg)"></i><i style="left:40px;top:0;transform:rotate(3deg);background-image:url(../assets/landing/photos/board.jpg)"></i><i style="left:80px;top:5px;transform:rotate(9deg);background-image:url(../assets/landing/photos/notes.jpg)"></i></span><b>แนบรูป</b><small>จากอัลบั้ม/แชต</small></div>
+            <div class="c3"><span class="typ">คณิต ใบงาน 7</span><b>พิมพ์</b><small>พิมพ์สั้น ๆ ก็รู้เรื่อง</small></div>
+            <div class="c4" style="background-image:url(../assets/landing/photos/chalk.jpg)"><b>ถ่ายรูป</b><small>กระดาน · ใบงาน</small></div>
+          </div>
+          <div class="srch"><svg class="ic"><use href="#i-search"/></svg><span>ค้นหางาน…</span><em>ทั้งหมด</em></div>
+          <div class="sec" style="margin:12px 0 8px">ใกล้ส่ง</div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">ส่งพรุ่งนี้ 08:00</span></small></div><span class="play"></span></div>
+          <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ · ส่งเสาร์</small></div><span class="play"></span></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span class="on"><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>ตอนนี้</i>เลือกวิธีจดก่อน</h3><span class="spd slow">แตะ 2 ครั้ง + พิมพ์ · ราว 6–8 วินาที</span><p>เปิดมาเจอกล่อง 4 กล่องให้เลือกก่อน แตะ "พิมพ์" → แผ่นเลื่อนขึ้น → พิมพ์ → แตะบันทึก ช้าตรงที่ต้องตัดสินใจก่อนว่าจะจดแบบไหน</p></div>
+    </div>
+
+    <!-- A พิมพ์ได้ทันที -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">10:31<i></i></div>
+        <div class="pad">
+          <div class="hrow"><span class="date">พฤหัส 26 พ.ย. · คาบ 3 ฟิสิกส์</span><span class="av">ฉ</span></div>
+          <div class="qcap">
+            <div class="in1">ทำแบบฝึกหัด 3.2 ข้อ 1–10 ส่ง พน.</div>
+            <div class="det"><span class="k4"><svg class="ic" style="width:14px;height:14px"><use href="#s-phy"/></svg>ฟิสิกส์</span><span class="k5">ส่งพรุ่งนี้</span><span class="k6">การบ้าน</span></div>
+            <div class="acts"><span class="b"><svg class="ic"><use href="#i-mic"/></svg></span><span class="b"><svg class="ic"><use href="#i-cam"/></svg></span><span class="sv">บันทึก ↵</span></div>
+          </div>
+          <div class="sec" style="margin:14px 0 8px;font-size:16px">ใกล้ส่ง</div>
+          <div class="mini3">
+            <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">พรุ่งนี้ 08:00</span></small></div></div>
+          </div>
+        </div>
+        <div class="kb">
+          <div class="r"><span>ๆ</span><span>ไ</span><span>ำ</span><span>พ</span><span>ะ</span><span>ั</span><span>ี</span><span>ร</span><span>น</span><span>ย</span><span>บ</span></div>
+          <div class="r"><span>ฟ</span><span>ห</span><span>ก</span><span>ด</span><span>เ</span><span>้</span><span>่</span><span>า</span><span>ส</span><span>ว</span><span>ง</span></div>
+          <div class="r"><span class="w">⇧</span><span>ผ</span><span>ป</span><span>แ</span><span>อ</span><span>ิ</span><span>ื</span><span>ท</span><span>ม</span><span class="w">⌫</span></div>
+          <div class="r"><span class="w">123</span><span class="w">🌐</span><span class="sp">เว้นวรรค</span><span class="go2">บันทึก</span></div>
+        </div>
+      </div></div>
+      <div class="cap"><h3><i>A</i>ช่องพิมพ์รออยู่แล้ว</h3><span class="spd">แตะ 1 ครั้ง (บันทึก) · ราว 3 วินาที</span><p>เปิดแอปมาแป้นพิมพ์ขึ้นเลย พิมพ์แบบที่เด็กพิมพ์ แอปจับวิชากับวันส่งให้ระหว่างพิมพ์ กดบันทึกบนแป้นได้เลย ถ้ารู้ตารางเรียน แอปเดาวิชาจากคาบที่เพิ่งเรียนจบได้ ไมค์กับกล้องอยู่ข้างปุ่มบันทึก</p></div>
+    </div>
+
+    <!-- B กดค้างพูด -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">15:28<i></i></div>
+        <div class="pad">
+          <div class="hrow"><span class="date">พฤหัส 26 พ.ย.</span><span class="av">ฉ</span></div>
+          <div class="sec" style="margin:8px 0 8px">ใกล้ส่ง</div>
+          <div class="mini3">
+            <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">พรุ่งนี้ 08:00</span></small></div></div>
+            <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ · ส่งเสาร์</small></div></div>
+          </div>
+        </div>
+        <div class="holdzone">
+          <div class="bubble"><div class="lv"><i></i>กำลังฟัง…</div><b>ภาษาไทย สรุปขุนช้างขุนแผนหนึ่งหน้า ส่งศุกร์หน้า</b><div class="det"><span class="tag k5">ไทย</span><span class="tag k1">ส่งศุกร์ 4 ธ.ค.</span></div></div>
+          <div class="bigmic"><svg class="ic"><use href="#i-mic"/></svg></div>
+          <div class="holdhint">ปล่อยนิ้ว = บันทึก · ลากขึ้น = ยกเลิก</div>
+        </div>
+        <div class="nav"><span class="on"><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>B</i>กดค้างแล้วพูด</h3><span class="spd">กดค้าง 1 ครั้ง · ไม่ต้องแตะบันทึก · ราว 3 วินาที</span><p>ปุ่มไมค์ใหญ่อยู่ใต้นิ้วโป้ง กดค้าง พูด ปล่อยนิ้ว งานก็ถูกบันทึกแล้ว เหมือนส่งข้อความเสียงในแชต ไม่ต้องเปิดหน้าต่างอะไรเพิ่ม ลากขึ้นถ้าพูดผิด ใช้ตอนเดินออกจากห้องได้</p></div>
+    </div>
+
+    <!-- C กล้องพร้อม -->
+    <div class="cell">
+      <div class="ph"><div class="in" style="background:#000">
+        <div class="vf" style="background-image:url(../assets/landing/photos/chalk.jpg)"></div>
+        <div class="sb" style="color:#fff">10:31<i></i></div>
+        <div class="ctop"><b>ถ่ายแล้วเป็นงานเลย</b><span class="chip2"><svg class="ic"><use href="#s-phy"/></svg>ฟิสิกส์ · คาบนี้</span></div>
+        <div class="brk"><i></i><i></i><i></i><i></i></div>
+        <div class="modes"><span>พิมพ์</span><span class="on">ถ่าย</span><span>พูด</span></div>
+        <span class="gthumb" style="background-image:url(../assets/landing/photos/board.jpg)"></span>
+        <div class="shut"></div>
+        <div class="cup"><span><svg class="ic"><use href="#i-doc"/></svg></span>งาน 6</div>
+        <div class="cnext">ปัดขึ้น = ดูงานทั้งหมด</div>
+      </div></div>
+      <div class="cap"><h3><i>C</i>เปิดมาเจอกล้อง</h3><span class="spd">แตะ 1 ครั้ง (ชัตเตอร์) · ราว 2 วินาที</span><p>หน้าแรกคือกล้อง ปัดซ้ายขวาเปลี่ยนเป็นพิมพ์หรือพูด เหมือนแอปกล้องในมือถือ ถ่ายกระดานแล้วเป็นงานของวิชาคาบนี้ทันที ชื่องานใส่ทีหลังก็ได้ เหมาะกับครูที่เขียนงานบนกระดาน</p></div>
+    </div>
+
+    <!-- E แชร์จากแชต -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="chat">
+          <div class="bar" style="position:absolute;left:0;right:0;top:0"><svg class="ic"><use href="#i-back"/></svg><div>กลุ่ม ม.5/2<small>42 คน</small></div></div>
+          <div class="sb" style="color:#fff;position:absolute;left:0;right:0;top:0">21:04<i></i></div>
+          <div class="msgs" style="padding-top:118px">
+            <div class="msg"><small>หัวหน้าห้อง</small>พรุ่งนี้ใส่ชุดพละนะ</div>
+            <div class="msg sel"><small>หัวหน้าห้อง</small>ครูชีวะให้ทำรายงานระบบหายใจ ส่งอาทิตย์ 6 ธ.ค. กลุ่มละ 4 คน</div>
+            <div class="msg me">โอเค ขอบคุณ</div>
+          </div>
+        </div>
+        <div class="dim" style="position:absolute;inset:0;background:rgba(15,26,48,.35);z-index:5"></div>
+        <div class="share">
+          <div class="grip" style="width:44px;height:5px;border-radius:3px;background:#D3DBE8;margin:0 auto 12px"></div>
+          <h5>แชร์ไปที่</h5>
+          <div class="apps"><span class="me2"><i>S</i>SABAii</span><span><i><svg class="ic"><use href="#i-pen"/></svg></i>โน้ต</span><span><i><svg class="ic"><use href="#i-img"/></svg></i>ไดรฟ์</span><span><i><svg class="ic"><use href="#i-doc"/></svg></i>คัดลอก</span></div>
+          <div class="prev"><b>รายงานระบบหายใจ · กลุ่มละ 4 คน</b>SABAii จะบันทึกเป็นงาน<div class="det"><span class="tag k4" style="background:#FCE7F1;color:#B0306F">ชีววิทยา</span><span class="tag k1">ส่งอา. 6 ธ.ค.</span><span class="tag k6">งานกลุ่ม</span></div></div>
+        </div>
+      </div></div>
+      <div class="cap"><h3><i>D</i>แชร์จากแชตกลุ่ม</h3><span class="spd and">Android เท่านั้น · แตะ 2 ครั้ง</span><p>กดค้างข้อความในแชต → แชร์ → SABAii งานถูกบันทึกโดยไม่ต้องเปิดแอป แก้ปัญหา "งานกลุ่มหายในแชต" iPhone ทำแบบนี้กับเว็บแอปไม่ได้ ต้องคัดลอกแล้ววางในช่องพิมพ์ของแบบ A แทน</p></div>
+    </div>
+
+    <!-- F หลังบันทึก -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">10:32<i></i></div>
+        <div class="pad">
+          <div class="hrow"><span class="date">พฤหัส 26 พ.ย. · คาบ 3 ฟิสิกส์</span><span class="av">ฉ</span></div>
+          <div class="qcap" style="box-shadow:0 0 0 1.5px #E1E7F2,0 18px 30px -22px rgba(11,27,77,.45)">
+            <div class="in1" style="color:#9AA5BB;font-weight:500">จดงานต่อ…</div>
+            <div class="acts"><span class="b"><svg class="ic"><use href="#i-mic"/></svg></span><span class="b"><svg class="ic"><use href="#i-cam"/></svg></span><span class="sv" style="background:#E1E7F2;color:#8B96AD">บันทึก ↵</span></div>
+          </div>
+          <div class="sec" style="margin:14px 0 8px;font-size:16px">ใกล้ส่ง</div>
+          <div class="mini3">
+            <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">พรุ่งนี้ 08:00</span></small></div></div>
+            <div class="row newx"><span class="si phy"><svg><use href="#s-phy"/></svg></span><div class="tx"><b>ทำแบบฝึกหัด 3.2 ข้อ 1–10<span class="newtag">เพิ่งจด</span></b><small>ฟิสิกส์ · <span class="r">พรุ่งนี้</span></small></div></div>
+            <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ · ส่งเสาร์</small></div></div>
+          </div>
+        </div>
+        <div class="saved">
+          <div class="t"><span class="ok"></span><div><b>บันทึกแล้ว · แบบฝึกหัด 3.2</b><small>แตะชิปถ้าแอปจับผิด</small></div></div>
+          <div class="det"><span>ฟิสิกส์<svg class="ic"><use href="#i-down"/></svg></span><span>พรุ่งนี้<svg class="ic"><use href="#i-down"/></svg></span><span class="u">เลิกทำ</span></div>
+          <div class="tm"></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span class="on"><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>E</i>บันทึกก่อน แก้ทีหลัง</h3><span class="spd">ใช้กับทุกแบบ · 0 แตะเพิ่ม</span><p>บันทึกทันทีไม่มีหน้าให้ตรวจ แถบกรมท่าโผล่ 4 วินาทีบอกว่าแอปจับวิชากับวันได้อะไร ผิดก็แตะชิปแก้ ถูกก็ปล่อยหายไปเอง งานใหม่ขึ้นในรายการพร้อมป้าย "เพิ่งจด" ช่องพิมพ์ว่างรอจดงานต่อ</p></div>
+    </div>
+  </div>
+
+  <h2 class="st">สมุดแบบเรียบ</h2>
+  <p class="lead2">สมุดเป็นที่เก็บรูปกับโน้ตที่จดไว้เท่านั้น ไม่มีอะไรให้ติ๊กหรือคอยดูแล</p>
+  <div class="grid">
+
+    <!-- N0 ตอนนี้ -->
+    <div class="cell">
+      <div class="ph"><div class="in old">
+        <div style="background:linear-gradient(150deg,#C62F35,#E5484D 60%,#F0785C);color:#fff"><div class="sb">20:07<i></i></div></div>
+        <div class="eh"><div style="display:flex;justify-content:space-between"><span class="round" style="background:rgba(255,255,255,.16);box-shadow:none;color:#fff"><svg class="ic"><use href="#i-back"/></svg></span><span class="round" style="background:rgba(255,255,255,.16);box-shadow:none;color:#fff"><svg class="ic"><use href="#i-pen"/></svg></span></div>
+          <h4>สอบย่อยไฟฟ้า</h4><small>ฟิสิกส์ · อีก 3 วัน · อา. 29 พ.ย. 10:00 ห้อง 412</small>
+          <div class="pg">อ่านแล้ว 1/7<u></u></div></div>
+        <div class="rb">▷ อ่านทีละชิ้น · เริ่มที่ยังไม่อ่าน</div>
+        <div class="dlab" style="padding:0 20px">วันนี้ <span>7 ชิ้น</span></div>
+        <div class="it"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>รูป · 13:57</small></div><span class="chk"></span></div>
+        <div class="it dn"><span class="th" style="background-image:url(../assets/landing/photos/notes.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>รูป · 13:57</small></div><span class="chk on"></span></div>
+        <div class="it"><span class="th" style="background-image:url(../assets/landing/photos/class.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>รูป · 13:57</small></div><span class="chk"></span></div>
+        <div class="it"><span class="th" style="background-image:url(../assets/landing/photos/board.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>รูป · 13:57</small></div><span class="chk"></span></div>
+        <span class="pin" style="left:330px;top:166px">1</span>
+        <span class="pin" style="left:22px;top:226px">2</span>
+        <span class="pin" style="left:60px;top:284px">3</span>
+        <span class="pin" style="left:306px;top:356px">4</span>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span class="on"><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>ตอนนี้</i>หน้าสอบ 0.10</h3>
+        <ul class="capl"><li><b>1</b>หลอด "อ่านแล้ว" = มีงานต้องคอยดูเพิ่ม</li><li><b>2</b>ปุ่มอ่านทีละชิ้น เป็นแอปอ่านหนังสือ ไม่ใช่แอปจด</li><li><b>3</b>ชื่องานซ้ำ 4 แถว ดูไม่ออกว่ารูปไหนเป็นอะไร</li><li><b>4</b>วงกลมดูเหมือนติ๊ก "งานเสร็จ" แต่แปลว่า "อ่านแล้ว"</li></ul></div>
+    </div>
+
+    <!-- N1 สมุดเรียบ -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">20:05<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">สมุด</div></div>
+          <div class="bigsrch" style="padding:11px 14px;font-size:15px"><svg class="ic"><use href="#i-search"/></svg>ค้นในโน้ตและชื่องาน…</div>
+          <div class="exs"><span class="cdw"><b>3</b><small>วัน</small></span><div class="tx"><b>สอบย่อยไฟฟ้า</b><small>รวมโน้ตฟิสิกส์ไว้ให้ 7 ชิ้น</small></div><span class="go3">เปิด</span></div>
+          <div class="saidx"><svg class="ic"><use href="#i-mic"/></svg><div>“ข้อ 5 แบบนี้ออกสอบแน่นอน”<small>ครูพูด · วันนี้</small></div></div>
+          <div class="sec" style="margin:16px 0 4px;font-size:17px">รูปและโน้ตล่าสุด</div>
+          <div class="dlab" style="margin-top:6px">วันนี้</div>
+          <div class="tiles"><span style="background-image:url(../assets/landing/photos/chalk.jpg)"><i>ฟิสิกส์</i></span><span style="background-image:url(../assets/landing/photos/board.jpg)"><i>ฟิสิกส์</i></span><span class="st">ครูบอกทำแค่ข้อคี่ ส่งในห้อง</span></div>
+          <div class="dlab">เมื่อวาน</div>
+          <div class="tiles"><span style="background-image:url(../assets/landing/photos/math.jpg)"><i>คณิต</i></span><span style="background-image:url(../assets/landing/photos/notes.jpg)"><i>ไทย</i></span><span style="background-image:url(../assets/landing/photos/sheet.jpg)"><i>อังกฤษ</i></span></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span class="on"><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>N1</i>สมุด: ของที่จดไว้</h3><span class="spd">ไม่มีอะไรให้ติ๊ก</span><p>ค้น · สอบที่ใกล้สุดเหลือแถบเดียว "รวมโน้ตไว้ให้ 7 ชิ้น" · ประโยคออกสอบ · แล้วเป็นรูปและโน้ตทุกวิชาเรียงตามวัน เหมือนแกลเลอรี่ที่มีแต่ของเรียน การ์ดวิชาย้ายไปเป็นตัวกรองในช่องค้น</p></div>
+    </div>
+
+    <!-- N2 หน้าสอบเรียบ -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div style="background:linear-gradient(150deg,#C62F35,#E5484D 60%,#F0785C);color:#fff"><div class="sb">20:07<i></i></div></div>
+        <div class="ehs"><div class="bk"><svg class="ic" style="width:18px;height:18px"><use href="#i-back"/></svg>สมุด</div><h4>สอบย่อยไฟฟ้า</h4><small>อา. 29 พ.ย. 10:00 · ห้อง 412 · โน้ตฟิสิกส์ตั้งแต่สอบครั้งก่อน</small></div>
+        <div class="pad">
+          <div class="dlab">วันนี้ · คาบ 3 <span>5 ชิ้น</span></div>
+          <div class="tiles"><span style="background-image:url(../assets/landing/photos/chalk.jpg)"></span><span style="background-image:url(../assets/landing/photos/board.jpg)"></span><span class="st red">“ข้อ 5 แบบนี้ออกสอบแน่นอน”<em>ออกสอบ</em></span><span style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><span class="st">ห้อง 412 · บทที่ 2–3</span></div>
+          <div class="dlab">พฤ. 19 พ.ย. <span>2 ชิ้น</span></div>
+          <div class="tiles"><span style="background-image:url(../assets/landing/photos/math.jpg)"></span><span style="background-image:url(../assets/landing/photos/notes.jpg)"></span></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span class="on"><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>N2</i>หน้าสอบ: ตารางรูปเฉย ๆ</h3><span class="spd">ไม่มีหลอด ไม่มีติ๊ก</span><p>รูปและโน้ตเป็นตาราง 3 ช่องแบ่งตามวัน ดูออกทันทีว่าแต่ละชิ้นคืออะไรเพราะเห็นตัวรูปเลย ประโยคออกสอบมีกรอบแดง แตะชิ้นไหนก็เปิดเต็มจอ ปัดดูชิ้นถัดไป</p></div>
+    </div>
+  </div>
+  <p class="note">ชื่องาน วิชา และวันเป็นตัวอย่างชุดเดียวกับในแอป · เวลาเป็นค่าประมาณ ยังไม่ได้จับเวลากับนักเรียนจริง · รูปถ่ายชุดเดียวกับหน้าแนะนำ (Unsplash)</p>
+</div></section>
