@@ -100,6 +100,16 @@ export function createStore(db, { now = () => new Date() } = {}) {
     emit();
     return a;
   }
+  /** แก้โน้ต (ตอนนี้ใช้แค่ read_at = อ่านแล้วตอนเตรียมสอบ) */
+  async function patchAttachment(id, patch) {
+    const i = state.attachments.findIndex(a => a.id === id);
+    if (i < 0) throw new Error('ไม่พบโน้ต');
+    const a = { ...state.attachments[i], ...patch };
+    await db.put('attachments', a);
+    state.attachments[i] = a;
+    emit();
+    return a;
+  }
   async function removeAttachment(id, notify = true) {
     await db.del('attachments', id);
     state.attachments = state.attachments.filter(a => a.id !== id);
@@ -132,7 +142,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
       ['แบบฝึกหัดบทที่ 3 ข้อ 1–12', 'ฟิสิกส์', 'homework', day(1), '08:00', 'ครูบอกทำแค่ข้อคี่ ส่งในห้อง'],
       ['ใบงานลำดับเลขคณิต', 'คณิตศาสตร์', 'homework', day(4), null, ''],
       ['ท่องศัพท์ Unit 5 (20 คำ)', 'ภาษาอังกฤษ', 'homework', day(2), null, ''],
-      ['สอบย่อยไฟฟ้า', 'ฟิสิกส์', 'exam', day(3), '10:00', 'ห้อง 412 · บทที่ 2–3'],
+      ['สอบย่อยไฟฟ้า', 'ฟิสิกส์', 'exam', day(3), '10:00', ['ห้อง 412 · บทที่ 2–3', 'ครูพูด · ตัวอย่าง\n“ข้อ 5 แบบนี้ออกสอบแน่นอน ทำให้คล่อง”']],
       ['สรุปเรื่องขุนช้างขุนแผน 1 หน้า', 'ภาษาไทย', 'homework', day(8), null, ''],
       ['รายงานกลุ่มระบบหายใจ', 'ชีววิทยา', 'project', day(10), '16:00', ''],
     ];
@@ -141,7 +151,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
       const t = makeTask({ title, subject_id: sid(subj), type, due_date, due_time, source: 'sample' }, iso());
       if (type === 'exam') t.place = '412';
       await putTask(t, false);
-      if (note) { const a = { id: newId('a'), task_id: t.id, kind: 'text', blob: null, text: note, mime_type: '', size: 0, created_at: iso() }; await db.put('attachments', a); state.attachments.push(a); }
+      for (const text of [].concat(note || [])) { const a = { id: newId('a'), task_id: t.id, kind: 'text', blob: null, text, mime_type: '', size: 0, created_at: iso() }; await db.put('attachments', a); state.attachments.push(a); }
       saved.push(t);
     }
     emit();
@@ -173,7 +183,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
   return {
     state, load, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
     addTasks, patchTask, removeTask, restoreTask, purgeTask,
-    addAttachment, removeAttachment, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
+    addAttachment, patchAttachment, removeAttachment, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
     ensureSubject, updateSubject, deleteSubject, setPref, exportJSON, restoreBackup, addSamples, removeSamples,
     subjectsById: () => Object.fromEntries(state.subjects.map(s => [s.id, s])),
   };

@@ -174,16 +174,43 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator(`.day:not(.out)`, { hasText: new RegExp(`^${+fri.slice(8)}$`) }).first().click();
   check('E แตะวัน → เห็นงานของวันนั้น', await page.locator('.daylist', { hasText: 'หน้า 20' }).isVisible());
   await shot('06-tasks-month');
-  // 0.9.9: แท็บสมุด — การ์ดวิชาแบบ B (ไอคอนวิชา) · ค้นในโน้ต · แตะการ์ด = หน้าวิชา
+  // 0.10: สมุดเน้นก่อนสอบ — ไม่มีสอบ = กล่อง "+ วันสอบ" + คลังรูป · วิชาเป็นแถวเล็ก (ไอคอนวิชา) · ค้นในโน้ต · แตะวิชา = หน้าวิชา
   await page.locator('#nav a[data-r="notebook"]').click();
   await page.waitForSelector('.nb-cards');
   const nVis = await page.evaluate(() => window.__sabaii.state.subjects.filter(s => !s.hidden).length);
-  check('0.9.9 สมุด: การ์ดวิชาครบทุกวิชาที่ไม่ได้ซ่อน + มีไอคอน', (await page.locator('.nb-card').count()) === nVis && (await page.locator('.nb-card .si').count()) === nVis, String(nVis));
+  check('0.10 สมุด: วิชาครบทุกวิชาที่ไม่ได้ซ่อน + มีไอคอน', (await page.locator('.nb-card').count()) === nVis && (await page.locator('.nb-card .si').count()) === nVis, String(nVis));
   check('0.9.9 เมนูล่าง 4 ช่อง · อยู่ที่ "สมุด"', (await page.locator('#nav a').count()) === 4 && (await page.locator('#nav a[data-r="notebook"][aria-current="page"]').count()) === 1);
+  check('0.10 สมุด: ยังไม่มีสอบ → กล่อง "ยังไม่มีสอบ" · คลังรูปมีรูปที่ถ่ายไว้', await page.locator('.nb-noexam').isVisible() && (await page.locator('.nb-tile').count()) === 1);
   await page.locator('#nb-q').fill('4.1');
-  check('0.9.9 ค้นในสมุด → เจองานที่มีคำนั้น · การ์ดวิชาซ่อน', (await page.locator('.nb-hit').count()) >= 1 && !(await page.locator('.nb-grid').isVisible()));
+  check('0.9.9 ค้นในสมุด → เจองานที่มีคำนั้น · ส่วนอื่นซ่อน', (await page.locator('.nb-hit').count()) >= 1 && !(await page.locator('.nb-body').isVisible()));
   await page.locator('#nb-q').fill(''); await page.locator('#nb-q').dispatchEvent('input');
   await shot('06b-notebook');
+  // สอบฟิสิกส์อีก 3 วัน + ประโยคครูที่บอกว่าออกสอบ → การ์ดแดงบนสุด · หน้าสอบรวมโน้ตฟิสิกส์ · ติ๊กอ่านแล้ว · อ่านทีละชิ้น
+  const exId = await page.evaluate(async () => {
+    const s = window.__sabaii, d = new Date(); d.setDate(d.getDate() + 3);
+    const ymd = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const [ex] = await s.addTasks([{ title: 'สอบย่อยบท 4', subject_id: s.state.subjects.find(x => x.name === 'ฟิสิกส์').id, type: 'exam', due_date: ymd }]);
+    await s.addAttachment(ex.id, { kind: 'text', text: 'ครูพูด · ทดสอบ\n“ข้อ 3 ออกสอบแน่นอน”' });
+    return ex.id;
+  });
+  await wait(300);
+  check('0.10 สมุด: สอบที่ใกล้สุดเป็นการ์ดแดงบนสุด นับถอยหลัง 3 วัน · ประโยค "ออกสอบ" ขึ้นมาให้', await page.locator('.nb-exam', { hasText: 'สอบย่อยบท 4' }).isVisible()
+    && (await page.locator('.nb-exam .cd b').textContent()) === '3' && (await page.locator('.nb-said', { hasText: 'ข้อ 3 ออกสอบแน่นอน' }).count()) === 1);
+  await shot('06c-notebook-exam');
+  await page.locator('.nb-exam').click(); await page.waitForSelector('.ex-head');
+  const nItems = await page.locator('.ex-item').count();
+  check('0.10 หน้าสอบ: รวมโน้ตฟิสิกส์ (รูป + ประโยคครู) · ป้ายออกสอบ · เมนูล่างยังอยู่ที่สมุด', nItems === 2 && (await page.locator('.ex-item .hint').count()) === 1
+    && (await page.locator('.ex-head .prog').textContent()).includes('0/2') && (await page.locator('#nav a[data-r="notebook"][aria-current="page"]').count()) === 1, String(nItems));
+  await page.locator('.ex-chk').first().click(); await wait(300);
+  check('0.10 ติ๊กอ่านแล้ว → นับเพิ่ม และเก็บลงเครื่อง', (await page.locator('.ex-head .prog').textContent()).includes('1/2')
+    && (await page.evaluate(() => window.__sabaii.state.attachments.filter(a => a.read_at).length)) === 1);
+  await page.locator('.ex-read').click();
+  check('0.10 อ่านทีละชิ้น: เปิดเต็มจอ เริ่มที่ชิ้นที่ยังไม่อ่าน', await page.locator('.reader').isVisible() && (await page.locator('.rd-top span').textContent()).startsWith('1/1'));
+  await page.locator('.reader .btn.primary').click(); await wait(300);
+  check('0.10 อ่านครบ → ปิดเอง · ขึ้น "อ่านครบทุกชิ้นแล้ว"', (await page.locator('.reader').count()) === 0 && await page.locator('.ex-all').isVisible());
+  await shot('06d-exam');
+  await page.getByRole('button', { name: 'กลับสมุด' }).click(); await page.waitForSelector('.nb-cards');
+  await page.evaluate(id => window.__sabaii.purgeTask(id), exId); await wait(300); // เก็บกวาด: ให้เทสต์ถัดไปเห็นข้อมูลเหมือนเดิม
   await page.locator('.nb-card', { hasText: 'ฟิสิกส์' }).click();
   await page.waitForSelector('#page .tcard');
   check('หน้าวิชาฟิสิกส์: ภาพย่อจากรูปที่ถ่าย', (await page.locator('.tcard .strip .mini').count()) === 1 && (await page.locator('.tcard .strip .mini .nitem.photo').count()) === 1);

@@ -1,17 +1,17 @@
-// จุดเริ่มแอป: เปิดที่เก็บข้อมูลในเครื่อง → หน้าแรก (ชั้นโน้ต + แผ่นล่าง) · หน้างาน · สมุด · หน้าฉัน · หน้าวิชา
+// จุดเริ่มแอป: เปิดที่เก็บข้อมูลในเครื่อง → หน้าแรก (ชั้นโน้ต + แผ่นล่าง) · หน้างาน · สมุด · หน้าฉัน · หน้าวิชา · หน้าสอบ
 import { h, ic, toast, $ } from './ui/kit.js';
 import { openBestDB } from './data/db.js';
 import { createStore } from './data/store.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { tasksView, subjectView } from './features/tasks.js';
-import { notebookView } from './features/notebook.js';
+import { notebookView, examView } from './features/notebook.js';
 import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.9.9';
-const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา' };
+globalThis.SABAII_VERSION = '0.10.0';
+const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', exam: 'ก่อนสอบ' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
 export function route() {
@@ -34,7 +34,7 @@ async function boot() {
   // เมนูล่างลอย: หลบเองตอนดูโน้ต และตอนเลื่อนรายการลง · โผล่กลับตอนเลื่อนขึ้น
   let navAway = false;
   app.updateNav = () => {
-    const r = route(), here = r.name === 'subject' ? 'notebook' : r.name;
+    const r = route(), here = r.name === 'subject' || r.name === 'exam' ? 'notebook' : r.name;
     nav.classList.toggle('away', navAway || (r.name === 'home' && document.body.classList.contains('note-mode')));
     nav.querySelectorAll('a').forEach(a => { if (a.dataset.r === here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   };
@@ -51,6 +51,7 @@ async function boot() {
     else if (r.name === 'notebook') notebookView(page);
     else if (r.name === 'me') meView(page);
     else if (r.name === 'subject') subjectView(page, r.arg);
+    else if (r.name === 'exam') examView(page, r.arg);
     if (key !== last) { navAway = false; document.title = `${TITLES[r.name]} · SABAii.com`; }
     page.scrollTop = y;
     last = key;
