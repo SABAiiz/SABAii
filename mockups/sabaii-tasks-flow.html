@@ -1,0 +1,528 @@
+<meta charset="utf-8">
+<title>SABAii หน้างานต่อจากหน้าแรก</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Mali:wght@500;600&display=swap">
+<style>
+/* ภาพเสนอ: แท็บ "งาน" 8 แบบ แต่ละแบบต่อจากหน้าแรกคนละวิธี · หน้าตาชุดเดียวกับ 0.9.9 · ข้อมูลชุดเดียวกับงานตัวอย่างในแอป · วันนี้ = พฤ. 26 พ.ย. 69 */
+:root{color-scheme:light dark;--bg:light-dark(#EEF1F6,#0A1230);--ink:light-dark(#0B1B4D,#E6EBF8);--t2:light-dark(#55627E,#A9B4CF);--card:light-dark(#fff,#121D44);--blue:light-dark(#0A6CF1,#6BA6FF);--s:.7436}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans Thai Looped",Inter,sans-serif;overflow-x:clip;-webkit-font-smoothing:antialiased}
+.band{padding-block:clamp(28px,4vw,52px);padding-left:max(5vw,16px);padding-right:max(5vw,16px)}
+.band.w{background:var(--card)}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font:700 clamp(30px,4vw,46px)/1.15 Anuphan,sans-serif;letter-spacing:-.015em}
+.lead{color:var(--t2);font-size:17px;margin-top:10px;max-width:72ch}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:44px 26px;margin-top:30px}
+.cell{display:flex;flex-direction:column;align-items:center}
+.ph{width:calc(390px*var(--s));height:calc(844px*var(--s));border-radius:calc(52px*var(--s));overflow:hidden;position:relative;box-shadow:0 0 0 7px #121726,0 30px 50px -28px rgba(11,27,77,.6);background:#fff;flex:none}
+.cell.ref .ph{box-shadow:0 0 0 7px #121726,0 0 0 12px #0A6CF1,0 30px 50px -28px rgba(11,27,77,.6)}
+.in{position:absolute;left:0;top:0;width:390px;height:844px;transform:scale(var(--s));transform-origin:0 0;background:#fff;overflow:hidden;color:#0B1B4D;font:15px/1.45 Inter,"Noto Sans Thai Looped",sans-serif}
+.cap{width:calc(390px*var(--s));margin-top:18px}
+.cap h3{font:700 18px/1.3 Anuphan,sans-serif;display:flex;gap:8px;align-items:baseline}
+.cap h3 i{font:700 13px Inter,sans-serif;font-style:normal;background:var(--ink);color:var(--bg);border-radius:7px;min-width:22px;height:22px;padding:0 5px;display:inline-grid;place-items:center;flex:none;transform:translateY(-2px)}
+.cell.ref .cap h3 i{background:var(--blue);color:#fff}
+.cap .fl{display:block;margin-top:7px;font-size:14.5px;font-weight:600;color:var(--blue);line-height:1.45}
+.cap p{font-size:15px;color:var(--t2);margin-top:4px}
+@media (max-width:1000px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.grid{grid-template-columns:1fr}}
+
+/* ---------- app ---------- */
+.sb{height:50px;display:flex;justify-content:space-between;align-items:center;padding:6px 30px 0 34px;font:600 15px Inter,sans-serif;position:relative;z-index:5}
+.sb i{width:24px;height:11px;border-radius:3px;border:1.4px solid currentColor;position:relative}
+.sb i::after{content:"";position:absolute;inset:1.5px 6px 1.5px 1.5px;background:currentColor;border-radius:1px}
+.pad{padding:0 20px}
+.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.pt{font:700 32px/1.2 "Noto Sans Thai Looped",sans-serif;letter-spacing:-.01em}
+.hrow{display:flex;justify-content:space-between;align-items:center;margin-top:4px;gap:8px}
+.pill{display:flex;align-items:center;gap:6px;border-radius:14px;padding:6px 11px;font-size:13.5px;font-weight:600;box-shadow:0 0 0 1.5px #E1E7F2;color:#33405E;white-space:nowrap}
+.pill .ic{width:17px;height:17px}
+.round{width:42px;height:42px;border-radius:50%;box-shadow:0 0 0 1.5px #E1E7F2;display:grid;place-items:center;flex:none}
+.si{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;flex:none;color:var(--c);background:color-mix(in srgb,var(--c) 14%,#fff)}
+.si svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.si.sm{width:36px;height:36px;border-radius:11px}.si.sm svg{width:18px;height:18px}
+.phy{--c:#6A4BE0}.eng{--c:#16A36A}.mat{--c:#2F6FDB}.tha{--c:#DB4B5B}.bio{--c:#D04C8E}.che{--c:#1596A8}
+.th{width:48px;height:48px;border-radius:14px;background:center/cover;flex:none}
+.sec{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:19px;margin:16px 0 9px}
+.sec small{font-size:14px;color:#5E6B85;font-weight:600}
+.sec a{font-size:14px;color:#0A6CF1;font-weight:600}
+.dh{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:#5E6B85;margin:14px 0 8px}
+.dh::after{content:"";flex:1;height:1px;background:#E6EAF2}
+.dh.red{color:#C62F35}
+.tag{display:inline-block;border-radius:7px;padding:0 7px;font-size:12.5px;font-weight:600;line-height:20px;white-space:nowrap}
+.k1{background:#E7F0FE;color:#0A55C2}.k2{background:#FFEFE1;color:#A4520E}.k3{background:#E3F6EE;color:#0E7A52}.k4{background:#EFE9FF;color:#5B3DC4}.k5{background:#FDECEE;color:#B3261E}.k6{background:#F1F4FA;color:#55627E}
+.row{display:flex;gap:12px;align-items:center;background:#fff;border-radius:20px;padding:9px 10px 9px 9px;box-shadow:0 0 0 1px #E9EDF4,0 10px 20px -18px rgba(11,27,77,.5);margin-bottom:8px}
+.row .tx{flex:1}
+.row b{display:block;font-size:15.5px;font-weight:600;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row small{font-size:13.5px;color:#5E6B85;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row small .r{color:#D9443A;font-weight:600}
+.row.mute{box-shadow:none;background:#F4F6FA}
+.row.mute b{color:#55627E}
+.row.ex{background:#FFF3F2;box-shadow:0 0 0 1.5px #F7C6C8}
+.cd{width:48px;height:48px;border-radius:14px;background:#E5484D;color:#fff;display:grid;place-items:center;text-align:center;line-height:1;flex:none}
+.cd b{display:block;font:800 19px Inter,sans-serif;color:#fff}
+.cd small{font-size:11px;color:#fff}
+.play{width:40px;height:40px;border-radius:50%;box-shadow:0 0 0 1.5px #DCE3EE;display:grid;place-items:center;flex:none}
+.play::before{content:"";border-left:11px solid #0B1B4D;border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:3px}
+.chk{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 2px #C3CCDC;flex:none}
+.chk.on{background:#14A06B;box-shadow:none;display:grid;place-items:center}
+.chk.on::before{content:"";width:10px;height:5px;border-left:2.4px solid #fff;border-bottom:2.4px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+.nav{position:absolute;left:18px;right:18px;bottom:26px;height:72px;border-radius:36px;background:rgba(255,255,255,.66);backdrop-filter:blur(16px) saturate(1.6);-webkit-backdrop-filter:blur(16px) saturate(1.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 1px rgba(11,27,77,.06),0 14px 30px -12px rgba(11,27,77,.3);display:grid;grid-template-columns:repeat(4,1fr);padding:6px;z-index:9}
+.nav span{border-radius:30px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;gap:1px}
+.nav span.on{background:linear-gradient(110deg,#FFE3CF,#F7DDF0 50%,#DCD9FF);box-shadow:inset 0 1px 0 #fff,0 0 0 1px rgba(255,255,255,.7)}
+.fade{position:absolute;left:0;right:0;bottom:0;height:130px;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 70%);z-index:8}
+.go{height:50px;border-radius:25px;background:#0B1B4D;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:16px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:#F1F4FA;border-radius:14px;padding:4px;margin-top:12px}
+.seg span{border-radius:11px;text-align:center;padding:6px 0;font-size:14px;font-weight:600;color:#55627E}
+.seg span.on{background:#fff;color:#0B1B4D;box-shadow:0 2px 6px -2px rgba(11,27,77,.25)}
+.seg span em{font-style:normal;font:700 12.5px Inter,sans-serif;color:#8B96AD;margin-left:3px}
+.chips{display:flex;gap:6px;flex-wrap:nowrap;overflow:hidden}
+.chips span{border-radius:12px;padding:5px 12px;font-size:14px;font-weight:600;background:#F1F4FA;white-space:nowrap}
+.chips span.on{background:#0B1B4D;color:#fff}
+
+/* หน้าแรก */
+.date{font-size:15px;color:#5E6B85}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 17px Anuphan,sans-serif;background:conic-gradient(from 210deg,#0A6CF1,#7C4DFF,#E0457B,#F08A24,#0A6CF1)}
+.hi{font:700 32px/1.25 "Noto Sans Thai Looped",sans-serif;letter-spacing:-.02em;margin-top:2px}
+.cap4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.cap4 div{height:104px;border-radius:24px;padding:12px 14px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden}
+.cap4 b{font-size:19px;font-weight:700;position:relative}
+.cap4 small{font-size:12.5px;opacity:.8;position:relative}
+.c1{background:linear-gradient(140deg,#0B1B4D,#1C3A8C);color:#fff}
+.c2{background:linear-gradient(140deg,#EFE9FF,#F6F1FF);color:#2E1F66}
+.c3{background:linear-gradient(140deg,#E3F6EE,#F1FBF6);color:#0E5A3C}
+.c4{background:center/cover;color:#fff}
+.c4::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 20%,rgba(255,255,255,.95) 85%)}
+.c4 b,.c4 small{color:#0B1B4D}
+.c1 .mic{position:absolute;top:10px;left:12px;width:34px;height:34px;border-radius:50%;background:#0A6CF1;display:grid;place-items:center}
+.c1 .mic .ic{width:19px;height:19px}
+.c1 .wv{position:absolute;top:18px;left:60px;display:flex;gap:3px;align-items:center}
+.c1 .wv i{width:3px;border-radius:2px;background:#fff;opacity:.85}
+.c2 .stk{position:absolute;top:6px;left:16px;right:16px;height:50px;transform:scale(.8);transform-origin:0 0}
+.c2 .stk i{position:absolute;width:52px;height:56px;border-radius:7px;border:3px solid #fff;background:center/cover;box-shadow:0 6px 12px -6px rgba(0,0,0,.4)}
+.c3 .typ{position:absolute;top:10px;left:12px;right:12px;background:#fff;border-radius:12px;padding:7px 10px;font-size:14px;font-weight:600;color:#0B1B4D}
+.c3 .typ::after{content:"";display:inline-block;width:2px;height:15px;background:#0A6CF1;margin-left:2px;vertical-align:-2px}
+.srch{display:flex;gap:9px;align-items:center;border:1.5px solid #E1E7F2;border-radius:18px;padding:10px 12px;margin-top:12px;color:#8B96AD;font-size:15.5px}
+.srch .ic{color:#0B1B4D}
+.srch span{flex:1}
+.srch em{font-style:normal;font-size:13.5px;font-weight:600;color:#0B1B4D;background:#F4F6FA;border-radius:10px;padding:3px 9px}
+.more{display:flex;align-items:center;justify-content:center;gap:6px;color:#0A6CF1;font-weight:700;font-size:15px;border-radius:16px;padding:9px 0;box-shadow:0 0 0 2.5px #0A6CF1;margin-top:2px;background:#F1F6FF}
+.more .ic{width:18px;height:18px}
+
+/* A */
+.onhome{border-radius:20px;border:1.5px dashed #C9D3E4;padding:10px 10px 4px;margin-top:12px}
+.onhome .lb{font-size:13px;font-weight:700;color:#7A87A2;display:flex;align-items:center;gap:6px;margin:0 2px 8px}
+.onhome .lb .ic{width:16px;height:16px}
+.onhome .row{padding:6px 8px;border-radius:14px;margin-bottom:6px;box-shadow:none;background:#F6F8FC}
+.onhome .row b{font-size:14px}
+.onhome .row small{font-size:12.5px}
+.onhome .si{width:34px;height:34px;border-radius:10px}.onhome .si svg{width:17px;height:17px}
+.onhome .th{width:34px;height:34px;border-radius:10px}
+.contd{display:flex;align-items:center;gap:8px;margin:16px 0 4px;font-size:14px;font-weight:700;color:#0A6CF1}
+.contd::before,.contd::after{content:"";flex:1;height:1.5px;background:#BFD6FB}
+.fold{display:flex;justify-content:space-between;align-items:center;border-radius:16px;background:#F4F6FA;padding:11px 14px;font-weight:600;font-size:14.5px;color:#55627E;margin-top:12px}
+
+/* B */
+.navytop{background:linear-gradient(160deg,#0B1B4D,#1C3A8C);color:#fff;height:270px;position:absolute;left:0;right:0;top:0}
+.minicap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+.minicap span{border-radius:16px;background:rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 7px;font-size:13px;font-weight:600}
+.minicap span .ic{width:20px;height:20px}
+.minicap span.m{background:#0A6CF1}
+.sheet2{position:absolute;left:0;right:0;top:196px;bottom:0;background:#fff;border-radius:28px 28px 0 0;padding:10px 20px 0;box-shadow:0 -10px 30px -12px rgba(0,0,0,.35)}
+.grip{width:44px;height:5px;border-radius:3px;background:#D3DBE8;margin:0 auto 10px}
+.hint{position:absolute;right:16px;top:150px;font-size:12.5px;font-weight:600;color:#C8D2EA;display:flex;align-items:center;gap:4px}
+
+/* C */
+.inbox{border-radius:22px;background:linear-gradient(135deg,#FFF4E5,#FFF9F0);padding:12px 12px 4px;margin-top:12px}
+.inbox .lb{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:16px;margin:0 2px 9px}
+.inbox .lb small{font-size:13px;color:#A4520E;font-weight:600}
+.icard{background:#fff;border-radius:18px;padding:11px 12px;margin-bottom:9px;box-shadow:0 8px 18px -14px rgba(120,70,10,.5)}
+.icard .t{display:flex;gap:10px;align-items:center}
+.icard .t b{font-size:15.5px;font-weight:600;display:block;line-height:1.3}
+.icard .t small{font-size:12.5px;color:#5E6B85}
+.icard .src{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;background:#F1F4FA;color:#33405E}
+.icard .src .ic{width:18px;height:18px}
+.icard .q{font-size:12.5px;font-weight:700;color:#A4520E;margin:9px 0 5px}
+.icard .opts{display:flex;gap:6px}
+.icard .opts span{border-radius:10px;padding:4px 10px;font-size:13.5px;font-weight:600;box-shadow:0 0 0 1.5px #E1E7F2;white-space:nowrap}
+
+/* D */
+.doing{margin-top:12px;border-radius:24px;background:linear-gradient(150deg,#0B1B4D,#1C3A8C);color:#fff;padding:14px 16px 14px}
+.doing .lb{font-size:12.5px;font-weight:700;letter-spacing:.02em;color:#9FB6EA;display:flex;align-items:center;gap:6px}
+.doing .lb i{width:8px;height:8px;border-radius:50%;background:#3DDC97;box-shadow:0 0 0 4px rgba(61,220,151,.25)}
+.doing b{display:block;font-size:18px;font-weight:700;margin-top:4px;line-height:1.3}
+.doing small{font-size:13px;color:#C8D2EA}
+.doing .tm{font:700 44px/1 Inter,sans-serif;letter-spacing:-.02em;margin-top:10px}
+.doing .tm span{font-size:15px;font-weight:600;color:#9FB6EA;margin-left:6px;letter-spacing:0}
+.doing .acts{display:flex;gap:8px;margin-top:12px}
+.doing .acts span{flex:1;height:42px;border-radius:21px;display:grid;place-items:center;font-weight:600;font-size:14.5px;background:rgba(255,255,255,.14)}
+.doing .acts span.ok{background:#fff;color:#0B1B4D}
+
+/* E */
+.wkh{font-size:14px;color:#5E6B85;margin-top:2px}
+.cols{display:flex;gap:10px;margin-top:14px;margin-right:-20px}
+.col{width:136px;flex:none;border-radius:22px;background:#F4F6FA;padding:10px 9px 8px;min-height:300px}
+.col.today{background:#EEF3FF;box-shadow:inset 0 0 0 2px #0B1B4D}
+.col h5{font-size:14px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline;margin:0 3px 9px}
+.col h5 span{font:600 12px Inter,"Noto Sans Thai Looped",sans-serif;color:#7A87A2}
+.col.today h5 span{color:#0A6CF1}
+.vc{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:8px;box-shadow:0 6px 14px -10px rgba(11,27,77,.4);color:#0B1B4D}
+.vc .im{height:78px;background:center/cover}
+.vc .ib{height:58px;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 14%,#fff);color:var(--c)}
+.vc .ib svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.vc .t{padding:8px 9px 9px}
+.vc b{display:block;font-size:13.5px;font-weight:600;line-height:1.35}
+.vc small{font-size:12px;color:#5E6B85}
+.vc.ex{background:#E5484D;color:#fff}
+.vc.ex small{color:#FFDADB}
+.vc.ex .big{font:800 30px/1 Inter,sans-serif;padding:12px 10px 0}
+.free{border-radius:14px;border:1.5px dashed #B9C6E0;padding:16px 8px;text-align:center;font-size:13px;color:#55627E}
+.dots{display:flex;gap:5px;justify-content:center;margin-top:10px}
+.dots i{width:6px;height:6px;border-radius:3px;background:#C9D3E4}.dots i.on{width:18px;background:#0B1B4D}
+
+/* F */
+.monthchip{display:flex;align-items:center;gap:4px;border-radius:14px;padding:6px 11px;font-size:14px;font-weight:600;box-shadow:0 0 0 1.5px #E1E7F2}
+.monthchip .ic{width:16px;height:16px}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-top:12px}
+.wk span{font-size:12.5px;color:#7A87A2}
+.wk b{display:grid;place-items:center;height:44px;width:44px;margin:4px auto 0;border-radius:14px;font:600 17px Inter,sans-serif;position:relative}
+.wk b.t{background:#0B1B4D;color:#fff}
+.wk b u{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);display:flex;gap:3px}
+.wk b u i{width:5px;height:5px;border-radius:50%;background:#0A6CF1}.wk b u i.r{background:#E5484D}
+.wk b.t u i{background:#fff}
+.barg{width:36px;height:4px;border-radius:2px;background:#D3DBE8;margin:8px auto 0}
+
+/* G */
+.tl{position:relative;margin-top:14px;padding-left:34px}
+.tl::before{content:"";position:absolute;left:10px;top:8px;bottom:-200px;width:2.5px;background:linear-gradient(180deg,#0A6CF1,#C9D3E4 40%)}
+.tn{position:relative;margin-bottom:12px}
+.tn::before{content:"";position:absolute;left:-30px;top:8px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 0 2.5px #C9D3E4}
+.tn.now::before{background:#0A6CF1;box-shadow:0 0 0 5px rgba(10,108,241,.2)}
+.tn.exn::before{background:#E5484D;box-shadow:0 0 0 5px rgba(229,72,77,.2)}
+.tn .when{font-size:13px;font-weight:700;color:#5E6B85;display:flex;gap:8px;align-items:baseline}
+.tn .when em{font-style:normal;font-weight:600;color:#8B96AD;font-size:12.5px}
+.tn.now .when{color:#0A6CF1}
+.tn .row{margin:6px 0 0}
+.gap{font-size:12.5px;color:#8B96AD;margin:-4px 0 10px;font-style:italic}
+
+/* H */
+.bigsrch{display:flex;gap:10px;align-items:center;border-radius:20px;background:#F1F4FA;padding:13px 14px;margin-top:12px;color:#8B96AD;font-size:16px}
+.bigsrch .ic{color:#0B1B4D}
+.sfil{display:flex;gap:8px;margin-top:12px;overflow:hidden;margin-right:-20px}
+.sfil span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#55627E;width:56px;flex:none}
+.sfil span .si{width:50px;height:50px;border-radius:16px}
+.sfil span.on .si{box-shadow:0 0 0 2.5px var(--c)}
+.sfil span.on{color:#0B1B4D}
+.sfil span.all .si{--c:#0B1B4D;background:#0B1B4D;color:#fff;font:700 13px Inter,"Noto Sans Thai Looped",sans-serif}
+.dense{margin-top:6px}
+.dr{display:flex;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid #EEF1F7}
+.dr .tx{flex:1}
+.dr b{display:block;font-size:15.5px;font-weight:600;line-height:1.3}
+.dr small{font-size:13px;color:#5E6B85}
+.dr .due{font-size:13px;font-weight:700;color:#5E6B85;text-align:right;white-space:nowrap}
+.dr .due.r{color:#D9443A}
+.dr .sd{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+
+/* สรุปท้าย */
+.pick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}
+.pick div{background:var(--bg);border-radius:20px;padding:14px 16px}
+.pick b{font:700 17px/1.3 Anuphan,sans-serif;display:flex;gap:8px;align-items:baseline}
+.pick b i{font:700 12px Inter,sans-serif;font-style:normal;background:var(--ink);color:var(--bg);border-radius:6px;min-width:20px;height:20px;display:inline-grid;place-items:center}
+.pick p{font-size:14px;color:var(--t2);margin-top:4px}
+.note{font-size:13.5px;color:var(--t2);margin-top:24px}
+@media (max-width:1000px){.pick{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.pick{grid-template-columns:1fr}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z"/></symbol>
+ <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V20a.5.5 0 0 1-.5.5h-10A.5.5 0 0 1 7 20z"/><path d="M10 11h5M10 14.5h5M10 18h3"/></symbol>
+ <symbol id="i-book" viewBox="0 0 24 24"><path d="M4.5 5.5c2.5-1 5-1 7.5.5v13c-2.5-1.5-5-1.5-7.5-.5zM19.5 5.5c-2.5-1-5-1-7.5.5v13c2.5-1.5 5-1.5 7.5-.5z"/></symbol>
+ <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.2c1.4-2 3.3-3 5.5-3s4.1 1 5.5 3"/></symbol>
+ <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V20"/></symbol>
+ <symbol id="i-img" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4 3.5"/></symbol>
+ <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+ <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2l1.5-2h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+ <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+ <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></symbol>
+ <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+ <symbol id="i-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+ <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+ <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 4h6l-1 6 3 3H7l3-3zM12 13v7"/></symbol>
+ <symbol id="s-phy" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
+ <symbol id="s-mat" viewBox="0 0 24 24"><path d="M17 5H7l5.5 7L7 19h10"/></symbol>
+ <symbol id="s-eng" viewBox="0 0 24 24"><text x="12" y="16.5" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="12" fill="currentColor" stroke="none">Aa</text></symbol>
+ <symbol id="s-tha" viewBox="0 0 24 24"><text x="12" y="17.5" text-anchor="middle" font-family="Noto Sans Thai Looped,sans-serif" font-weight="700" font-size="15" fill="currentColor" stroke="none">ก</text></symbol>
+ <symbol id="s-bio" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14zM5 19l8-8"/></symbol>
+ <symbol id="s-che" viewBox="0 0 24 24"><path d="M9 3.5h6M10 3.5V9L5 18.3A1.5 1.5 0 006.3 20.5h11.4a1.5 1.5 0 001.3-2.2L14 9V3.5M7.4 15h9.2"/></symbol>
+</svg>
+
+<section class="band"><div class="wrap">
+  <h1>หน้างาน ต่อจากหน้าแรกยังไงดี</h1>
+  <p class="lead">หน้าแรก (กรอบฟ้า) มีไว้จดงานและโชว์งานใกล้ส่งแค่ 3 งาน อีก 8 แบบที่เหลือเป็นหน้างานที่ต่อจากหน้าแรกคนละวิธี ตัวอักษรใต้ภาพคือชื่อแบบ บรรทัดสีฟ้าใต้ภาพบอกว่าแบบนั้นต่อจากหน้าแรกยังไง เลือกแบบเดียว หรือหยิบหลายแบบมาผสมกันก็ได้ ข้อมูลเป็นงานตัวอย่างชุดเดียวกับในแอป วันนี้คือพฤหัสบดี 26 พ.ย.</p>
+  <div class="grid">
+
+    <!-- 0 หน้าแรก -->
+    <div class="cell ref">
+      <div class="ph"><div class="in">
+        <div class="sb">19:40<i></i></div>
+        <div class="pad">
+          <div class="hrow"><span class="date">พฤหัส 26 พ.ย.</span><span class="av">ฉ</span></div>
+          <div class="hi">จดงานอะไรดี?</div>
+          <div class="cap4">
+            <div class="c1"><span class="mic"><svg class="ic"><use href="#i-mic"/></svg></span><span class="wv"><i style="height:10px"></i><i style="height:22px"></i><i style="height:14px"></i><i style="height:26px"></i><i style="height:12px"></i><i style="height:20px"></i><i style="height:9px"></i></span><b>พูด</b><small>พูดเอง หรือฟังครู</small></div>
+            <div class="c2"><span class="stk"><i style="left:0;top:6px;transform:rotate(-8deg);background-image:url(../assets/landing/photos/class.jpg)"></i><i style="left:40px;top:0;transform:rotate(3deg);background-image:url(../assets/landing/photos/board.jpg)"></i><i style="left:80px;top:5px;transform:rotate(9deg);background-image:url(../assets/landing/photos/notes.jpg)"></i></span><b>แนบรูป</b><small>จากอัลบั้ม/แชต</small></div>
+            <div class="c3"><span class="typ">คณิต ใบงาน 7</span><b>พิมพ์</b><small>พิมพ์สั้น ๆ ก็รู้เรื่อง</small></div>
+            <div class="c4" style="background-image:url(../assets/landing/photos/chalk.jpg)"><b>ถ่ายรูป</b><small>กระดาน · ใบงาน</small></div>
+          </div>
+          <div class="srch"><svg class="ic"><use href="#i-search"/></svg><span>ค้นหางาน…</span><em>ทั้งหมด</em></div>
+          <div class="sec" style="margin:12px 0 8px">ใกล้ส่ง</div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">ส่งพรุ่งนี้ 08:00</span></small></div><span class="play"></span></div>
+          <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ · ส่งเสาร์</small></div><span class="play"></span></div>
+          <div class="row"><span class="si phy"><svg><use href="#s-phy"/></svg></span><div class="tx"><b>สอบย่อยไฟฟ้า</b><small>ฟิสิกส์ · สอบอาทิตย์ 10:00</small></div><span class="play"></span></div>
+          <div class="more">อีก 3 งาน อยู่ในแท็บงาน <svg class="ic"><use href="#i-right"/></svg></div>
+        </div>
+        <div class="nav"><span class="on"><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>หน้าแรก</i>จุดเริ่มต้น</h3><p>หน้าตาเหมือนตอนนี้ เพิ่มแค่ปุ่มฟ้าใต้รายการ "อีก 3 งาน อยู่ในแท็บงาน" ทุกแบบด้านขวาเริ่มจากปุ่มนี้หรือจากเมนูล่าง</p></div>
+    </div>
+
+    <!-- A ต่อรายการ -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">19:41<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">งาน</div><span class="pill">ค้าง 6 งาน</span></div>
+          <div class="onhome">
+            <div class="lb"><svg class="ic"><use href="#i-home"/></svg>3 งานนี้อยู่บนหน้าแรกแล้ว</div>
+            <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ส่งพรุ่งนี้ 08:00</small></div></div>
+            <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>ส่งเสาร์</small></div></div>
+            <div class="row"><span class="si phy"><svg><use href="#s-phy"/></svg></span><div class="tx"><b>สอบย่อยไฟฟ้า</b><small>สอบอาทิตย์ 10:00</small></div></div>
+          </div>
+          <div class="contd">ต่อจากหน้าแรก</div>
+          <div class="dh">จันทร์ 30 พ.ย.</div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/math.jpg)"></span><div class="tx"><b>ใบงานลำดับเลขคณิต</b><small>คณิตศาสตร์ · ส่งจันทร์</small></div><span class="play"></span></div>
+          <div class="dh">ศุกร์ 4 ธ.ค.</div>
+          <div class="row"><span class="si tha"><svg><use href="#s-tha"/></svg></span><div class="tx"><b>สรุปเรื่องขุนช้างขุนแผน 1 หน้า</b><small>ไทย · ส่งศุกร์หน้า</small></div><span class="play"></span></div>
+          <div class="dh">อาทิตย์ 6 ธ.ค.</div>
+          <div class="row"><span class="si bio"><svg><use href="#s-bio"/></svg></span><div class="tx"><b>รายงานกลุ่มระบบหายใจ</b><small>ชีววิทยา · งานกลุ่ม</small></div><span class="play"></span></div>
+          <div class="fold">เสร็จแล้ว 4 งาน<svg class="ic" style="width:18px;height:18px"><use href="#i-down"/></svg></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>A</i>รายการต่อจากหน้าแรก</h3><span class="fl">หน้าแรก → งาน: รายการเดิมที่ยาวขึ้น</span><p>3 งานจากหน้าแรกย่อเป็นกล่องเส้นประอยู่บนสุด ใต้เส้นฟ้าคืองานที่หน้าแรกไม่ได้โชว์ ใช้การ์ดหน้าตาเดียวกัน คนใช้เห็นทันทีว่าเป็นรายการเดียวกัน</p></div>
+    </div>
+
+    <!-- B ลากขึ้น -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="navytop">
+          <div class="sb">19:41<i></i></div>
+          <div class="pad">
+            <div class="hrow"><div class="pt" style="color:#fff">งาน</div><span class="pill" style="color:#fff;box-shadow:0 0 0 1.5px rgba(255,255,255,.3)"><svg class="ic"><use href="#i-search"/></svg>ค้น</span></div>
+            <div class="minicap"><span class="m"><svg class="ic"><use href="#i-mic"/></svg>พูด</span><span><svg class="ic"><use href="#i-img"/></svg>แนบรูป</span><span><svg class="ic"><use href="#i-pen"/></svg>พิมพ์</span><span><svg class="ic"><use href="#i-cam"/></svg>ถ่ายรูป</span></div>
+          </div>
+        </div>
+        <div class="sheet2">
+          <div class="grip"></div>
+          <div class="dh" style="margin-top:2px">พรุ่งนี้ · ศ. 27</div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">08:00</span></small></div><span class="play"></span></div>
+          <div class="dh">เสาร์ 28</div>
+          <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ</small></div><span class="play"></span></div>
+          <div class="dh red">อาทิตย์ 29 · สอบ</div>
+          <div class="row ex"><span class="cd"><b>3</b><small>วัน</small></span><div class="tx"><b>สอบย่อยไฟฟ้า</b><small>ฟิสิกส์ · 10:00 · ห้อง 412</small></div></div>
+          <div class="dh">จันทร์ 30</div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/math.jpg)"></span><div class="tx"><b>ใบงานลำดับเลขคณิต</b><small>คณิตศาสตร์</small></div><span class="play"></span></div>
+          <div class="dh">สัปดาห์หน้า</div>
+          <div class="row"><span class="si tha"><svg><use href="#s-tha"/></svg></span><div class="tx"><b>สรุปเรื่องขุนช้างขุนแผน</b><small>ไทย · ศ. 4 ธ.ค.</small></div><span class="play"></span></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>B</i>หน้าแรกที่ลากขึ้นจนสุด</h3><span class="fl">หน้าแรก → งาน: หน้าเดียวกัน แค่ลากแผ่นขึ้น</span><p>ปุ่มจด 4 แบบหดเหลือแถวเล็กบนหัว แผ่นขาวขยายขึ้นมาโชว์ทุกงาน กดแท็บงานหรือลากแผ่นในหน้าแรกขึ้นก็มาที่เดียวกัน ลากลงก็กลับหน้าแรก</p></div>
+    </div>
+
+    <!-- C เพิ่งจด -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">15:32<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">งาน</div><span class="pill"><svg class="ic"><use href="#i-search"/></svg>ค้น</span></div>
+          <div class="inbox">
+            <div class="lb">เพิ่งจด · ยังไม่ครบ <small>แตะเลือกได้เลย</small></div>
+            <div class="icard">
+              <div class="t"><span class="src"><svg class="ic"><use href="#i-mic"/></svg></span><div><b>ทำโจทย์ท้ายบทข้อ 1 ถึง 5</b><small>ฟังครู · 15:28 ตอนหมดคาบ</small></div></div>
+              <div class="q">วิชาอะไร</div>
+              <div class="opts"><span>ฟิสิกส์</span><span>เคมี</span><span>คณิต</span><span>อื่น ๆ</span></div>
+              <div class="q">ส่งวันไหน</div>
+              <div class="opts"><span>พรุ่งนี้</span><span>จ. 30</span><span>คาบหน้า</span><span>ไม่รู้</span></div>
+            </div>
+            <div class="icard">
+              <div class="t"><span class="th" style="width:36px;height:36px;border-radius:11px;background-image:url(../assets/landing/photos/board.jpg)"></span><div><b>รูปกระดาน · ยังไม่มีชื่อ</b><small>ถ่ายรูป · 14:10 · เคมี</small></div></div>
+              <div class="q">งานนี้คืออะไร</div>
+              <div class="opts"><span>+ ตั้งชื่องาน</span><span>เป็นโน้ต ไม่ใช่งาน</span></div>
+            </div>
+          </div>
+          <div class="sec" style="margin-top:14px">ครบแล้ว <small>เรียงตามวันส่ง</small></div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">ส่งพรุ่งนี้ 08:00</span></small></div><span class="play"></span></div>
+          <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ · ส่งเสาร์</small></div><span class="play"></span></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>C</i>เพิ่งจด รอเติมให้ครบ</h3><span class="fl">หน้าแรก → งาน: จดลวก ๆ ตอนหมดคาบ แล้วมาเติมตอนว่าง</span><p>งานที่จดเร็วแต่ยังขาดวิชาหรือวันส่งขึ้นกล่องส้มบนสุด แตะชิปเดียวก็ครบ แล้วงานจะเลื่อนลงไปอยู่ในรายการปกติ</p></div>
+    </div>
+
+    <!-- D กำลังทำ -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">20:12<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">งาน</div><span class="pill"><svg class="ic"><use href="#i-search"/></svg>ค้น</span></div>
+          <div class="doing">
+            <div class="lb"><i></i>กำลังทำ · เริ่มจากหน้าแรก</div>
+            <b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b>
+            <small>ฟิสิกส์ · ส่งพรุ่งนี้ 08:00</small>
+            <div class="tm">12:40<span>นาที</span></div>
+            <div class="acts"><span>พักก่อน</span><span>ดูโน้ต</span><span class="ok">เสร็จแล้ว</span></div>
+          </div>
+          <div class="seg"><span class="on">ยังไม่เริ่ม<em>5</em></span><span>กำลังทำ<em>1</em></span><span>เสร็จแล้ว<em>4</em></span></div>
+          <div class="row" style="margin-top:12px"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ · ส่งเสาร์</small></div><span class="play"></span></div>
+          <div class="row ex"><span class="cd"><b>3</b><small>วัน</small></span><div class="tx"><b>สอบย่อยไฟฟ้า</b><small>ฟิสิกส์ · อา. 10:00</small></div><span class="play"></span></div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/math.jpg)"></span><div class="tx"><b>ใบงานลำดับเลขคณิต</b><small>คณิตศาสตร์ · ส่งจันทร์</small></div><span class="play"></span></div>
+          <div class="row"><span class="si tha"><svg><use href="#s-tha"/></svg></span><div class="tx"><b>สรุปเรื่องขุนช้างขุนแผน</b><small>ไทย · ศ. 4 ธ.ค.</small></div><span class="play"></span></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>D</i>งานที่กดเริ่มไว้</h3><span class="fl">หน้าแรก → งาน: กดปุ่ม ▶ ที่หน้าแรก งานไปโผล่ที่นี่</span><p>งานที่กำลังทำอยู่บนสุดพร้อมเวลาที่เดินอยู่ ใต้นั้นแยกเป็น 3 ช่อง ยังไม่เริ่ม · กำลังทำ · เสร็จแล้ว ปุ่ม ▶ บนหน้าแรกเลยมีที่ไป</p></div>
+    </div>
+
+    <!-- E สัปดาห์เป็นคอลัมน์ -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">19:41<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">งาน</div><span class="pill"><svg class="ic"><use href="#i-cal"/></svg>พ.ย.</span></div>
+          <div class="wkh">สัปดาห์นี้ · ปัดซ้ายขวาดูวันถัดไป</div>
+          <div class="cols">
+            <div class="col today"><h5>วันนี้<span>พฤ 26</span></h5><div class="free">ไม่มีงานส่ง<br>ทำของพรุ่งนี้ได้เลย</div></div>
+            <div class="col"><h5>พรุ่งนี้<span>ศ 27</span></h5>
+              <div class="vc"><div class="im" style="background-image:url(../assets/landing/photos/sheet.jpg)"></div><div class="t"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · 08:00</small></div></div>
+            </div>
+            <div class="col"><h5>เสาร์<span>28</span></h5>
+              <div class="vc eng"><div class="ib"><svg viewBox="0 0 24 24"><use href="#s-eng"/></svg></div><div class="t"><b>ท่องศัพท์ Unit 5</b><small>อังกฤษ</small></div></div>
+            </div>
+            <div class="col" style="background:#FDECEE"><h5 style="color:#C62F35">อาทิตย์<span>29</span></h5>
+              <div class="vc ex"><div class="big">3 วัน</div><div class="t"><b>สอบย่อยไฟฟ้า</b><small>ฟิสิกส์ · 10:00</small></div></div>
+            </div>
+          </div>
+          <div class="dots"><i></i><i class="on"></i><i></i><i></i><i></i></div>
+          <div class="sec" style="margin-top:14px">สัปดาห์หน้า <small>3 งาน</small></div>
+          <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/math.jpg)"></span><div class="tx"><b>ใบงานลำดับเลขคณิต</b><small>คณิตศาสตร์ · จ. 30</small></div><span class="play"></span></div>
+          <div class="row"><span class="si tha"><svg><use href="#s-tha"/></svg></span><div class="tx"><b>สรุปเรื่องขุนช้างขุนแผน</b><small>ไทย · ศ. 4 ธ.ค.</small></div><span class="play"></span></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>E</i>สัปดาห์เป็นช่อง ๆ</h3><span class="fl">หน้าแรก → งาน: หน้าแรกคือวันนี้ หน้างานคือทั้งสัปดาห์</span><p>แต่ละวันเป็นช่องสูง ปัดซ้ายขวาไปวันถัดไป การ์ดมีรูปโน้ตใหญ่ วันสอบเป็นช่องแดง เหมือนเปิดสมุดจดการบ้านทีละหน้า</p></div>
+    </div>
+
+    <!-- F ปฏิทิน (แบบเดิม) -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">19:41<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">งาน</div><div style="display:flex;gap:8px"><span class="monthchip">พ.ย.<svg class="ic"><use href="#i-down"/></svg></span><span class="round"><svg class="ic"><use href="#i-search"/></svg></span></div></div>
+          <div class="wk">
+            <div><span>อา</span><b>22</b></div><div><span>จ</span><b>23</b></div><div><span>อ</span><b>24</b></div><div><span>พ</span><b>25</b></div><div><span>พฤ</span><b class="t">26</b></div><div><span>ศ</span><b>27<u><i></i></u></b></div><div><span>ส</span><b>28<u><i></i></u></b></div>
+          </div>
+          <div class="barg"></div>
+          <div class="chips" style="margin-top:12px"><span class="on">ทั้งหมด</span><span>ใกล้ส่ง</span><span>สอบ</span><span>เสร็จแล้ว</span></div>
+          <div class="dh">พรุ่งนี้ · ศ. 27</div>
+          <div class="row"><span class="si phy"><svg><use href="#s-phy"/></svg></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์ · <span class="r">ส่งพรุ่งนี้ 08:00</span></small></div></div>
+          <div class="dh">เสาร์ 28 พ.ย.</div>
+          <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ · ส่งเสาร์</small></div></div>
+          <div class="dh">อาทิตย์ 29 พ.ย.</div>
+          <div class="row ex"><span class="cd"><b>3</b><small>วัน</small></span><div class="tx"><b>สอบย่อยไฟฟ้า</b><small>ฟิสิกส์ · 10:00</small></div></div>
+          <div class="dh">จันทร์ 30 พ.ย.</div>
+          <div class="row"><span class="si mat"><svg><use href="#s-mat"/></svg></span><div class="tx"><b>ใบงานลำดับเลขคณิต</b><small>คณิตศาสตร์ · ส่งจันทร์</small></div></div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>F</i>แบบเดิม (0.9.9)</h3><span class="fl">หน้าแรก → งาน: ไม่มีอะไรเชื่อม รายการเดียวกันซ้ำ</span><p>ไว้เทียบ แถบสัปดาห์ ตัวกรอง แล้วงานเรียงตามวัน 3 งานแรกคือชุดเดียวกับหน้าแรก นี่คือจุดที่รู้สึกว่าแปลก</p></div>
+    </div>
+
+    <!-- G ไทม์ไลน์ -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">19:41<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">งาน</div><span class="pill"><svg class="ic"><use href="#i-search"/></svg>ค้น</span></div>
+          <div class="tl">
+            <div class="tn now"><div class="when">ตอนนี้ · พฤ. 19:40</div></div>
+            <div class="tn"><div class="when">ศ. 08:00 <em>อีก 12 ชม.</em></div>
+              <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/sheet.jpg)"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์</small></div><span class="play"></span></div></div>
+            <div class="tn"><div class="when">ส. 28 <em>อีก 2 วัน</em></div>
+              <div class="row"><span class="si eng"><svg><use href="#s-eng"/></svg></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ</small></div><span class="play"></span></div></div>
+            <div class="tn exn"><div class="when" style="color:#C62F35">อา. 10:00 · สอบ <em>อีก 3 วัน</em></div>
+              <div class="row ex"><span class="cd"><b>3</b><small>วัน</small></span><div class="tx"><b>สอบย่อยไฟฟ้า</b><small>ฟิสิกส์ · ห้อง 412</small></div></div></div>
+            <div class="tn"><div class="when">จ. 30 <em>อีก 4 วัน</em></div>
+              <div class="row"><span class="th" style="background-image:url(../assets/landing/photos/math.jpg)"></span><div class="tx"><b>ใบงานลำดับเลขคณิต</b><small>คณิตศาสตร์</small></div><span class="play"></span></div></div>
+            <div class="gap">ว่าง 3 วัน</div>
+            <div class="tn"><div class="when">ศ. 4 ธ.ค. <em>อีก 8 วัน</em></div>
+              <div class="row"><span class="si tha"><svg><use href="#s-tha"/></svg></span><div class="tx"><b>สรุปเรื่องขุนช้างขุนแผน</b><small>ไทย</small></div><span class="play"></span></div></div>
+          </div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>G</i>เส้นเวลาจากตอนนี้</h3><span class="fl">หน้าแรก → งาน: หน้าแรกบอกว่าอะไรใกล้ หน้างานบอกว่าใกล้แค่ไหน</span><p>เส้นเดียวไล่จาก "ตอนนี้" ลงไป แต่ละงานบอกว่าเหลืออีกกี่ชั่วโมงหรือกี่วัน ช่วงที่ไม่มีงานบอกว่าว่างกี่วัน สอบเป็นจุดแดง</p></div>
+    </div>
+
+    <!-- H ค้นหา -->
+    <div class="cell">
+      <div class="ph"><div class="in">
+        <div class="sb">19:41<i></i></div>
+        <div class="pad">
+          <div class="hrow"><div class="pt">งาน</div></div>
+          <div class="bigsrch"><svg class="ic"><use href="#i-search"/></svg>ค้นงาน ชื่อ วิชา หรือคำที่ครูพูด</div>
+          <div class="sfil">
+            <span class="all on"><i class="si">ทั้งหมด</i>10 งาน</span>
+            <span><i class="si phy"><svg><use href="#s-phy"/></svg></i>ฟิสิกส์</span>
+            <span><i class="si mat"><svg><use href="#s-mat"/></svg></i>คณิต</span>
+            <span><i class="si eng"><svg><use href="#s-eng"/></svg></i>อังกฤษ</span>
+            <span><i class="si tha"><svg><use href="#s-tha"/></svg></i>ไทย</span>
+            <span><i class="si bio"><svg><use href="#s-bio"/></svg></i>ชีวะ</span>
+          </div>
+          <div class="seg"><span class="on">ค้าง<em>6</em></span><span>เสร็จแล้ว<em>4</em></span></div>
+          <div class="dense">
+            <div class="dr phy"><span class="chk"></span><div class="tx"><b>แบบฝึกหัดบทที่ 3 ข้อ 1–12</b><small>ฟิสิกส์</small></div><span class="due r">พรุ่งนี้</span></div>
+            <div class="dr eng"><span class="chk"></span><div class="tx"><b>ท่องศัพท์ Unit 5 (20 คำ)</b><small>อังกฤษ</small></div><span class="due">ส. 28</span></div>
+            <div class="dr phy"><span class="chk"></span><div class="tx"><b>สอบย่อยไฟฟ้า <span class="tag k5">สอบ</span></b><small>ฟิสิกส์</small></div><span class="due r">อา. 29</span></div>
+            <div class="dr mat"><span class="chk"></span><div class="tx"><b>ใบงานลำดับเลขคณิต</b><small>คณิตศาสตร์</small></div><span class="due">จ. 30</span></div>
+            <div class="dr tha"><span class="chk"></span><div class="tx"><b>สรุปเรื่องขุนช้างขุนแผน</b><small>ไทย</small></div><span class="due">ศ. 4</span></div>
+            <div class="dr bio"><span class="chk"></span><div class="tx"><b>รายงานกลุ่มระบบหายใจ</b><small>ชีววิทยา</small></div><span class="due">อา. 6</span></div>
+          </div>
+        </div>
+        <div class="fade"></div>
+        <div class="nav"><span><svg class="ic"><use href="#i-home"/></svg>หน้าหลัก</span><span class="on"><svg class="ic"><use href="#i-doc"/></svg>งาน</span><span><svg class="ic"><use href="#i-book"/></svg>สมุด</span><span><svg class="ic"><use href="#i-user"/></svg>ฉัน</span></div>
+      </div></div>
+      <div class="cap"><h3><i>H</i>ที่หาและติ๊กทุกงาน</h3><span class="fl">หน้าแรก → งาน: หน้าแรกไว้จด หน้างานไว้หา</span><p>ช่องค้นย้ายจากหน้าแรกมาไว้ที่นี่ แตะไอคอนวิชาเพื่อกรอง รายการแน่นแบบเช็กลิสต์ ติ๊กเสร็จได้ทันทีโดยไม่ต้องเปิดงาน หน้าแรกเหลือแค่จด + 3 งาน</p></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="band w"><div class="wrap">
+  <h1 style="font-size:32px">ถ้ายังเลือกไม่ได้ ลองถามว่าเด็กกดแท็บงานตอนไหน</h1>
+  <div class="pick">
+    <div><b><i>A</i><i>B</i>อยากเห็นที่เหลือ</b><p>เลื่อนหน้าแรกจนสุดแล้วยังอยากดูต่อ → หน้างานคือภาคต่อของรายการเดิม</p></div>
+    <div><b><i>C</i>เพิ่งเลิกเรียน</b><p>จดไว้ลวก ๆ ทั้งวัน ตอนเย็นมาเก็บให้ครบ → หน้างานคือที่จัดของที่จดมา</p></div>
+    <div><b><i>D</i>กำลังนั่งทำการบ้าน</b><p>กดเริ่มจากหน้าแรกแล้ว → หน้างานคือที่ดูว่าทำถึงไหน</p></div>
+    <div><b><i>E</i><i>G</i><i>H</i>วางแผนหรือหางาน</b><p>อยากรู้ว่าสัปดาห์นี้เป็นยังไง หรือหางานชิ้นเดียว → หน้างานคือภาพรวมทั้งหมด</p></div>
+  </div>
+  <p class="note">แต่ละแบบผสมกันได้ เช่น C บนสุด + A ด้านล่าง หรือ D + H · ชื่องาน วิชา และวันเป็นตัวอย่างชุดเดียวกับในแอป · รูปถ่ายชุดเดียวกับหน้าแนะนำ (Unsplash)</p>
+</div></section>
