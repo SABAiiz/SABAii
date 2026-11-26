@@ -60,8 +60,11 @@ button, a { cursor: pointer; border: 0; background: none; text-decoration: none;
 .nitem.photo { background: #1b1f2a; }
 .nitem.photo::before { content: ""; position: absolute; inset: -20px; background: var(--src) center / cover; filter: blur(18px) brightness(.75); }
 .nitem.photo .zoom { position: absolute; inset: 0; display: block; cursor: zoom-in; }
-.nitem.photo img { width: 100%; height: 100%; object-fit: contain; display: block; position: relative; }
-.mini-in .nitem.photo img { object-fit: cover; }
+.nitem.photo img { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; } /* เต็มกรอบ (26 พ.ย.) · แตะดูทั้งใบ */
+.nexp { position: absolute; right: 10px; top: 10px; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #fff; background: rgba(11,20,48,.42); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); pointer-events: none; }
+.nexp svg { width: 15px; height: 15px; }
+.mini-in .nexp { display: none; }
+.ntag .ncount { font-weight: 700; margin-left: 4px; opacity: .8; }
 .viewer { position: fixed; inset: 0; z-index: 70; background: rgba(5,10,30,.94); display: grid; place-items: center; cursor: zoom-out; }
 .viewer img { max-width: 100vw; max-height: 100dvh; object-fit: contain; }
 .viewer .fab { position: fixed; right: 16px; top: calc(12px + env(safe-area-inset-top, 0px)); }
@@ -74,6 +77,9 @@ body:not(.note-mode) #note-ui > * { opacity: 0; pointer-events: none; }
 #note-add { right: 16px; bottom: calc(var(--sheet-vis) + 12px); }
 .subjchip { left: 70px; top: calc(18px + env(safe-area-inset-top, 0px)); height: 32px; border-radius: 16px; background: var(--sheet-bg); box-shadow: 0 3px 12px rgba(0,0,0,.10); display: flex; align-items: center; gap: 7px; padding: 0 12px 0 4px; font-size: 13px; font-weight: 600; }
 .subjchip .badge { width: 24px; height: 24px; border-radius: 8px; font-size: 9.5px; }
+.subjchip .sib { background: var(--surface); color: var(--text-2); }
+.subjchip .sib svg { width: 15px; height: 15px; }
+.subjchip .cn::after { content: "·"; margin-left: 7px; opacity: .45; }
 .pager { right: 12px; top: calc(110px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 7px; align-items: center; }
 .pager i { width: 7px; height: 7px; border-radius: 4px; background: rgba(0,0,0,.2); transition: height .2s; }
 .pager i.on { height: 22px; background: var(--ink); }
@@ -462,32 +468,58 @@ body.ns-3 .pane-note { padding: 0 0 max(14px, calc(var(--safe-b) - 4px)); }
 .tk-b .cta svg { width: 18px; height: 18px; }
 
 /* ---------- 4 สมุดกราฟ ---------- */
-body.ns-4 .npage .wash { opacity: 1; background-color: #F4F7FC; background-image: linear-gradient(#DCE5F3 1px, transparent 1px), linear-gradient(90deg, #DCE5F3 1px, transparent 1px); background-size: 22px 22px; }
-body.ns-4 #stage .nitem:not(.empty) { border-radius: 4px; box-shadow: 0 16px 28px -12px rgba(11,27,77,.38), 0 1px 2px rgba(11,27,77,.12); }
-body.ns-4 #stage .nitem.photo { background: #fff; }
+/* แบบ 4 สมุดกราฟ (ยกระดับ 26 พ.ย.): กระดาษกราฟมีเส้นหลักทุก 5 ช่อง + เส้นกั้นหน้าสีแดง · โพลารอยด์กระดาษครีม รูปเต็มกรอบ
+   เทปวาชิขอบหยักห้อยเลยขอบการ์ด · คำบรรยายลายมือ + ลำดับโน้ต · แผ่นล่างปุ่มสติกเกอร์ */
+body.ns-4 .npage .wash { opacity: 1; background-color: #F6F8FC;
+  background-image: linear-gradient(90deg, transparent 30px, rgba(229,101,101,.32) 30px 32px, transparent 32px),
+    linear-gradient(#CFDBEE 1px, transparent 1px), linear-gradient(90deg, #CFDBEE 1px, transparent 1px),
+    linear-gradient(#E2E9F5 1px, transparent 1px), linear-gradient(90deg, #E2E9F5 1px, transparent 1px);
+  background-size: 100% 100%, 110px 110px, 110px 110px, 22px 22px, 22px 22px; background-position: 0 0, -1px -1px, -1px -1px, -1px -1px, -1px -1px; }
+body.ns-4 #stage .nitem:not(.empty) { border-radius: 4px; box-shadow: 0 18px 30px -14px rgba(11,27,77,.42), 0 2px 5px rgba(11,27,77,.08), 0 0 0 1px rgba(11,27,77,.05); }
+body.ns-4 #stage .nitem.photo { background: linear-gradient(170deg, #FFFFFF, #FBF9F4); overflow: visible; }
 body.ns-4 #stage .nitem.photo::before { display: none; }
-body.ns-4 #stage .nitem.photo .zoom { inset: 10px 10px 40px; background: #EEF2F8; }
-body.ns-4 #stage .nitem.photo .ntag { left: 0; right: 0; bottom: 9px; justify-content: center; background: none; color: #33406A; font-family: var(--hand); font-size: 13px; }
-body.ns-4 #stage .nitem:not(.empty)::after { content: ""; position: absolute; top: -4px; left: 50%; width: 92px; height: 24px; margin-left: -46px; background: rgba(255,213,92,.8); transform: rotate(-3deg); z-index: 3; }
+body.ns-4 #stage .nitem.photo .zoom { inset: 12px 12px 52px; background: #E9EEF6; border-radius: 2px; overflow: hidden; }
+body.ns-4 #stage .nitem.photo .zoom::after { content: ""; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px rgba(11,27,77,.10), inset 0 1px 8px rgba(11,27,77,.14); pointer-events: none; }
+body.ns-4 #stage .nitem.photo .nexp { right: 8px; top: auto; bottom: 8px; border-radius: 9px; }
+body.ns-4 #stage .nitem .ntag { left: 0; right: 0; bottom: 0; height: 52px; padding: 0 16px; border-radius: 0; justify-content: center; background: none; color: #33406A; font-family: var(--hand); font-size: 14px; }
+body.ns-4 #stage .nitem.sticky .ntag { height: 40px; }
+body.ns-4 #stage .nitem .ntag:has(.ncount) { padding-right: 52px; padding-left: 20px; white-space: nowrap; }
+@media (max-width: 360px) { body.ns-4 #stage .nitem .ntag { font-size: 12.5px; gap: 4px; } body.ns-4 #stage .nitem .ntag svg { display: none; } }
+body.ns-4 #stage .nitem .ntag svg { width: 14px; height: 14px; opacity: .7; }
+body.ns-4 #stage .nitem .ntag .ncount { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); margin: 0; font: 700 12px/1 "Inter", sans-serif; color: #0B1B4D; opacity: 1; background: #FFE27A; border-radius: 6px; padding: 4px 6px; }
+body.ns-4 #stage .nitem:not(.empty)::after { content: ""; position: absolute; top: -11px; left: 50%; width: 108px; height: 28px; margin-left: -54px; z-index: 3; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, rgba(255,255,255,.28) 0 5px, transparent 5px 10px), rgba(255,206,84,.82);
+  clip-path: polygon(0 10%, 3% 0, 6% 12%, 9% 2%, 91% 2%, 94% 12%, 97% 0, 100% 10%, 98% 50%, 100% 90%, 97% 100%, 94% 88%, 91% 98%, 9% 98%, 6% 88%, 3% 100%, 0 90%, 2% 50%);
+  transform: rotate(-3deg); }
 body.ns-4 #note-back, body.ns-4 #note-hand, body.ns-4 .subjchip { border: 2px solid #0B1B4D; box-shadow: 3px 3px 0 #0B1B4D; border-radius: 14px; }
-body.ns-4 .peek { font-family: var(--hand); font-size: 14px; color: #33406A; }
-body.ns-4.note-mode #sheet { box-shadow: 0 -2px 0 #0B1B4D; border-radius: 26px 26px 0 0; }
-body.ns-4 .nsubj { order: 2; background: none; padding: 0; color: var(--text-2); }
-body.ns-4 .ndue { order: 1; background: #fff; border: 2px solid #0B1B4D; color: #0B1B4D; border-radius: 8px; height: 26px; padding: 0 8px; font-weight: 800; }
-body.ns-4 .ndue.urgent { border-color: var(--error); color: var(--error); background: #fff; }
+body.ns-4 .subjchip { height: 40px; top: calc(14px + env(safe-area-inset-top, 0px)); padding: 0 14px 0 6px; font-size: 13.5px; font-weight: 700; color: #0B1B4D; }
+body.ns-4 .subjchip .badge { width: 26px; height: 26px; border-radius: 8px; }
+body.ns-4 .pager i { background: rgba(11,27,77,.18); } body.ns-4 .pager i.on { background: #0B1B4D; }
+body.ns-4 .pager small { font-family: var(--hand); font-size: 12px; color: #33406A; }
+body.ns-4 .peek { font-family: var(--hand); font-size: 13.5px; color: #0B1B4D; background: #fff; height: 32px; padding: 0 14px; border-radius: 16px; border: 2px solid #0B1B4D; box-shadow: 2px 2px 0 #0B1B4D; bottom: calc(var(--sheet-vis) + 10px); }
+body.ns-4 .peek:active { transform: translateX(-50%) translate(2px, 2px); box-shadow: none; }
+body.ns-4.note-mode #sheet { box-shadow: 0 -2px 0 #0B1B4D, 0 -14px 30px -18px rgba(11,27,77,.35); border-radius: 26px 26px 0 0; }
+body.ns-4 .nsubj { order: 2; background: none; padding: 0 2px; color: var(--text-2); gap: 6px; }
+body.ns-4 .nsubj::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+body.ns-4 .ndue { order: 1; background: #fff; border: 2px solid #0B1B4D; color: #0B1B4D; border-radius: 8px; height: 28px; padding: 0 9px; font-weight: 800; box-shadow: 2px 2px 0 #0B1B4D; }
+body.ns-4 .ndue.urgent { border-color: var(--error); color: var(--error); background: #FFF4F3; box-shadow: 2px 2px 0 var(--error); }
 body.ns-4 .ndue.urgent::before { display: none; }
 body.ns-4 .nx { order: 3; }
-body.ns-4 .ntitle h2 { font-family: var(--hand); font-weight: 700; font-size: 26px; line-height: 1.4; letter-spacing: 0; margin-top: 2px; }
-body.ns-4 .ntitle h2 .ht { background: linear-gradient(transparent 55%, #FFE27A 55%, #FFE27A 90%, transparent 90%); padding: 0 3px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+body.ns-4 .ntitle h2 { font-family: var(--hand); font-weight: 700; font-size: 28px; line-height: 1.4; letter-spacing: 0; margin-top: 6px; }
+body.ns-4 .ntitle h2 .ht { background: linear-gradient(100deg, transparent 0 1%, #FFE27A 2% 97%, transparent 99%) 0 78% / 100% 46% no-repeat; padding: 0 4px; border-radius: 4px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 body.ns-4 .pane-note .iconbtn { border-radius: 12px; background: #fff; border: 2px solid #0B1B4D; box-shadow: 3px 3px 0 #0B1B4D; }
-body.ns-4 .pane-note .lbl { display: none; }
-body.ns-4 .pane-note .pills { margin-top: 14px; gap: 10px; }
-body.ns-4 .pane-note .pill { height: 50px; flex-direction: row; gap: 6px; font-size: 14px; color: #0B1B4D; border: 2px solid #0B1B4D; box-shadow: 3px 3px 0 #0B1B4D; border-radius: 14px; }
+body.ns-4 .pane-note .iconbtn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #0B1B4D; }
+body.ns-4 .pane-note .lbl { display: flex; align-items: center; gap: 8px; margin: 16px 0 0; font: 600 13px/1.2 var(--hand); letter-spacing: 0; color: #5E6B85; }
+body.ns-4 .pane-note .lbl::after { content: ""; flex: 1; height: 0; border-top: 2px dashed #D3DCEB; }
+body.ns-4 .pane-note .pills { margin-top: 10px; gap: 10px; }
+body.ns-4 .pane-note .pill { height: 50px; flex-direction: row; gap: 6px; font-size: 14px; color: #0B1B4D; border: 2px solid #0B1B4D; box-shadow: 3px 3px 0 #0B1B4D; border-radius: 14px; transition: transform .08s, box-shadow .08s; }
 body.ns-4 .pane-note .pill svg { color: #0B1B4D; }
 body.ns-4 .pane-note .pill:nth-child(1) { background: #FFF6D6; } body.ns-4 .pane-note .pill:nth-child(2) { background: #E7F0FE; } body.ns-4 .pane-note .pill:nth-child(3) { background: #FCE8F1; }
 body.ns-4 .pane-note .pill:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #0B1B4D; }
-body.ns-4 .pane-note .cta { border: 2px solid #0B1B4D; box-shadow: 4px 4px 0 #0B1B4D !important; border-radius: 16px !important; }
+body.ns-4 .pane-note .cta { border: 2px solid #0B1B4D; box-shadow: 4px 4px 0 #0B1B4D !important; border-radius: 16px !important; transition: transform .08s, box-shadow .08s; }
+body.ns-4 .pane-note .cta:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #0B1B4D !important; }
 body.ns-4 .pane-note .cta:not(.doing) { background: #0A6CF1; }
+body.ns-4 .pane-note .cta .ctai { background: #fff; color: #0A6CF1; border: 2px solid #0B1B4D; border-radius: 12px; }
 
 /* ---------- 5 สีวิชาเต็มหัว + ปัดเพื่อเริ่ม ---------- */
 body.ns-5 .npage .wash { opacity: 1; background: radial-gradient(120% 75% at 85% 0%, color-mix(in srgb, var(--sc) 55%, #fff) 0%, var(--sc) 42%, color-mix(in srgb, var(--sc) 78%, #000) 100%); }

@@ -177,15 +177,18 @@ export function editTask(id) {
 
 /** ภาพย่อโน้ตแบบ Canva: วาดโน้ตจริงขนาดเต็ม (กว้าง 300) แล้วย่อทั้งแผ่น */
 const MINI_W = 300;
-export function noteEl(a, i = 0) {
+/** การ์ดโน้ต 1 ใบ · ใช้กับ notes.map(noteEl) ได้ตรง ๆ (all = โน้ตทั้งหมดของงาน → ป้ายบอก "1/3") */
+export function noteEl(a, i = 0, all = null) {
   const tilt = i % 2 ? 'tilt-r' : 'tilt-l';
   const d = new Date(a.created_at);
   const when = h('span.ntag', { html: ic(a.kind === 'text' ? 'text' : 'camera') },
-    `${a.kind === 'text' ? 'จดเมื่อ' : 'ถ่ายเมื่อ'} ${d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' })} ${d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`);
+    `${a.kind === 'text' ? 'จดเมื่อ' : 'ถ่ายเมื่อ'} ${d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' })} ${d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`,
+    all?.length > 1 ? h('b.ncount', `${i + 1}/${all.length}`) : '');
   if (a.kind === 'image') {
+    // รูปเต็มกรอบ (ตัดขอบส่วนเกิน · เจ้าของสั่ง 26 พ.ย.) — แตะเพื่อดูทั้งใบไม่ตัดขอบ
     const src = urlOf(a);
     return h('div.nitem.photo.' + tilt, { style: { '--src': `url("${src}")` } },
-      h('button.zoom', { 'aria-label': 'ดูรูปเต็มจอ', onclick: () => viewPhoto(src) }, h('img', { src, alt: 'รูปโน้ตของงาน', loading: 'lazy' })), when);
+      h('button.zoom', { 'aria-label': 'ดูรูปเต็มจอ', onclick: () => viewPhoto(src) }, h('img', { src, alt: 'รูปโน้ตของงาน', loading: 'lazy' }), h('span.nexp', { 'aria-hidden': 'true', html: ic('expand') })), when);
   }
   return h('div.nitem.sticky.' + tilt, a.text, when);
 }
