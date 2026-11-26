@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { toYMD, dueLabel, monthGrid, twoWeeks, daysBetween, relDay } from '../src/domain/dates.js';
-import { makeTask, recommend, applyFilter, search, summary, dayMarks, nextExam } from '../src/domain/tasks.js';
+import { makeTask, recommend, applyFilter, search, summary, dayMarks, nextExam, streakOf } from '../src/domain/tasks.js';
 import { draftFromText, draftsFromText } from '../src/domain/parse.js';
 import { findTime, findDate } from '../src/domain/thai-parse.js';
 import { memoryDB } from '../src/data/db.js';
@@ -242,4 +242,14 @@ test('สำรองแล้วกู้คืน: ได้งานกลั
   const r2 = await b.restoreBackup(json);
   assert.deepEqual([r2.added, r2.skipped], [0, 2]);
   await assert.rejects(() => b.restoreBackup('{"tasks":[]}'), /ไม่ใช่ไฟล์สำรองของ SABAii/);
+});
+
+test('วันต่อเนื่อง: นับย้อนจากวันนี้ · วันนี้ยังไม่ทำก็ยังไม่ขาด · เว้นวันแล้วขาด', () => {
+  const D = (...a) => new Set(a);
+  assert.equal(streakOf(D(), '2026-11-26'), 0);
+  assert.equal(streakOf(D('2026-11-26', '2026-11-25', '2026-11-24'), '2026-11-26'), 3);
+  assert.equal(streakOf(D('2026-11-25', '2026-11-24'), '2026-11-26'), 2);
+  assert.equal(streakOf(D('2026-11-26', '2026-11-24'), '2026-11-26'), 1);
+  assert.equal(streakOf(D('2026-11-24'), '2026-11-26'), 0);
+  assert.equal(streakOf(D('2026-12-01', '2026-11-30'), '2026-12-01'), 2); // ข้ามเดือน
 });

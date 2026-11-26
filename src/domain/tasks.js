@@ -1,5 +1,5 @@
 // กฎของงานล้วน ๆ (ไม่แตะ DOM ไม่แตะฐานข้อมูล) — เทสต์ด้วย node ได้ตรง ๆ
-import { dueSortKey, daysBetween } from './dates.js';
+import { dueSortKey, daysBetween, addDaysYMD } from './dates.js';
 
 export const TYPES = {
   homework: 'การบ้าน',
@@ -117,4 +117,11 @@ export function dayMarks(tasks) {
 /** สอบครั้งถัดไปที่ยังไม่ผ่าน */
 export function nextExam(tasks, today) {
   return recommend(tasks.filter(t => t.type === 'exam' && t.due_date && daysBetween(today, t.due_date) >= 0))[0] || null;
+}
+
+/** วันต่อเนื่องที่ทำงานเสร็จอย่างน้อย 1 งาน · doneDays = Set ของ 'YYYY-MM-DD' (วันนี้ยังไม่มีก็ยังไม่ขาด — นับจากเมื่อวาน) */
+export function streakOf(doneDays, today) {
+  let d = doneDays.has(today) ? today : addDaysYMD(today, -1), n = 0;
+  while (doneDays.has(d)) { n++; d = addDaysYMD(d, -1); }
+  return n;
 }
