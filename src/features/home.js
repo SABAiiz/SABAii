@@ -2,7 +2,7 @@
 //   แผ่นขึ้น (กลาง/บน) : เพิ่มงาน 4 แบบ · ค้นหา + ชิปวัน · งานแนะนำ (ปักหมุดก่อน แล้วเรียงตามกำหนดส่ง)
 //   แผ่นลง (ล่าง)      : ชั้นหลังคือ "โน้ตหน้างาน" 1 หน้า = 1 งาน · ปัดขึ้น/ลง = งานถัดไป · ปัดซ้าย/ขวา = โน้ตถัดไป
 //                        แผ่นเหลือการ์ดงาน: เพิ่มโน้ต รูป/ข้อความ/เสียง + ทำเลย (จับเวลา) → เสร็จแล้ว
-import { h, ic, ART, toast, badge, shortOf, tintOf, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
+import { h, ic, ART, toast, badge, shortOf, tintOf, subjIcon, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
 import { daysBetween } from '../domain/dates.js';
 import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
 const DOWL = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์'], MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
@@ -244,7 +244,9 @@ function syncNote() {
     $('#note-chip').replaceChildren(); $('#note-pager').replaceChildren(); $('#note-peek').hidden = true; return;
   }
   const s = subj(t.subject_id), n = notesOf(t.id).length;
-  $('#note-chip').replaceChildren(badge(s), n ? `โน้ต ${n} รายการ` : 'ยังไม่มีโน้ต');
+  // ไอคอนวิชาแบบเดียวกับสมุด (ไม่มีวิชา = ไอคอนสมุด ไม่ใช่ขีด "—")
+  const chipIc = h('span.badge.sib', { style: s.id ? { background: tintOf(s), color: s.color || '#69778F' } : {}, html: s.id ? subjIcon(s) : ic('notebook') });
+  $('#note-chip').replaceChildren(chipIc, s.id ? h('span.cn', shortOf(s)) : '', n ? `โน้ต ${n} รายการ` : 'ยังไม่มีโน้ต');
   $('#note-pager').replaceChildren(...pages.slice(0, 8).map((_, i) => h('i', { class: i === cur ? 'on' : '' })), h('small', `${cur + 1} / ${pages.length}`));
   const nxt = task(pages[cur + 1]);
   $('#note-peek').hidden = pages.length < 2;

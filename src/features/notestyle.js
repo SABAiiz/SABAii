@@ -89,7 +89,7 @@ export function notePane(t, s, notes, timer, act) {
       editBtn()),
     h('div.lbl', 'เพิ่มโน้ตให้งานนี้'),
     h('div.pills', pills()),
-    button('ทำเลย', v === 1 ? 'เริ่มจับเวลา' : ''),
+    button('ทำเลย', v === 1 || v === 4 ? 'เริ่มจับเวลา' : ''),
   ];
 }
 
