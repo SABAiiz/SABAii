@@ -308,15 +308,16 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.keyboard.press('Escape'); await wait(300);
   await page.evaluate(() => { location.hash = '#/me'; }); await wait(500);
   check('ฉัน: Classroom · ห้องเรียน อยู่ในหมวด "เร็ว ๆ นี้" (ยังไม่เปิด)', await page.getByText('เร็ว ๆ นี้').isVisible()
-    && (await page.locator('.list-btn', { hasText: 'Google Classroom' }).textContent()).includes('ยังไม่เปิด')
-    && (await page.locator('.list-btn', { hasText: 'ห้องเรียน' }).textContent()).includes('ยังไม่เปิด'));
-  await page.locator('.list-btn', { hasText: 'Google Classroom' }).click(); await wait(300);
+    && (await page.locator('.soon-tile', { hasText: 'Google Classroom' }).textContent()).includes('ยังไม่เปิด')
+    && (await page.locator('.soon-tile', { hasText: 'ห้องเรียน' }).textContent()).includes('ยังไม่เปิด'));
+  await page.locator('.soon-tile', { hasText: 'Google Classroom' }).click(); await wait(300);
   check('ฉัน: แตะ Classroom → บอกว่ายังไม่เปิด ต้องมีบัญชี', await page.getByText(/ต้องมีบัญชีและเซิร์ฟเวอร์/).isVisible());
   await page.keyboard.press('Escape'); await wait(400);
-  const listenRow = page.locator('.list-btn', { hasText: 'ปุ่มพูด เริ่มที่' });
-  const modeBefore = await listenRow.textContent();
-  await listenRow.click(); await wait(400);
-  check('ฉัน: ปุ่มพูดเริ่มที่ ฉันพูดเอง → ครูกำลังสั่งงาน', modeBefore.includes('ฉันพูดเอง') && (await listenRow.textContent()).includes('ครูกำลังสั่งงาน'));
+  const segOn = () => page.locator('.mseg button[aria-pressed="true"]').getAttribute('aria-label');
+  const modeBefore = await segOn();
+  await page.locator('.mseg button', { hasText: 'ฟังครู' }).click(); await wait(400);
+  check('ฉัน: ปุ่มพูดเริ่มที่ สลับในแถว ฉันพูดเอง → ครูกำลังสั่งงาน', modeBefore === 'ฉันพูดเอง' && (await segOn()) === 'ครูกำลังสั่งงาน'
+    && await page.evaluate(() => window.__sabaii.state.prefs.listen_mode === 'teacher'));
 
   // 0.4.2: ฟังครู — เสียงปลอม: รอบแรกพูดแล้วเบราว์เซอร์ตัดเอง (เงียบ) · รอบต่อไปรอจนกดหยุด
   await page.evaluate(() => {

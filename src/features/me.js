@@ -1,7 +1,8 @@
-// หน้า "ฉัน" (0.9) — ชื่อ · การ์ดกรมท่า (วงความคืบหน้า 7 วัน · กราฟ · ค้าง/ใกล้ส่ง/ถึงสอบ จากงานจริง) · ตั้งค่า · ข้อมูล · "เร็ว ๆ นี้" ล่างสุด
+// หน้า "ฉัน" (0.9 · ยกระดับ 26 พ.ย.) — หัววงรุ้ง + ชื่อไล่สี + วันต่อเนื่อง · การ์ดกรมท่า (วง 7 วัน · กราฟ · ค้าง/ใกล้ส่ง/ถึงสอบ แตะได้)
+//   · ตั้งค่า (ไอคอนสี · สลับโหมดปุ่มพูดในแถว) · ข้อมูลของฉัน · "เร็ว ๆ นี้" เป็นการ์ดเล็ก · ท้ายหน้า = รุ่น + เกี่ยวกับ
 import { h, ic, put, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
 import { toYMD, fromYMD, addDaysYMD, daysBetween, DOW_SHORT } from '../domain/dates.js';
-import { summary, isLive, nextExam } from '../domain/tasks.js';
+import { summary, isLive, nextExam, streakOf } from '../domain/tasks.js';
 import { SUBJECT_COLORS } from '../data/store.js';
 import { app, S, subj, today } from './shared.js';
 import { MODES, listenMode } from './listen.js';
@@ -11,6 +12,10 @@ import { openOnboarding } from './onboard.js';
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
 
+// สีไอคอนแต่ละแถว (พื้นอ่อน + ไอคอนเข้ม) — ชุดเดียวกับปุ่มสติกเกอร์ในหน้าโน้ต
+const TINT = { blue: ['#E7F0FE', '#0A6CF1'], pink: ['#FCE8F1', '#C2255C'], green: ['#E3F6EC', '#1E8A52'], yellow: ['#FFF4D1', '#B07800'],
+  purple: ['#F0EAFE', '#6B35C2'], teal: ['#E0F5F5', '#0E7C86'], slate: ['#EEF1F6', '#3B4A6B'] };
+
 export function meView(root) {
   const s = S(), td = today(), sum = summary(s.tasks, td);
   const name = s.prefs.display_name || '';
@@ -18,56 +23,75 @@ export function meView(root) {
   const exam = nextExam(s.tasks.filter(isLive), td);
 
   const days = Array.from({ length: 7 }, (_, i) => addDaysYMD(td, i - 6));
-  const doneBy = Object.fromEntries(days.map(d => [d, 0]));
-  for (const t of s.tasks) if (isLive(t) && t.status === 'done' && t.completed_at) { const d = toYMD(new Date(t.completed_at)); if (d in doneBy) doneBy[d]++; }
-  const week = Object.values(doneBy).reduce((a, b) => a + b, 0), max = Math.max(1, ...Object.values(doneBy));
-  const row = (icon, label, value, onclick, sub, extra) => h('button.list-btn', { onclick },
-    h('span.mi', { html: ic(icon) }), h('span.lk', label, sub ? h('small', sub) : ''), value != null ? h('span.lv', value) : '', extra || '', h('span.chev', { html: ic('right') }));
+  const doneBy = Object.fromEntries(days.map(d => [d, 0])), doneDays = new Set();
+  for (const t of s.tasks) if (isLive(t) && t.status === 'done' && t.completed_at) { const d = toYMD(new Date(t.completed_at)); doneDays.add(d); if (d in doneBy) doneBy[d]++; }
+  const week = Object.values(doneBy).reduce((a, b) => a + b, 0), max = Math.max(3, ...Object.values(doneBy)); // 1 งานไม่เต็มแท่ง
+  const streak = streakOf(doneDays, td);
+  const row = (icon, tint, label, value, onclick, { sub, extra } = {}) => h('button.list-btn', { onclick },
+    h('span.mi', { style: { '--mb': TINT[tint][0], '--mc': TINT[tint][1] }, html: ic(icon) }), h('span.lk', label, sub ? h('small', sub) : ''), value != null ? h('span.lv', value) : '', extra || '', h('span.chev', { html: ic('right') }));
   const left = week + sum.open, pct = left ? week / left : 0, C = 2 * Math.PI * 36;
   const nSubj = s.subjects.filter(x => !x.hidden).length;
+  const ringOn = h('span.rs', { html: `<svg viewBox="0 0 84 84"><defs><linearGradient id="me-rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9CC3FF"/><stop offset="1" stop-color="#4C8DFF"/></linearGradient></defs><circle cx="42" cy="42" r="36"/><circle class="on" cx="42" cy="42" r="36" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${C.toFixed(1)}"/></svg>` });
+  requestAnimationFrame(() => requestAnimationFrame(() => ringOn.querySelector('.on')?.setAttribute('stroke-dashoffset', (C * (1 - pct)).toFixed(1)))); // วงค่อย ๆ เต็ม
+  const mode = listenMode();
+  const setMode = m => async e => { e.stopPropagation(); if (m === listenMode()) return; await app.store.setPref('listen_mode', m); toast(`ปุ่มพูดจะเริ่มที่ "${MODES[m]}"`); };
+  const soon = (icon, label, onclick) => h('button.soon-tile', { onclick }, h('span.si', { html: ic(icon) }), h('b', label), h('small', 'ยังไม่เปิด'));
+  const examSubj = exam && subj(exam.subject_id);
 
   put(root,
-    h('div.meline', h('span.avatar.big', (name || 'ฉ').slice(0, 1)),
-      h('div', h('b', name || 'ยังไม่ได้ตั้งชื่อ'), h('small', `${nSubj} วิชา`)),
-      h('button.mename', { onclick: editName }, name ? 'แก้ชื่อ' : 'ตั้งชื่อ')),
-    // การ์ดกรมท่าใบเดียว: ความคืบหน้า 7 วัน · กราฟ · ตัวเลขจากงานจริง
+    // หัว: วงรุ้ง + ชื่อไล่สี (ชุดเดียวกับหน้าแรก) · ไฟต่อเนื่อง
+    h('section.mehero',
+      h('button.mavatar', { onclick: editName, 'aria-label': name ? 'แก้ชื่อ' : 'ตั้งชื่อ' }, h('span', (name || 'ฉ').slice(0, 1)), h('i', { html: ic('edit') })),
+      h('div.mh-t',
+        h('button.mh-name' + (name ? '' : '.unset'), { onclick: editName }, name || 'ตั้งชื่อเล่น'),
+        h('small', `${nSubj} วิชา · ทำเสร็จแล้ว ${sum.done} งาน`),
+        h('span.streak' + (streak ? '' : '.zero'), { html: ic('flame') }, streak ? `ทำต่อเนื่อง ${streak} วัน` : 'ทำงานเสร็จสัก 1 งาน เริ่มนับวันแรก'))),
+    // การ์ดกรมท่าใบเดียว: ความคืบหน้า 7 วัน · กราฟ · ตัวเลขจากงานจริง (แตะตัวเลขไปหน้างาน)
     h('section.mecard', { 'aria-label': 'สรุปงาน' },
       h('div.mc-top',
-        h('div.ring', { role: 'img', 'aria-label': `ทำเสร็จ ${week} จาก ${left} งาน` },
-          h('span.rs', { html: `<svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="36"/><circle class="on" cx="42" cy="42" r="36" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - pct)).toFixed(1)}"/></svg>` }),
-          h('b', `${week}/${left}`)),
-        h('div', h('small', '7 วันนี้'), h('strong', week ? `ทำเสร็จ ${week} งาน` : 'ยังไม่มีงานเสร็จ', h('br'), sum.open ? `เหลืออีก ${sum.open}` : 'ไม่มีงานค้าง'))),
-      h('div.week', { role: 'img', 'aria-label': `งานที่ทำเสร็จ 7 วันล่าสุด รวม ${week} งาน` }, days.map(d => {
+        h('div.ring', { role: 'img', 'aria-label': `ทำเสร็จ ${week} จาก ${left} งาน` }, ringOn, h('b', `${week}/${left}`)),
+        h('div', h('small', '7 วันนี้'), h('strong', week ? `ทำเสร็จ ${week} งาน` : 'ยังไม่มีงานเสร็จ', h('br'), h('span.mc-left', sum.open ? `เหลืออีก ${sum.open}` : 'ไม่มีงานค้าง')))),
+      h('div.week', { role: 'img', 'aria-label': `งานที่ทำเสร็จ 7 วันล่าสุด รวม ${week} งาน` }, days.map((d, k) => {
         const n = doneBy[d];
-        return h('div.wcol' + (d === td ? '.today' : ''), h('div.wbar', h('i', { style: { height: `${n ? Math.max(12, n / max * 100) : 6}%` } }), n ? h('em', String(n)) : ''),
-          h('span', DOW_SHORT[fromYMD(d).getDay()].replace('.', '')));
+        return h('div.wcol' + (d === td ? '.today' : ''), { style: { '--k': k } },
+          h('div.wbar', n ? h('i', { style: { height: `${Math.max(16, n / max * 100)}%` } }, h('em', String(n))) : h('i.none')),
+          h('span', d === td ? 'วันนี้' : DOW_SHORT[fromYMD(d).getDay()].replace('.', '')));
       })),
       h('div.stats',
-        h('div.stat', h('b', String(sum.open)), h('small', 'งานค้าง')),
-        h('div.stat', h('b', String(sum.soon)), h('small', 'ใกล้ส่ง')),
-        h('div.stat.r', h('b', exam ? String(Math.max(0, daysBetween(td, exam.due_date))) : '—'), h('small', exam ? `วันถึงสอบ${subj(exam.subject_id).id ? ' ' + subj(exam.subject_id).name.replace(/^ภาษา/, '') : ''}` : 'ยังไม่มีสอบ')))),
+        h('button.stat', { onclick: () => { location.hash = '#/tasks'; } }, h('b', String(sum.open)), h('small', 'งานค้าง')),
+        h('button.stat', { onclick: () => { location.hash = '#/tasks'; } }, h('b', String(sum.soon)), h('small', 'ใกล้ส่ง')),
+        h('button.stat.r', { onclick: () => (exam ? app.openNotes(exam.id) : (location.hash = '#/tasks')) },
+          h('b', exam ? String(Math.max(0, daysBetween(td, exam.due_date))) : '—'), h('small', exam ? `วันถึงสอบ${examSubj.id ? ' ' + examSubj.name.replace(/^ภาษา/, '') : ''}` : 'ยังไม่มีสอบ')))),
+    h('h2.msec', 'ตั้งค่า'),
     h('div.mlist',
-      row('layout', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, null, h('img.mthumb', { src: stylePreview(noteStyle()), alt: '' })),
-      row('mic', 'ปุ่มพูด เริ่มที่', MODES[listenMode()], toggleListen),
-      row('book', 'วิชาของฉัน', `${nSubj} วิชา`, subjectsModal),
-      row('spark', 'งานตัวอย่าง', hasSamples ? 'ลบออก' : 'ลองใส่', toggleSamples),
-      row('reset', 'ตอบแบบสอบถามเริ่มต้นใหม่', null, () => openOnboarding({ redo: true }))),
+      row('layout', 'blue', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, { extra: h('img.mthumb', { src: stylePreview(noteStyle()), alt: '' }) }),
+      // โหมดปุ่มพูด: สลับในแถวเลย ไม่ต้องเปิดกล่อง
+      h('div.list-btn.mrow-seg', { role: 'group', 'aria-label': 'ปุ่มพูด เริ่มที่' },
+        h('span.mi', { style: { '--mb': TINT.pink[0], '--mc': TINT.pink[1] }, html: ic('mic') }), h('span.lk', 'ปุ่มพูด เริ่มที่'),
+        h('span.mseg', ['self', 'teacher'].map(m => h('button', { 'aria-pressed': String(m === mode), 'aria-label': MODES[m], onclick: setMode(m) }, m === 'self' ? 'พูดเอง' : 'ฟังครู')))),
+      row('book', 'green', 'วิชาของฉัน', `${nSubj} วิชา`, subjectsModal),
+      row('spark', 'yellow', 'งานตัวอย่าง', hasSamples ? 'ลบออก' : 'ลองใส่', toggleSamples),
+      row('reset', 'purple', 'ตอบแบบสอบถามเริ่มต้นใหม่', null, () => openOnboarding({ redo: true }))),
+    h('h2.msec', 'ข้อมูลของฉัน'),
     h('div.mlist',
-      row('save', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData),
-      row('restore', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
-      row('lock', 'ข้อมูลและความเป็นส่วนตัว', s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal),
-      row('info', 'เกี่ยวกับ SABAii.com', `รุ่น ${globalThis.SABAII_VERSION || ''}`, () => openModal({ title: 'เกี่ยวกับ SABAii.com', body: h('div',
-        h('p', 'แอปจัดการงานเรียน: เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง'),
-        h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง ยังไม่มีบัญชี การซิงก์ การอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) }))),
-    // ยังไม่เปิด: อยู่ล่างสุด จาง ๆ
-    h('p.msoon', 'เร็ว ๆ นี้'),
-    h('div.mlist.soon',
-      row('link', 'Google Classroom', 'ยังไม่เปิด', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว')),
-      row('users', 'ห้องเรียน', 'ยังไม่เปิด', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้')),
-      row('bell', 'การแจ้งเตือน', 'ยังไม่เปิด', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') }))),
+      row('save', 'teal', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData),
+      row('restore', 'teal', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
+      row('lock', 'slate', 'ข้อมูลและความเป็นส่วนตัว', s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal)),
+    // ยังไม่เปิด: การ์ดเล็ก 3 ใบ จาง ๆ
+    h('h2.msec.msoon', 'เร็ว ๆ นี้'),
+    h('div.soon-grid',
+      soon('link', 'Google Classroom', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว')),
+      soon('users', 'ห้องเรียน', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้')),
+      soon('bell', 'การแจ้งเตือน', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') }))),
+    h('button.mfoot', { onclick: aboutModal, 'aria-label': 'เกี่ยวกับ SABAii.com' }, h('span', h('b', 'SABAii.com'), ` · รุ่น ${globalThis.SABAII_VERSION || ''}`), h('small', { html: ic('lock') + 'งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น' })),
   );
 }
 
+function aboutModal() {
+  openModal({ title: 'เกี่ยวกับ SABAii.com', body: h('div',
+    h('p', 'แอปจัดการงานเรียน: เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง'),
+    h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง ยังไม่มีบัญชี การซิงก์ การอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) });
+}
 function stylePicker() {
   const cur = noteStyle();
   openModal({ title: 'หน้าโน้ตงาน', label: 'เลือกหน้าตาหน้าโน้ตงาน', body: h('div',
@@ -78,11 +102,6 @@ function stylePicker() {
 }
 function notYet(name, what) {
   openModal({ title: name, body: h('div', h('p', what), h('p.muted', 'ยังไม่เปิดในรุ่นนี้ — ต้องมีบัญชีและเซิร์ฟเวอร์ก่อน ตอนนี้งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น')) });
-}
-async function toggleListen() {
-  const next = listenMode() === 'teacher' ? 'self' : 'teacher';
-  await app.store.setPref('listen_mode', next);
-  toast(`ปุ่มพูดจะเริ่มที่ "${MODES[next]}"`);
 }
 function editName() {
   const inp = h('input.field', { id: 'me-name', value: S().prefs.display_name || '', maxlength: 40, 'aria-label': 'ชื่อที่แสดง', placeholder: 'ชื่อเล่น' });
