@@ -1261,6 +1261,7 @@ body.note-mode .pane-home *, body:has(#page:not([hidden])) .pane-home * { animat
 .sk-papers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .sk-papers button { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 4px 6px; border-radius: 14px; font: 600 12px var(--disp); color: var(--text-2); }
 .sk-papers button[aria-pressed="true"] { background: var(--blue-light); color: var(--blue); }
+.sk-papers button span { white-space: nowrap; font-size: 11.5px; letter-spacing: -.01em; }
 .pp { width: 40px; height: 56px; border-radius: 4px; background-color: #FFFDF8; box-shadow: 0 0 0 1px #E1E7F2, 0 3px 6px rgba(11,27,77,.08); }
 .pp-lined { background-image: linear-gradient(90deg, transparent 7px, rgba(228,84,101,.5) 7px 8px, transparent 8px), repeating-linear-gradient(transparent 0 6px, rgba(10,108,241,.32) 6px 7px); background-position: 0 0, 0 8px; }
 .pp-grid { background-image: linear-gradient(rgba(10,108,241,.22) 1px, transparent 1px), linear-gradient(90deg, rgba(10,108,241,.22) 1px, transparent 1px); background-size: 6px 6px; }
@@ -1284,7 +1285,11 @@ body.note-mode .pane-home *, body:has(#page:not([hidden])) .pane-home * { animat
 .sk-ib:active:not(:disabled) { transform: scale(.92); }
 .sk-ib svg { width: 20px; height: 20px; }
 .sk-close { background: var(--ink); color: #fff; box-shadow: 0 8px 16px -8px rgba(11,27,77,.8); }
-.sk-name { flex: 1; min-width: 0; padding: 0 4px; display: flex; flex-direction: column; line-height: 1.2; }
+.sk-name { flex: 1; min-width: 0; padding: 2px 6px; display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2; text-align: left; border-radius: 12px; }
+.sk-name:active { background: rgba(11,27,77,.06); }
+.sk-name > span { display: flex; align-items: center; gap: 2px; }
+.sk-name > span svg { width: 15px; height: 15px; color: var(--text-2); transition: transform .25s; }
+.sk.strip-on .sk-name > span svg { transform: rotate(180deg); }
 .sk-name b { font: 700 16px var(--disp); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sk-name small { font: 600 12px Inter, var(--disp); color: var(--text-2); }
 .sk-stage { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; perspective: 2200px; }
@@ -1355,3 +1360,50 @@ body.note-mode .pane-home *, body:has(#page:not([hidden])) .pane-home * { animat
 .sk-mi.danger, .sk-mi.danger svg { color: var(--error); }
 body.sk-on #toast { z-index: 60; }
 .sk [hidden] { display: none !important; }
+
+/* ---------- 0.10.1 ยกระดับสมุดจด ---------- */
+.pp-cornell { background-image: linear-gradient(90deg, transparent 12px, rgba(11,27,77,.4) 12px 13px, transparent 13px), linear-gradient(rgba(11,27,77,.4) 1px, transparent 1px), linear-gradient(rgba(11,27,77,.4) 1px, transparent 1px), repeating-linear-gradient(transparent 0 5px, rgba(10,108,241,.28) 5px 6px);
+  background-size: 100% 41px, 100% 100%, 100% 100%, 100% 100%; background-position: 0 6px, 0 6px, 0 46px, 0 0; background-repeat: no-repeat, no-repeat, no-repeat, repeat; }
+.pp-todo { background-image: linear-gradient(90deg, transparent 4px, rgba(11,27,77,.38) 4px 8px, transparent 8px), repeating-linear-gradient(transparent 0 7px, rgba(10,108,241,.3) 7px 8px); background-size: 100% 8px, 100% 100%;
+  background-position: 0 2px, 0 0; background-repeat: repeat-y, repeat; -webkit-mask: none; }
+.pp-board { background: radial-gradient(70% 60% at 50% 40%, #33584D, #1F3B33); box-shadow: 0 0 0 2px #B58A5A, 0 3px 6px rgba(11,27,77,.15); }
+/* ชื่อหน้า → แถบภาพย่อทุกหน้า (ลอยเหนือแถบเครื่องมือ ไม่ดันหน้ากระดาษ) */
+.sk-bottom { position: relative; }
+.sk-strip { position: absolute; left: 10px; right: 10px; bottom: calc(100% + 10px); z-index: 7; display: flex; gap: 10px; overflow-x: auto; padding: 10px 12px; border-radius: 22px; scrollbar-width: none;
+  background: rgba(255,255,255,.86); -webkit-backdrop-filter: blur(24px) saturate(1.8); backdrop-filter: blur(24px) saturate(1.8);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.9), 0 0 0 1px rgba(11,27,77,.07), 0 22px 44px -18px rgba(11,27,77,.5); animation: skpop .25s cubic-bezier(.3,1.3,.5,1); }
+.sk-strip::-webkit-scrollbar { display: none; }
+.sk-film { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 11px Inter, sans-serif; color: var(--text-2); }
+.sk-film canvas, .sk-film i { width: 54px; height: auto; aspect-ratio: 1000 / 1414; border-radius: 4px; box-shadow: 0 0 0 1px rgba(11,27,77,.08), 0 6px 12px -8px rgba(11,27,77,.5); }
+.sk-film.on canvas { box-shadow: 0 0 0 2.5px var(--ink), 0 6px 12px -6px rgba(11,27,77,.6); }
+.sk-film.on { color: var(--ink); }
+.sk-film i { display: grid; place-items: center; border: 2px dashed #CBD3E1; box-shadow: none; color: #8A94A8; }
+.sk-film:active canvas { transform: scale(.94); }
+/* ซูม */
+.sk-zoom { position: absolute; top: 4px; right: 12px; z-index: 7; display: flex; align-items: center; gap: 5px; height: 34px; padding: 0 12px 0 10px; border-radius: 17px;
+  background: var(--ink); color: #fff; font: 600 13px Inter, sans-serif; box-shadow: 0 8px 18px -8px rgba(11,27,77,.8); animation: skpop .2s cubic-bezier(.3,1.4,.5,1); }
+.sk-zoom svg { width: 16px; height: 16px; }
+.sk-paper.zoomed { transition: none; }
+.sk-stage { overflow: hidden; }
+/* ค้างแล้วกลายเป็นรูปทรง: วาบฟ้าสั้น ๆ */
+.sk-paper.snap .sk-ink { animation: sksnap .45s ease-out; }
+@keyframes sksnap { 0% { filter: drop-shadow(0 0 0 rgba(10,108,241,0)); } 30% { filter: drop-shadow(0 0 5px rgba(10,108,241,.9)); } 100% { filter: drop-shadow(0 0 0 rgba(10,108,241,0)); } }
+/* สีเลือกเอง */
+.sk-own { position: relative; width: 26px; height: 26px; border-radius: 50%; flex: none; cursor: pointer; overflow: hidden;
+  background: conic-gradient(#E45465, #F4A340, #FFE066, #16B76A, #0EA5B7, #0A6CF1, #8B5CF6, #D9468F, #E45465); box-shadow: inset 0 0 0 2px rgba(255,255,255,.7); }
+.sk-own.on { background: var(--sw); box-shadow: 0 0 0 2.5px #fff, 0 0 0 4.5px var(--sw); overflow: visible; }
+.sk-own.on::after { content: ""; position: absolute; right: -3px; bottom: -3px; width: 11px; height: 11px; border-radius: 50%; background: conic-gradient(#E45465, #FFE066, #16B76A, #0A6CF1, #8B5CF6, #E45465); box-shadow: 0 0 0 1.5px #fff; }
+.sk-own input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.sk-hint.tip { display: none; }
+@media (min-width: 560px) { .sk-hint.tip { display: block; padding-left: 10px; border-left: 1px solid #E3E8F0; } }
+/* กระดานดำ */
+.sk.dark-paper .sk-paper { background: #23443A; box-shadow: 0 0 0 5px #B58A5A, 0 0 0 6px rgba(0,0,0,.12), 0 30px 50px -24px rgba(11,27,77,.7); border-radius: 3px; }
+.sk.dark-paper .sk-paper::after { display: none; }
+.sk.dark-paper .sk-ta { outline-color: rgba(255,255,255,.6); background: rgba(255,255,255,.06); }
+/* แตะปก: ปกพลิกเปิด หน้าลอยขึ้น */
+.bk-fly-dim { position: fixed; inset: 0; z-index: 48; background: rgba(233,237,244,.92); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); pointer-events: none; }
+.bk-fly { position: fixed; z-index: 49; perspective: 1400px; transform-origin: 0 0; pointer-events: none; }
+.bk-fly-page { position: absolute; inset: 0; border-radius: 3px 8px 8px 3px; overflow: hidden; background: #FFFDF8; box-shadow: 0 30px 60px -28px rgba(11,27,77,.6), 0 0 0 1px rgba(11,27,77,.06); }
+.bk-fly-page canvas { width: 100%; height: 100%; display: block; }
+.bk-fly .bk-fly-cover { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 0 50%; backface-visibility: hidden; transform-style: preserve-3d; }
+.bk-fly .bk-label { left: 18%; right: 25%; top: 10%; }

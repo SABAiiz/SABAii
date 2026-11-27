@@ -151,6 +151,94 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const kept = await page.evaluate(() => ({ b: window.__sabaii.state.books.length, p: window.__sabaii.state.pages.length, t: window.__sabaii.state.pages.flatMap(p => p.texts).map(t => t.v) }));
   check('เปิดแอปใหม่: สมุด/หน้า/ข้อความยังอยู่', kept.b === 2 && kept.p === 4 && kept.t.includes('กฎของนิวตัน'), JSON.stringify(kept));
 
+  // ---------- 0.10.1 ยกระดับ ----------
+  await page.locator('.bk-cover', { hasText: 'ฟิสิกส์' }).click();
+  await page.waitForSelector('.bk-fly'); await wait(330);
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/09-cover-open.png` });
+  await page.waitForSelector('#sk.in'); await wait(800);
+  check('แตะปก: ปกพลิกเปิด แล้วเข้าหน้าเขียน (ของที่ลอยหายหมด)', (await page.locator('.bk-fly, .bk-fly-dim').count()) === 0 && await page.locator('#sk').isVisible());
+  const cur = () => page.evaluate(() => { const b = window.__sabaii.state.books.find(x => x.title === 'ฟิสิกส์'); return window.__sabaii.state.pages.find(p => p.id === b.last_page); });
+  const bx = await page.locator('.sk-paper').boundingBox();
+  const Q = (x, y) => [bx.x + bx.width * x, bx.y + bx.height * y];
+  await page.locator('.sk-name').click(); await wait(300);
+  check('แตะ "หน้า x / y" = แถบภาพย่อทุกหน้า', await page.locator('.sk-strip').isVisible() && (await page.locator('.sk-film canvas').count()) === 3);
+  await page.locator('.sk-film').nth(2).click(); await wait(800);
+  check('แตะภาพย่อในแถบ = ไปหน้านั้น', (await page.locator('.sk-name small').textContent()) === 'หน้า 3 / 3' && !(await page.locator('.sk-strip').isVisible()));
+  // ค้างไว้ = รูปทรงเป๊ะ
+  await page.locator('.sk-tool[data-tool="pen"]').click();
+  await page.mouse.move(...Q(.5 + .25, .5)); await page.mouse.down();
+  for (let i = 1; i <= 40; i++) { const a = i / 40 * Math.PI * 2; await page.mouse.move(...Q(.5 + .25 * Math.cos(a) + Math.sin(i * 1.7) * .006, .5 + .16 * Math.sin(a) + Math.cos(i * 2.1) * .004)); }
+  await wait(800); await page.mouse.up(); await wait(600);
+  const snapped = (await cur()).strokes.at(-1);
+  check('วาดวงกลมเบี้ยว ๆ แล้วค้างไว้ → วงกลมเป๊ะ', snapped?.sh === 1 && snapped.p.length === 147, snapped ? `sh=${snapped.sh} n=${snapped.p.length / 3}` : 'ไม่มีเส้น');
+  await page.mouse.move(...Q(.2, .2)); await page.mouse.down();
+  for (let i = 1; i <= 20; i++) await page.mouse.move(...Q(.2 + i * .02, .2 + Math.sin(i) * .01));
+  await page.mouse.up(); await wait(600);
+  const free = (await cur()).strokes.at(-1);
+  check('เขียนปกติ (ไม่ค้าง) = ลายมือเดิม มีหนา-บางตามความเร็ว', !free.sh && new Set(free.p.filter((v, i) => i % 3 === 2)).size > 2);
+  // ซูม (ctrl + ล้อเมาส์ = ถ่างนิ้วบนทัชแพด)
+  await page.mouse.move(...Q(.4, .3));
+  await page.keyboard.down('Control'); await page.mouse.wheel(0, -120); await page.keyboard.up('Control'); await wait(400);
+  const zl = await page.locator('.sk-zoom').textContent().catch(() => '');
+  check('ซูมเข้าได้ · มีปุ่มบอก % และกลับขนาดเดิม', await page.locator('.sk-zoom').isVisible() && /\d+%/.test(zl) && parseInt(zl) > 150, zl);
+  await page.locator('.sk-tool[data-tool="pen"]').click();
+  const zx = await page.locator('.sk-paper').boundingBox();
+  const n0 = (await cur()).strokes.length;
+  await page.mouse.move(zx.x + 300, zx.y + 400); await page.mouse.down(); await page.mouse.move(zx.x + 360, zx.y + 420, { steps: 6 }); await page.mouse.up(); await wait(600);
+  const zs = (await cur()).strokes.at(-1);
+  check('ตอนซูม เขียนตรงตำแหน่งนิ้ว', (await cur()).strokes.length === n0 + 1 && Math.abs(zs.p[0] - (300 / zx.width) * 1000) < 6, `${zs.p[0]}`);
+  await shot('10-zoom');
+  await page.locator('.sk-zoom').click(); await wait(400);
+  check('แตะปุ่ม % = กลับ 100%', !(await page.locator('.sk-zoom').isVisible()));
+  // ทำสำเนาหน้า · กระดานดำใช้สีชอล์ก
+  await page.locator('.sk-ib[aria-label="ตั้งค่าหน้า"]').click(); await wait(200);
+  await page.locator('.sk-mi', { hasText: 'ทำสำเนาหน้านี้' }).click(); await wait(900);
+  check('ทำสำเนาหน้า → หน้า 4 / 4 มีเส้นครบเท่าหน้าเดิม', (await page.locator('.sk-name small').textContent()) === 'หน้า 4 / 4' && (await cur()).strokes.length >= n0 + 1);
+  await page.locator('.sk-ib[aria-label="ตั้งค่าหน้า"]').click(); await wait(200);
+  await page.locator('.sk-menu .sk-papers button', { hasText: 'กระดานดำ' }).click(); await wait(300);
+  await page.locator('.sk-tool[data-tool="pen"]').click();
+  check('กระดานดำ: จานสีเป็นชอล์ก (ขาวเป็นสีแรก)', await page.locator('.sk.dark-paper').count() === 1 && (await page.locator('.sk-colors button').first().getAttribute('aria-label')) === 'สี #FFFFFF');
+  await page.locator('.sk-colors button').nth(1).click();
+  await page.mouse.move(...Q(.18, .12)); await page.mouse.down();
+  for (let i = 1; i <= 24; i++) await page.mouse.move(...Q(.18 + i * .025, .12 + Math.sin(i * .9) * .015)); await page.mouse.up(); await wait(600);
+  check('เขียนบนกระดานดำได้ด้วยชอล์กเหลือง', (await cur()).strokes.at(-1).c === '#FFE066');
+  await shot('11-board');
+  await page.locator('.sk-ib[aria-label="ตั้งค่าหน้า"]').click(); await wait(250);
+  await shot('12-papers');
+  await page.keyboard.press('Escape'); await wait(100);
+  await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(400);
+  await shot('13-overview2');
+
+  // ---------- นิ้วจริง (CDP): นิ้วเดียวเขียน · ถ่างสองนิ้ว = ซูม · ปัดสองนิ้ว = พลิกหน้า ----------
+  const tctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, serviceWorkers: 'block' });
+  await tctx.route('http://sabaii.test/**', r => {
+    let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname)); if (f.endsWith('/')) f += 'index.html';
+    if (!f.startsWith(ROOT) || !fs.existsSync(f)) return r.fulfill({ status: 404, body: '' });
+    r.fulfill({ status: 200, contentType: TYPES[path.extname(f)] || 'application/octet-stream', body: fs.readFileSync(f) });
+  });
+  const tp = await tctx.newPage();
+  tp.on('pageerror', e => errors.push('นิ้ว: ' + e.message));
+  await tp.goto('http://sabaii.test/#/notebook'); await tp.locator('#ob-skip').tap(); await wait(400);
+  await tp.locator('.bk-new').tap(); await wait(400); await tp.locator('.bk-in').fill('นิ้ว'); await tp.locator('.mfoot .btn.primary').tap();
+  await tp.waitForSelector('#sk.in'); await wait(600);
+  const cdp = await tctx.newCDPSession(tp);
+  const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
+  const tb = await tp.locator('.sk-paper').boundingBox(), cx = tb.x + tb.width / 2, cy = tb.y + tb.height / 2;
+  await touch('touchStart', [[cx - 80, cy]]); for (let i = 1; i <= 12; i++) await touch('touchMove', [[cx - 80 + i * 12, cy + Math.sin(i) * 10]]); await touch('touchEnd', []); await wait(600);
+  const tStrokes = () => tp.evaluate(() => window.__sabaii.state.pages[0].strokes.length);
+  check('นิ้ว: นิ้วเดียว = เขียน', (await tStrokes()) === 1);
+  await touch('touchStart', [[cx - 30, cy], [cx + 30, cy]]);
+  for (let i = 1; i <= 10; i++) await touch('touchMove', [[cx - 30 - i * 9, cy - i * 3], [cx + 30 + i * 9, cy + i * 3]]);
+  await touch('touchEnd', []); await wait(400);
+  const tz = await tp.locator('.sk-zoom').textContent().catch(() => '');
+  check('นิ้ว: ถ่างสองนิ้ว = ซูม (ไม่เกิดเส้นเพิ่ม)', await tp.locator('.sk-zoom').isVisible() && parseInt(tz) > 200 && (await tStrokes()) === 1, tz);
+  await tp.locator('.sk-zoom').tap(); await wait(400);
+  await touch('touchStart', [[cx + 60, cy - 20], [cx + 60, cy + 20]]);
+  for (let i = 1; i <= 10; i++) await touch('touchMove', [[cx + 60 - i * 14, cy - 20], [cx + 60 - i * 14, cy + 20]]);
+  await touch('touchEnd', []); await wait(900);
+  check('นิ้ว: ปัดสองนิ้วไปซ้ายที่หน้าสุดท้าย = หน้าใหม่ พลิกไป', (await tp.locator('.sk-name small').textContent()) === 'หน้า 2 / 2' && (await tStrokes()) === 1);
+  await tctx.close();
+
   check('ไม่มีข้อผิดพลาดในหน้า', !errors.length, errors.join(' | '));
   console.log(`\nรวม ${results.filter(Boolean).length}/${results.length} ผ่าน`);
   await browser.close();

@@ -74,3 +74,40 @@ test('ที่เก็บ: สร้างสมุดได้หน้าแ
   await st.deleteBook(b.id);
   assert.equal(st.state.books.length, 0); assert.equal(st.state.pages.length, 0);
 });
+
+// 0.10.1
+const wobble = f => { const p = []; for (let i = 0; i <= 60; i++) { const [x, y] = f(i / 60); p.push(x + Math.sin(i * 1.7) * 3, y + Math.cos(i * 2.3) * 3, .5); } return p; };
+test('ค้างไว้ = รูปทรงเป๊ะ: วงกลม · สี่เหลี่ยม · สามเหลี่ยม · เส้นตรง · ขีดมั่ว ๆ ไม่แปลง', () => {
+  assert.equal(G.recognize(wobble(t => [300 + 120 * Math.cos(t * 6.28), 300 + 90 * Math.sin(t * 6.28)]))?.kind, 'circle');
+  const sq = t => { const s = ((t + .1) % 1) * 4, k = Math.floor(s) % 4, u = s - Math.floor(s); return [[100 + 200 * u, 100], [300, 100 + 200 * u], [300 - 200 * u, 300], [100, 300 - 200 * u]][k]; };
+  assert.equal(G.recognize(wobble(sq))?.kind, 'rect');
+  const V = [[200, 100], [350, 360], [60, 340]];
+  const tri = t => { const s = t * 3, k = Math.floor(s) % 3, u = s - Math.floor(s), a = V[k], b = V[(k + 1) % 3]; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]; };
+  const tr = G.recognize(wobble(tri)); assert.equal(tr?.kind, 'triangle'); assert.equal(tr.p.length, 12);
+  const ln = G.recognize(wobble(t => [100 + 400 * t, 200 + 50 * t])); assert.equal(ln?.kind, 'line'); assert.equal(ln.p.length, 6);
+  assert.equal(G.recognize(wobble(t => [100 + 400 * t, 200 + Math.sin(t * 40) * 60])), null);
+  assert.equal(G.recognize([0, 0, .5, 5, 5, .5, 10, 0, .5, 12, 3, .5]), null, 'เล็กเกินไป');
+});
+test('หมึก: ช้า = หนา เร็ว = บาง · ขอบเส้นหัวท้ายเรียว', () => {
+  let slow = .5, fast = .5;
+  for (let i = 0; i < 20; i++) { slow = G.speedPressure(slow, .1); fast = G.speedPressure(fast, 3); }
+  assert.ok(slow > .7 && fast < .3, `${slow} ${fast}`);
+  const p = []; for (let i = 0; i < 12; i++) p.push(i * 20, 0, .5);
+  const o = G.inkOutline(p, 10);
+  assert.equal(o.L.length, 12);
+  assert.ok(o.rad[0] < o.rad[6] && o.rad[11] < o.rad[6], 'หัวท้ายเรียวกว่ากลางเส้น');
+  assert.ok(Math.abs(o.L[6][1] - o.R[6][1] - 2 * o.rad[6]) < 1e-9);
+  assert.equal(G.inkOutline([0, 0, .5, 1, 1, .5], 6), null);
+});
+test('ทำสำเนาหน้า: วางต่อจากหน้าเดิม เนื้อหาเหมือนกัน แก้ฉบับใหม่ไม่กระทบของเดิม', async () => {
+  const st = createStore(memoryDB()); await st.load();
+  const b = await st.addBook({ title: 'x' });
+  const [p0] = st.pagesOf(b.id);
+  await st.addPage(b.id);
+  await st.savePage({ ...p0, paper: 'board', strokes: [line('s', 0, 0, 9, 9)], texts: [{ id: 't', x: 0, y: 0, w: 9, s: 9, c: '#fff', v: 'ก' }] }, false);
+  const d = await st.duplicatePage(p0.id);
+  const ps = st.pagesOf(b.id);
+  assert.equal(ps[1].id, d.id); assert.equal(ps.length, 3);
+  assert.equal(d.paper, 'board'); assert.equal(d.strokes.length, 1); assert.equal(d.texts[0].v, 'ก');
+  d.texts[0].v = 'ข'; assert.equal(st.pagesOf(b.id)[0].texts[0].v, 'ก');
+});

@@ -151,6 +151,13 @@ export function createStore(db, { now = () => new Date() } = {}) {
     await db.put('pages', p); state.pages.push(p);
     return p;
   }
+  /** ทำสำเนาหน้า (วางต่อจากหน้าเดิม) */
+  async function duplicatePage(id) {
+    const src = state.pages.find(x => x.id === id);
+    if (!src) return null;
+    const p = await addPage(src.book_id, id);
+    return savePage({ ...p, paper: src.paper, strokes: src.strokes.slice(), texts: src.texts.map(t => ({ ...t })), imgs: src.imgs.map(i => ({ ...i })) }, false);
+  }
   async function removePage(id) {
     const p = state.pages.find(x => x.id === id);
     if (!p) return;
@@ -231,7 +238,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
     addTasks, patchTask, removeTask, restoreTask, purgeTask,
     addAttachment, removeAttachment, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
     ensureSubject, updateSubject, deleteSubject,
-    addBook, updateBook, deleteBook, pagesOf, savePage, addPage, removePage, setPref, exportJSON, restoreBackup, addSamples, removeSamples,
+    addBook, updateBook, deleteBook, pagesOf, savePage, addPage, duplicatePage, removePage, setPref, exportJSON, restoreBackup, addSamples, removeSamples,
     subjectsById: () => Object.fromEntries(state.subjects.map(s => [s.id, s])),
   };
 }
