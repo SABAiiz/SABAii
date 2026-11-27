@@ -2,9 +2,9 @@
 // เปลี่ยนหน้าแบบพลิกกระดาษ (ปุ่ม ‹ › · ปัดสองนิ้ว · ใช้ปากกาสไตลัสอยู่ = ปัดนิ้วเดียวได้) · ออก = หน้าเขียนย่อลงไปเป็นภาพย่อในหน้า "ทุกหน้า" ของสมุด
 // เส้น/ข้อความเก็บเป็นหน่วยหน้ากระดาษ (domain/pages.js) วาดใหม่ได้ทุกขนาดจอ · ระหว่างเขียนบันทึกเงียบ ๆ ทุก 0.4 วินาที
 import { h, put, toast, confirmBox, openModal, closeModal, onBack, pushBack, dropBack } from '../ui/kit.js';
-import { app, S, subj, visibleSubjects } from './shared.js';
+import { app, S, subj } from './shared.js';
 import { pickImage, prepareImage } from './images.js';
-import { relDay, toYMD } from '../domain/dates.js';
+import { relDay, toYMD, MONTH_SHORT, beYear } from '../domain/dates.js';
 import * as G from '../domain/pages.js';
 import { SUBJECT_COLORS } from '../data/store.js';
 
@@ -146,6 +146,70 @@ export function wrapText(ctx, text, maxW) {
 const textLines = t => { const c = mctx(); c.font = `500 ${t.s}px ${FONT}`; return wrapText(c, t.v || ' ', t.w); };
 const textH = t => Math.max(1, textLines(t).length) * t.s * 1.45;
 
+/* =================== หน้าปก + สารบัญอัตโนมัติ (0.11) ===================
+   เรียบ ๆ แบบหน้าแรกของสมุดจริง: แถบสีสันปก · ป้ายเล็ก · ชื่อเล่มตัวใหญ่ · เส้นบาง · สารบัญมีจุดนำสายตาถึงเลขหน้า
+   สารบัญดึงหัวข้อจากข้อความตัวใหญ่บนสุดของแต่ละหน้าเอง (G.pageTitle) */
+/** หน้าตาของเล่ม: สมุดวิชาใช้ชื่อ/สีของวิชา (เปลี่ยนชื่อวิชาแล้วตามเอง) · เล่มอื่นเป็น "โปรเจกต์" */
+export function bookFace(b) {
+  const s = b?.subject_id && S().subjects.find(x => x.id === b.subject_id);
+  return { title: s ? s.name : b?.title || 'สมุดจด', color: s ? s.color : b?.color || '#0B1B4D', kind: s ? 'วิชา' : 'โปรเจกต์', subject: s || null };
+}
+const thaiDate = iso => { const d = new Date(iso); return `${d.getDate()} ${MONTH_SHORT[d.getMonth()]} ${String(beYear(d.getFullYear())).slice(-2)}`; };
+function coverInfo(page) {
+  const b = S().books.find(x => x.id === page.book_id);
+  if (!b) return null;
+  const pages = app.store.pagesOf(b.id);
+  return { ...bookFace(b), created: b.created_at, total: pages.length, toc: G.tocOf(pages), year: beYear(new Date(b.created_at).getFullYear()) };
+}
+const fitText = (ctx, t, w) => { if (ctx.measureText(t).width <= w) return t; while (t.length > 1 && ctx.measureText(t + '…').width > w) t = t.slice(0, -1); return t + '…'; };
+const COVER_ROW = 78, COVER_END = PH - 110;
+/** ตำแหน่งทุกอย่างบนหน้าปก (หน่วยหน้า) — ใช้ทั้งตอนวาดและตอนทำปุ่มแตะสารบัญ */
+export function coverLayout(info) {
+  const c = mctx(); c.font = `700 88px ${FONT}`;
+  const lines = wrapText(c, info.title, 820).slice(0, 3);
+  const titleY = 280, rule = titleY + lines.length * 102 + 30, meta = rule + 34, head = meta + 120; // เว้นบนให้พ้นแถบปุ่มลอย
+  const room = Math.max(0, Math.floor((COVER_END - (head + 78)) / COVER_ROW));
+  const rows = info.toc.length > room ? info.toc.slice(0, Math.max(0, room - 1)) : info.toc;
+  return { lines, titleY, rule, meta, head, rows: rows.map((r, i) => ({ ...r, y: head + 92 + i * COVER_ROW })), more: info.toc.length - rows.length };
+}
+function drawCover(ctx, info, H) {
+  const L = coverLayout(info), ink = '#0B1B4D', mute = '#7A8499';
+  ctx.save();
+  ctx.fillStyle = info.color; ctx.fillRect(0, 0, 26, H);
+  ctx.fillStyle = 'rgba(11,27,77,.08)'; ctx.fillRect(26, 0, 2, H);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = info.color; ctx.font = `700 26px ${FONT}`;
+  ctx.fillText(`${info.kind} · ${info.year}`, 96, 236);
+  ctx.fillStyle = ink; ctx.font = `700 88px ${FONT}`;
+  L.lines.forEach((l, i) => ctx.fillText(l, 92, L.titleY + 72 + i * 102));
+  ctx.fillStyle = ink; ctx.fillRect(96, L.rule, 808, 3);
+  ctx.fillStyle = mute; ctx.font = `500 28px ${FONT}`;
+  ctx.fillText(`เริ่ม ${thaiDate(info.created)}   ·   ${info.total} หน้า`, 96, L.meta + 30);
+  ctx.fillStyle = ink; ctx.font = `700 36px ${FONT}`;
+  ctx.fillText('สารบัญ', 96, L.head + 34);
+  if (!L.rows.length) {
+    ctx.fillStyle = mute; ctx.font = `500 28px ${FONT}`;
+    ctx.fillText('พิมพ์หัวข้อตัวใหญ่ไว้บนสุดของแต่ละหน้า', 96, L.head + 104);
+    ctx.fillText('แล้วสารบัญจะขึ้นตรงนี้เอง', 96, L.head + 146);
+  }
+  for (const r of L.rows) {
+    const y = r.y + 30;
+    ctx.fillStyle = info.color; ctx.font = `700 26px Inter, ${FONT}`;
+    ctx.fillText(String(r.n).padStart(2, '0'), 96, y);
+    ctx.font = `500 32px ${FONT}`; ctx.fillStyle = r.title ? ink : mute;
+    const t = fitText(ctx, r.title || `หน้า ${r.n}`, 560);
+    ctx.fillText(t, 160, y);
+    const tw = ctx.measureText(t).width;
+    ctx.fillStyle = mute; ctx.font = `600 26px Inter, ${FONT}`;
+    const num = String(r.n), nw = ctx.measureText(num).width;
+    ctx.fillText(num, 904 - nw, y);
+    ctx.fillStyle = 'rgba(11,27,77,.28)';
+    for (let x = 160 + tw + 20; x < 904 - nw - 18; x += 14) { ctx.beginPath(); ctx.arc(x, y - 8, 2.2, 0, 7); ctx.fill(); }
+  }
+  if (L.more > 0) { ctx.fillStyle = mute; ctx.font = `500 26px ${FONT}`; ctx.fillText(`และอีก ${L.more} หน้า — ดูได้ที่ "ทุกหน้า"`, 160, (L.rows.at(-1)?.y ?? L.head + 40) + COVER_ROW + 30); }
+  ctx.restore();
+}
+
 /** ความสูงหน้า (หน่วย) — หน้ายาวขึ้นเองเมื่อเขียนใกล้ท้ายหน้า */
 export const pageH = p => Math.max(PH, p.h || 0);
 const boxes = new WeakMap(); // กรอบของแต่ละเส้น (ไว้ข้ามเส้นที่อยู่นอกจอ)
@@ -153,8 +217,9 @@ const boxOf = s => { let b = boxes.get(s); if (!b) boxes.set(s, b = G.strokeBox(
 
 /** วาดหน้าทั้งหน้า — ctx ต้องตั้งสเกลเป็นหน่วยหน้ากระดาษไว้แล้ว · u = หน่วยต่อ 1 px บนจอ · view = ช่วง y ที่เห็น (ข้ามของนอกจอ) */
 export function drawPage(ctx, page, u, { hide = null, onImg = null, H = pageH(page), view = null } = {}) {
-  paper(ctx, page.paper, u, H);
-  const dark = G.DARK_PAPERS.includes(page.paper);
+  paper(ctx, page.cover ? 'blank' : page.paper, u, H);
+  if (page.cover) { const info = coverInfo(page); if (info) drawCover(ctx, info, H); }
+  const dark = !page.cover && G.DARK_PAPERS.includes(page.paper);
   const off = (y0, y1) => view && (y1 < view[0] || y0 > view[1]);
   for (const o of page.imgs || []) {
     if (off(o.y, o.y + o.h)) continue;
@@ -186,7 +251,7 @@ export function thumb(page, px = 300) {
 const ed = { open: false };
 const pref = () => S().prefs.sketch || {};
 const pagesNow = () => app.store.pagesOf(ed.book.id);
-const isDark = () => G.DARK_PAPERS.includes(ed.page?.paper);
+const isDark = () => !ed.page?.cover && G.DARK_PAPERS.includes(ed.page?.paper);
 const palOf = t => t === 'hl' ? G.HIGHLIGHTS : isDark() ? G.CHALKS : G.INKS;
 const bag = t => t !== 'hl' && isDark() ? ed.dcolor : ed.color;
 const col = t => bag(t)[t === 'shape' ? 'shape' : t];
@@ -223,7 +288,8 @@ function build() {
   const b = (cls, name, label, on, extra = {}) => h('button.' + cls, { type: 'button', 'aria-label': label, title: label, html: si(name), onclick: on, ...extra });
   ed.base = h('canvas.sk-base'); ed.ink = h('canvas.sk-ink');
   ed.selbox = h('div.sk-selbox', { hidden: true }, h('i.sk-handle'));
-  ed.layer = h('div.sk-layer', ed.selbox); // ชั้นเดียวกับหน้ากระดาษ (หน่วยหน้า) — กรอบเลือก · ช่องพิมพ์
+  ed.toc = h('div.sk-toc');
+  ed.layer = h('div.sk-layer', ed.toc, ed.selbox); // ชั้นเดียวกับหน้ากระดาษ (หน่วยหน้า) — สารบัญแตะได้ · กรอบเลือก · ช่องพิมพ์
   ed.selbar = h('div.sk-selbar', { hidden: true },
     h('button', { type: 'button', onclick: () => selAction('copy'), html: si('copy') + '<span>ทำสำเนา</span>' }),
     h('button', { type: 'button', onclick: () => selAction('del'), html: si('trash') + '<span>ลบ</span>' }));
@@ -369,6 +435,7 @@ function paintChrome() {
   ed.tools.style.setProperty('--pen', col('pen')); ed.tools.style.setProperty('--hl', ed.color.hl);
   ed.root.classList.toggle('dark-paper', isDark());
   if (!ed.strip.hidden) paintStrip();
+  paintToc();
   paintOpts();
 }
 function paintOpts() {
@@ -401,6 +468,13 @@ async function pickTool(k) {
   if (k === 'img') return insertImage();
   if (k !== 'lasso') setSel(null);
   ed.tool = k; paintChrome();
+}
+
+/** หน้าปก: แถวสารบัญแตะแล้วพลิกไปหน้านั้น */
+function paintToc() {
+  const info = ed.page.cover && coverInfo(ed.page);
+  put(ed.toc, info ? coverLayout(info).rows.map(r => h('a', { href: '#', role: 'button', style: { top: r.y - 18 + 'px' }, 'aria-label': `ไปหน้า ${r.n}${r.title ? ' ' + r.title : ''}`,
+    onclick: e => { e.preventDefault(); turnTo(pagesNow().findIndex(p => p.id === r.id)); } })) : '');
 }
 
 /* ---------- ประวัติ (เลิกทำ/ทำซ้ำ) แยกตามหน้า ---------- */
@@ -485,7 +559,7 @@ function bindPointer() {
   }
 
   el.addEventListener('pointerdown', e => {
-    if (ed.busy || e.target.closest('.sk-ta')) return;
+    if (ed.busy || e.target.closest('.sk-ta, .sk-toc a')) return;
     if (e.pointerType === 'pen') ed.penSeen = true;
     ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
     el.setPointerCapture?.(e.pointerId);
@@ -841,7 +915,8 @@ export async function closeSketch(fromPop = false) {
   const root = ed.root, pageId = ed.page.id;
   document.removeEventListener('keydown', ed.onKey);
   ed.ro.disconnect();
-  if (!location.hash.startsWith('#/book/')) location.hash = '#/book/' + ed.book.id;
+  app.svTab = 'notes';
+  if (location.hash !== homeOf(ed.book)) location.hash = homeOf(ed.book);
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
   const target = document.querySelector(`.bk-thumb[data-id="${pageId}"]`);
   document.body.classList.remove('sk-on');
@@ -862,44 +937,81 @@ export async function closeSketch(fromPop = false) {
   Object.assign(ed, { open: false, closing: false, root: null });
 }
 
-/* =================== หน้า "ทุกหน้า" ของสมุด (#/book/<id>) =================== */
-let shown = null; // ภาพย่อค่อย ๆ โผล่เฉพาะตอนเพิ่งเปิดสมุด (วาดใหม่ตอนข้อมูลเปลี่ยนไม่ต้องเล่นซ้ำ)
+/* =================== เล่ม: สมุดของวิชา · โปรเจกต์ · ตารางทุกหน้า (#/book/<id>) =================== */
+/** สมุดของวิชา (เล่มแรกที่ผูกวิชานั้น) */
+export const subjectBook = sid => S().books.filter(b => b.subject_id === sid).sort((a, b) => a.created_at.localeCompare(b.created_at))[0] || null;
+/** โปรเจกต์ = เล่มที่ไม่ใช่สมุดหลักของวิชาไหน */
+export const projectBooks = () => S().books.filter(b => !(b.subject_id && S().subjects.some(s => s.id === b.subject_id) && subjectBook(b.subject_id)?.id === b.id))
+  .sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+/** หน้าที่ปิดสมุดแล้วกลับไป: สมุดวิชา → หน้าวิชา · โปรเจกต์ → หน้ารวมของเล่ม */
+const homeOf = b => { const s = bookFace(b).subject; return s ? '#/subject/' + s.id : '#/book/' + b.id; };
+/** เปิดสมุดของวิชา (ยังไม่มี = สร้างพร้อมหน้าปก แล้วเปิดที่หน้าปก) */
+export async function openSubjectBook(sid, pageId = null, fromEl = null) {
+  let b = subjectBook(sid);
+  if (!b) { const s = subj(sid); b = await app.store.addBook({ title: s.name, color: s.color, subject_id: sid, cover: true }); }
+  app.svTab = 'notes';
+  if (location.hash !== homeOf(b)) location.hash = homeOf(b);
+  setTimeout(() => openSketch(b.id, pageId, fromEl), 30);
+}
+
+let shown = null; // ภาพย่อค่อย ๆ โผล่เฉพาะตอนเพิ่งเปิด (วาดใหม่ตอนข้อมูลเปลี่ยนไม่ต้องเล่นซ้ำ)
 const fmtDay = iso => { const d = toYMD(new Date(iso)), t = toYMD(new Date()); return d === t ? 'วันนี้' : relDay(d, t); };
+/** ตารางภาพย่อทุกหน้าของเล่ม (ใช้ทั้งหน้าวิชาและหน้าโปรเจกต์) + ปุ่ม "เขียนต่อ" */
+export function pageGrid(b) {
+  const list = app.store.pagesOf(b.id);
+  const anim = shown !== b.id; shown = b.id;
+  const open = (p, el) => openSketch(b.id, p?.id || null, el);
+  return [
+    h('div.bk-grid' + (anim ? '.anim' : ''), list.map((p, i) => h('button.bk-thumb' + (p.id === b.last_page ? '.last' : ''), { type: 'button', 'data-id': p.id, 'aria-label': `หน้า ${i + 1}`, style: { '--n': i },
+      onclick: e => open(p, e.currentTarget.querySelector('canvas')) }, thumb(p, 300), h('span', h('b', String(i + 1)), h('small', p.cover ? 'หน้าปก' : G.pageTitle(p) || '')))),
+    h('button.bk-thumb.bk-add', { type: 'button', 'aria-label': 'เพิ่มหน้าใหม่', onclick: async () => { const p = await app.store.addPage(b.id); await app.store.updateBook(b.id, { last_page: p.id }); open(p, document.querySelector(`.bk-thumb[data-id="${p.id}"] canvas`)); } },
+      h('i', { html: si('plus') }), h('span', h('b', 'หน้าใหม่')))),
+    h('button.bk-go', { type: 'button', onclick: () => open(null, document.querySelector(`.bk-thumb[data-id="${b.last_page}"] canvas`)), html: si('pen') + '<span>เขียนต่อ</span>' }),
+  ];
+}
+/** แผงโน้ตในหน้าวิชา: มีสมุดแล้ว = ทุกหน้า · ยังไม่มี = ชวนเริ่มจด */
+export function notesPanel(sid) {
+  const b = subjectBook(sid);
+  if (b) return pageGrid(b);
+  shown = null;
+  const s = subj(sid);
+  return h('div.sv-empty', { style: { '--c': s.color } },
+    h('div.sv-stack', h('i'), h('i'), h('i', h('b', s.name))),
+    h('b', `เริ่มสมุด${s.name}`), h('p', 'ได้หน้าปกพร้อมสารบัญ แล้วเขียนต่อได้เลย'),
+    h('button.btn.primary.auto', { type: 'button', onclick: () => openSubjectBook(sid) }, 'เริ่มจด'));
+}
+
+/** หน้ารวมของโปรเจกต์ */
 export function bookView(root, id) {
   const b = S().books.find(x => x.id === id);
   if (!b) { shown = null; put(root, h('div.phead', h('button.iconbtn', { 'aria-label': 'กลับ', html: si('back'), onclick: () => { location.hash = '#/notebook'; } }), h('h1', 'ไม่พบสมุด'))); return; }
+  const f = bookFace(b);
+  if (f.subject && subjectBook(f.subject.id)?.id === b.id) { app.svTab = 'notes'; location.replace('#/subject/' + f.subject.id); return; }
   const list = app.store.pagesOf(id);
-  const s = b.subject_id ? subj(b.subject_id) : null;
-  const anim = shown !== id; shown = id;
   put(root,
     h('div.phead.bk-head',
       h('button.iconbtn', { 'aria-label': 'กลับไปสมุด', html: si('back'), onclick: () => { location.hash = '#/notebook'; } }),
-      h('h1', b.title),
-      h('button.iconbtn', { 'aria-label': 'ตั้งค่าสมุด', html: si('more'), onclick: () => bookMenu(b) })),
-    h('p.bk-meta', { style: { '--c': b.color } }, h('i'), [s?.id ? s.name : null, `${list.length} หน้า`, 'แก้ล่าสุด ' + fmtDay(b.updated_at)].filter(Boolean).join(' · ')),
-    h('div.bk-grid' + (anim ? '.anim' : ''), list.map((p, i) => h('button.bk-thumb' + (p.id === b.last_page ? '.last' : ''), { type: 'button', 'data-id': p.id, 'aria-label': `หน้า ${i + 1}`, style: { '--n': i },
-      onclick: e => openSketch(id, p.id, e.currentTarget.querySelector('canvas')) }, thumb(p, 300), h('span', String(i + 1)))),
-    h('button.bk-thumb.bk-add', { type: 'button', 'aria-label': 'เพิ่มหน้าใหม่', onclick: async () => { const p = await app.store.addPage(id); await app.store.updateBook(id, { last_page: p.id }); openSketch(id, p.id, document.querySelector(`.bk-thumb[data-id="${p.id}"] canvas`)); } },
-      h('i', { html: si('plus') }), h('span', 'หน้าใหม่'))),
-    h('button.bk-go', { type: 'button', style: { '--c': b.color }, onclick: () => openSketch(id, null, document.querySelector(`.bk-thumb[data-id="${b.last_page}"] canvas`)), html: si('pen') + '<span>เขียนต่อ</span>' }));
+      h('span'), h('button.iconbtn', { 'aria-label': 'ตั้งค่าสมุด', html: si('more'), onclick: () => bookMenu(b) })),
+    h('div.sv-hero', h('span.sv-book', { style: { '--c': f.color } }),
+      h('div', h('small', f.subject ? `โปรเจกต์ · ${f.subject.name}` : 'โปรเจกต์'), h('h1', f.title), h('p', `${list.length} หน้า · แก้ล่าสุด ${fmtDay(b.updated_at)}`))),
+    pageGrid(b));
 }
 
 function bookMenu(b) {
-  const m = openModal({
+  openModal({
     title: b.title, label: 'ตั้งค่าสมุด',
     body: [
       h('button.sk-mi', { type: 'button', onclick: () => { closeModal(); bookDialog(b); }, html: si('edit') + '<span>เปลี่ยนชื่อ / สีปก</span>' }),
       h('button.sk-mi.danger', { type: 'button', onclick: async () => {
         closeModal();
-        const ok = await confirmBox({ title: `ลบสมุด "${b.title}"?`, body: `ทุกหน้า (${app.store.pagesOf(b.id).length} หน้า) จะหายไป กู้คืนไม่ได้`, ok: 'ลบสมุด', danger: true });
+        const ok = await confirmBox({ title: `ลบ "${b.title}"?`, body: `ทุกหน้า (${app.store.pagesOf(b.id).length} หน้า) จะหายไป กู้คืนไม่ได้`, ok: 'ลบทั้งเล่ม', danger: true });
         if (!ok) return;
         location.hash = '#/notebook';
         await app.store.deleteBook(b.id);
-        toast('ลบสมุดแล้ว');
-      }, html: si('trash') + '<span>ลบสมุดนี้</span>' }),
+        toast('ลบแล้ว');
+      }, html: si('trash') + '<span>ลบทั้งเล่ม</span>' }),
     ],
   });
-  return m;
 }
 
 /** รอให้การถอยประวัติของกล่องที่เพิ่งปิดเสร็จ (มี popstate) หรือไม่เกิน 0.35 วินาที */
@@ -909,70 +1021,50 @@ const settled = () => new Promise(res => {
   addEventListener('popstate', done);
 });
 
-/** กล่องสร้างสมุดใหม่ / แก้ชื่อและสีปก */
+/** กล่องเล่มใหม่ (โปรเจกต์ / วิชาใหม่) — หรือแก้ชื่อและสีของโปรเจกต์ (ส่ง b) */
 export function bookDialog(b = null) {
-  const st = { title: b?.title || '', color: b?.color || SUBJECT_COLORS[S().books.length % SUBJECT_COLORS.length], paper: b?.paper || 'lined', subject_id: b?.subject_id || null };
-  const name = h('input.bk-in', { value: st.title, placeholder: 'เช่น สรุปฟิสิกส์ บทที่ 4', maxLength: 40, 'aria-label': 'ชื่อสมุด', oninput: e => { st.title = e.target.value; prev(); } });
-  const cover = h('div.bk-cover.preview', { 'aria-hidden': 'true' });
-  const prev = () => { cover.style.setProperty('--c', st.color); put(cover, h('span.bk-label', h('b', st.title.trim() || 'สมุดจด'), h('small', b ? `${app.store.pagesOf(b.id).length} หน้า` : 'หน้าใหม่'))); };
+  const st = { kind: 'project', title: b?.title || '', color: b?.color || SUBJECT_COLORS[(S().books.length + 4) % SUBJECT_COLORS.length], paper: b?.paper || 'lined', cover: true };
+  const name = h('input.bk-in', { value: st.title, maxLength: 40, 'aria-label': 'ชื่อ', oninput: e => { st.title = e.target.value; prev(); } });
+  const pv = h('div.nb-book.big', { 'aria-hidden': 'true' });
+  const prev = () => {
+    pv.style.setProperty('--c', st.color);
+    put(pv, h('b', st.title.trim() || (st.kind === 'subject' ? 'วิชาใหม่' : 'โปรเจกต์')), h('small', st.kind === 'subject' ? 'วิชา' : 'โปรเจกต์'));
+    name.placeholder = st.kind === 'subject' ? 'ชื่อวิชา เช่น ประวัติศาสตร์' : 'เช่น โครงงานวิทย์ · ติวสอบเข้า';
+  };
+  const seg = b ? null : h('div.nb-seg');
+  const paintSeg = () => seg && put(seg, [['project', 'โปรเจกต์'], ['subject', 'วิชาใหม่']].map(([k, l]) =>
+    h('button', { type: 'button', 'aria-pressed': String(st.kind === k), onclick: () => { st.kind = k; paintSeg(); prev(); } }, l)));
   const colors = h('div.bk-colors');
   const paintColors = () => put(colors, SUBJECT_COLORS.map(c => h('button', { type: 'button', 'aria-label': 'สีปก ' + c, 'aria-pressed': String(st.color === c), style: { '--sw': c }, onclick: () => { st.color = c; paintColors(); prev(); } })));
+  const firsts = h('div.nb-firsts');
+  const paintFirsts = () => put(firsts, [[true, 'หน้าปก + สารบัญ', 'เปิดมาเจอหน้าปก สารบัญขึ้นเอง'], [false, 'เริ่มเขียนเลย', 'ไม่มีหน้าปก']].map(([v, l, d]) =>
+    h('button', { type: 'button', 'aria-pressed': String(st.cover === v), onclick: () => { st.cover = v; paintFirsts(); } }, h('i.' + (v ? 'pf-cover' : 'pf-plain'), { style: { '--c': st.color } }), h('span', h('b', l), h('small', d)))));
   const papers = h('div.sk-papers');
   const paintPapers = () => put(papers, Object.entries(G.PAPERS).map(([k, l]) => h('button', { type: 'button', 'aria-pressed': String(st.paper === k), onclick: () => { st.paper = k; paintPapers(); } }, h('i.pp.pp-' + k), h('span', l))));
-  const subs = visibleSubjects();
-  const chips = b ? null : h('div.bk-subs', subs.map(s => h('button', { type: 'button', style: { '--c': s.color }, onclick: () => { st.title = s.name; st.color = s.color; st.subject_id = s.id; name.value = s.name; paintColors(); prev(); } }, s.name)));
-  paintColors(); paintPapers(); prev();
+  paintSeg(); paintColors(); paintFirsts(); paintPapers(); prev();
   const go = h('button.btn.primary.wide', { type: 'button', onclick: async () => {
-    const title = st.title.trim() || 'สมุดจด';
+    const title = st.title.trim();
+    if (!title) { name.focus(); toast(st.kind === 'subject' ? 'ตั้งชื่อวิชาก่อน' : 'ตั้งชื่อโปรเจกต์ก่อน'); return; }
     if (b) { await app.store.updateBook(b.id, { title, color: st.color }); closeModal(); return; }
-    const nb = await app.store.addBook({ ...st, title });
+    let target;
+    if (st.kind === 'subject') {
+      const s = await app.store.ensureSubject(title);
+      await app.store.updateSubject(s.id, { color: st.color, hidden: false });
+      target = subjectBook(s.id) || await app.store.addBook({ title, color: st.color, paper: st.paper, subject_id: s.id, cover: st.cover });
+    } else target = await app.store.addBook({ title, color: st.color, paper: st.paper, cover: st.cover });
     const back = settled();
     closeModal();
-    await back; // ปิดกล่องแล้วเบราว์เซอร์ถอยประวัติ — รอให้เสร็จก่อน ไม่งั้นจะถอยทับหน้าสมุดที่เพิ่งเปิด
-    location.hash = '#/book/' + nb.id;
-    setTimeout(() => openSketch(nb.id), 30);
-  } }, b ? 'บันทึก' : 'สร้างแล้วเริ่มเขียน');
+    await back; // ปิดกล่องแล้วเบราว์เซอร์ถอยประวัติ — รอให้เสร็จก่อน ไม่งั้นจะถอยทับหน้าที่เพิ่งเปิด
+    app.svTab = 'notes';
+    location.hash = homeOf(target);
+    setTimeout(() => openSketch(target.id), 40);
+  } }, b ? 'บันทึก' : 'สร้างแล้วเปิดหน้าแรก');
   openModal({
-    title: b ? 'แก้สมุด' : 'สมุดใหม่', label: b ? 'แก้สมุด' : 'สร้างสมุดใหม่',
+    title: b ? 'แก้โปรเจกต์' : 'เล่มใหม่', label: b ? 'แก้โปรเจกต์' : 'สร้างเล่มใหม่',
     isDirty: () => !b && !!st.title.trim(),
-    body: h('div.bk-form', h('div.bk-pv', cover), name, chips ? [h('p.bk-lb', 'ตั้งตามวิชา'), chips] : '', h('p.bk-lb', 'สีปก'), colors, b ? '' : [h('p.bk-lb', 'กระดาษ'), papers]),
+    body: h('div.bk-form', seg, h('div.bk-pv', pv), name, h('p.bk-lb', 'สีปก'), colors,
+      b ? '' : [h('p.bk-lb', 'หน้าแรก'), firsts, h('p.bk-lb', 'กระดาษ'), papers]),
     foot: go,
   });
   if (!b) setTimeout(() => name.focus(), 320);
-}
-
-/** แตะปก: ปกพลิกเปิดออก หน้าที่เขียนล่าสุดลอยขึ้นมากลางจอ แล้วขยายต่อเป็นหน้าเขียน */
-async function openFromCover(btn, b) {
-  shown = null;
-  if (reduced() || ed.open) { location.hash = '#/book/' + b.id; setTimeout(() => openSketch(b.id), 30); return; }
-  const list = app.store.pagesOf(b.id), last = list.find(p => p.id === b.last_page) || list[list.length - 1];
-  const r = btn.getBoundingClientRect();
-  const W = Math.min(innerWidth * .62, 300), H = W * PH / PW, L = (innerWidth - W) / 2, T = (innerHeight - H) / 2 - 20;
-  const pg = thumb(last, 360);
-  const cover = h('div.bk-cover.bk-fly-cover', { style: { '--c': b.color } }, h('span.bk-label', h('b', b.title), h('small', `${list.length} หน้า`)));
-  const fly = h('div.bk-fly', { style: { left: L + 'px', top: T + 'px', width: W + 'px', height: H + 'px', '--c': b.color } }, h('div.bk-fly-page', pg), cover);
-  const dim = h('div.bk-fly-dim');
-  btn.style.visibility = 'hidden';
-  document.body.append(dim, fly);
-  const s = r.width / W;
-  const ez = 'cubic-bezier(.3,.7,.2,1)';
-  dim.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 520, fill: 'forwards' });
-  fly.animate([{ transform: `translate(${r.left - L}px, ${r.top - T}px) scale(${s}, ${r.height / H})` }, { transform: 'none' }], { duration: 560, easing: ez, fill: 'both' });
-  await cover.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(0deg)', offset: .25 }, { transform: 'rotateY(-168deg)', opacity: .9 }], { duration: 620, easing: 'cubic-bezier(.5,0,.25,1)', fill: 'forwards' }).finished.catch(() => {});
-  cover.remove();
-  location.hash = '#/book/' + b.id;
-  await new Promise(res => setTimeout(res, 40));
-  await openSketch(b.id, null, pg);
-  setTimeout(() => { fly.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, fill: 'forwards' }); dim.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }); }, 120);
-  setTimeout(() => { fly.remove(); dim.remove(); btn.style.visibility = ''; }, 460);
-}
-
-/** ปกสมุดบนชั้น (หน้าสมุด) */
-export function coverEl(b) {
-  const list = app.store.pagesOf(b.id);
-  const last = list.find(p => p.id === b.last_page) || list[list.length - 1];
-  return h('button.bk-cover', { type: 'button', style: { '--c': b.color }, 'aria-label': `สมุด ${b.title} · ${list.length} หน้า`,
-    onclick: e => openFromCover(e.currentTarget, b) },
-    last ? h('span.bk-peek', thumb(last, 200)) : '',
-    h('span.bk-label', h('b', b.title), h('small', `${list.length} หน้า`)));
 }

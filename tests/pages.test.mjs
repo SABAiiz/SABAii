@@ -111,3 +111,26 @@ test('ทำสำเนาหน้า: วางต่อจากหน้า
   assert.equal(d.paper, 'board'); assert.equal(d.strokes.length, 1); assert.equal(d.texts[0].v, 'ก');
   d.texts[0].v = 'ข'; assert.equal(st.pagesOf(b.id)[0].texts[0].v, 'ก');
 });
+
+// 0.11 หน้าปก + สารบัญ
+test('หัวข้อของหน้า: ตัวใหญ่บนสุดก่อน · ไม่มีตัวใหญ่ใช้ข้อความบนสุด · ไม่มีเลย = null', () => {
+  const T = (y, s, v) => ({ id: v, x: 100, y, w: 600, s, c: '#000', v });
+  assert.equal(G.pageTitle({ texts: [T(400, 30, 'เนื้อหา'), T(120, 56, 'กฎของโอห์ม\nบรรทัดสอง'), T(80, 30, 'วันที่')] }), 'กฎของโอห์ม');
+  assert.equal(G.pageTitle({ texts: [T(200, 30, 'สรุปบท 3'), T(500, 30, 'อื่น')] }), 'สรุปบท 3');
+  assert.equal(G.pageTitle({ texts: [T(900, 30, 'ท้ายหน้า')] }), null);
+  assert.equal(G.pageTitle({ texts: [T(100, 40, '   ')] }), null);
+  assert.equal(G.pageTitle({}), null);
+  assert.equal(G.pageTitle({ texts: [T(100, 40, 'ก'.repeat(80))] }).length, 60);
+});
+test('สารบัญ: ข้ามหน้าปก เลขหน้าตามลำดับในเล่ม', () => {
+  const rows = G.tocOf([{ id: 'c', cover: true, texts: [] }, { id: 'a', texts: [{ x: 0, y: 100, s: 50, v: 'บทนำ' }] }, { id: 'b', texts: [] }]);
+  assert.deepEqual(rows.map(r => [r.n, r.id, r.title]), [[2, 'a', 'บทนำ'], [3, 'b', null]]);
+});
+test('ที่เก็บ: สร้างเล่มแบบมีหน้าปก → หน้าปก + หน้าเขียน · เปิดครั้งแรกที่หน้าปก · หน้าใหม่ไม่ได้กระดาษว่างของหน้าปก', async () => {
+  const st = createStore(memoryDB()); await st.load();
+  const b = await st.addBook({ title: 'โครงงาน', paper: 'grid', cover: true });
+  const ps = st.pagesOf(b.id);
+  assert.equal(ps.length, 2); assert.equal(ps[0].cover, true); assert.equal(ps[1].paper, 'grid'); assert.equal(b.last_page, ps[0].id);
+  const n = await st.addPage(b.id, ps[0].id); assert.equal(n.paper, 'grid');
+  const d = await st.duplicatePage(ps[0].id); assert.equal(d.paper, 'grid'); assert.ok(!d.cover);
+});

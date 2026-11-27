@@ -216,3 +216,17 @@ export function recognize(p) {
   return null;
 }
 function* pts3(p) { for (let i = 0; i < p.length; i += 3) yield [p[i], p[i + 1]]; }
+
+/* ---------- 0.11 หน้าปก + สารบัญอัตโนมัติ ---------- */
+/** หัวข้อของหน้า = ข้อความตัวใหญ่ที่อยู่บนสุด (ตัวใหญ่ ≥ 38 ในครึ่งบนก่อน · ไม่มีก็เอาข้อความบนสุดถ้าอยู่ช่วงบน) · ไม่มี = null */
+export function pageTitle(p) {
+  const ts = (p.texts || []).filter(t => (t.v || '').trim()).sort((a, b) => a.y - b.y || a.x - b.x);
+  const pick = ts.find(t => t.s >= 38 && t.y < 700) || ts.find(t => t.y < 420);
+  if (!pick) return null;
+  const line = pick.v.trim().split('\n')[0].trim();
+  return line.length > 60 ? line.slice(0, 59) + '…' : line;
+}
+/** แถวสารบัญของหน้าปก: ทุกหน้าที่ไม่ใช่หน้าปก → { n: เลขหน้าในเล่ม, id, title (ไม่มีหัวข้อ = null) } */
+export function tocOf(pages) {
+  return pages.map((p, i) => ({ n: i + 1, id: p.id, title: pageTitle(p), cover: !!p.cover })).filter(r => !r.cover);
+}

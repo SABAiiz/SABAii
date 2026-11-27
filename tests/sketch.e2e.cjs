@@ -25,15 +25,19 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const shot = async n => { if (!SHOTS) return; await wait(450); await page.screenshot({ path: `${SHOTS}/${n}.png` }); };
   await page.goto('http://sabaii.test/#/notebook');
   await page.waitForSelector('#ob-skip'); await page.locator('#ob-skip').click(); await wait(400);
-  await page.waitForSelector('.bk-new');
-  check('ชั้น "สมุดจด" มีปุ่มสมุดใหม่', await page.locator('.bk-new').isVisible());
+  await page.waitForSelector('.nb-add');
+  check('0.11 หน้าสมุด: การ์ดวิชา + ปุ่ม "เพิ่ม วิชา/โปรเจกต์" + ชวนเริ่มโปรเจกต์แรก', await page.locator('.nb-add').isVisible() && (await page.locator('.nb-card').count()) >= 8 && await page.locator('.nb-proj.empty').isVisible());
+  check('0.11 วิชาที่ยังไม่มีสมุด = "แตะเพื่อเริ่มจด"', (await page.locator('.nb-card', { hasText: 'ฟิสิกส์' }).textContent()).includes('แตะเพื่อเริ่มจด'));
 
-  // สร้างสมุด (ตั้งตามวิชาฟิสิกส์)
-  await page.locator('.bk-new').click(); await wait(400);
-  await page.locator('.bk-subs button', { hasText: 'ฟิสิกส์' }).click();
+  // สมุดของวิชาฟิสิกส์ (แบบเริ่มเขียนเลย ไม่มีหน้าปก)
+  await page.locator('.nb-add').click(); await wait(400);
+  await page.locator('.nb-seg button', { hasText: 'วิชาใหม่' }).click();
+  await page.locator('.bk-in').fill('ฟิสิกส์');
+  await page.locator('.nb-firsts button', { hasText: 'เริ่มเขียนเลย' }).click();
   await shot('01-new-book');
   await page.locator('.mfoot .btn.primary').click();
   await page.waitForSelector('#sk.in'); await wait(500);
+  check('0.11 "วิชาใหม่" ชื่อซ้ำวิชาเดิม = ใช้วิชาเดิม (ไม่มีวิชาซ้ำ) · ปิดแล้วกลับหน้าวิชา', await page.evaluate(() => window.__sabaii.state.subjects.filter(s => s.name === 'ฟิสิกส์').length === 1 && location.hash.startsWith('#/subject/')));
   check('สร้างแล้วเข้าหน้าเขียนทันที · หน้า 1 / 1', (await page.locator('.sk-name b').textContent()) === '1 / 1');
   const full = await page.evaluate(() => { const r = document.querySelector('.sk-stage').getBoundingClientRect(); return [r.width, r.height, innerWidth, innerHeight]; });
   check('กระดาษเต็มจอ ขอบชนขอบ', full[0] === full[2] && full[1] === full[3], full.join(','));
@@ -138,43 +142,55 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator('.sk-close').click(); await wait(250);
   await shot('06-closing');
   await page.waitForSelector('#sk', { state: 'detached' }); await wait(300);
-  check('ออกแล้วเห็นทุกหน้า (3 หน้า + ปุ่มหน้าใหม่)', (await page.locator('.bk-thumb[data-id]').count()) === 3 && await page.locator('.bk-add').isVisible() && await page.evaluate(() => location.hash.startsWith('#/book/')));
-  check('หน้าล่าสุดมีกรอบเข้ม (หน้า 2)', (await page.locator('.bk-thumb.last span').textContent()) === '2');
+  check('ออกแล้วเห็นทุกหน้าในหน้าวิชา แท็บโน้ต (3 หน้า + ปุ่มหน้าใหม่)', (await page.locator('.bk-thumb[data-id]').count()) === 3 && await page.locator('.bk-add').isVisible() && await page.evaluate(() => location.hash.startsWith('#/subject/')) && (await page.locator('.sv-tabs [aria-selected="true"]').textContent()).startsWith('โน้ต'));
+  check('หน้าล่าสุดมีกรอบเข้ม (หน้า 2) · ใต้ภาพย่อมีหัวข้อหน้า', (await page.locator('.bk-thumb.last span b').textContent()) === '2' && (await page.locator('.bk-thumb[data-id] small').first().textContent()) === 'กฎของนิวตัน');
   await shot('07-overview');
 
   // แตะภาพย่อ = เปิดหน้านั้น · ปุ่มย้อนกลับของเครื่อง = ออก
   await page.locator('.bk-thumb[data-id]').nth(0).click(); await page.waitForSelector('#sk.in'); await wait(500);
   check('แตะภาพย่อหน้า 1 → เปิดหน้า 1', (await page.locator('.sk-name b').textContent()) === '1 / 3');
   await page.goBack(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(200);
-  check('ปุ่มย้อนกลับของเครื่อง = ออกจากหน้าเขียน กลับไปทุกหน้า', await page.evaluate(() => location.hash.startsWith('#/book/')));
+  check('ปุ่มย้อนกลับของเครื่อง = ออกจากหน้าเขียน กลับไปหน้าวิชา', await page.evaluate(() => location.hash.startsWith('#/subject/')));
+  await page.locator('.sv-tabs button', { hasText: 'งาน' }).click(); await wait(200);
+  check('0.11 หน้าวิชา: แท็บงาน = งานของวิชา (ของเดิม)', await page.locator('#page .board').isVisible());
+  await page.locator('.sv-tabs button', { hasText: 'โน้ต' }).click(); await wait(200);
 
-  // ชั้นสมุด + ค้นข้อความในสมุด
-  await page.locator('.bk-head .iconbtn').first().click(); await page.waitForSelector('.bk-cover'); await wait(300);
-  await page.locator('.bk-new').click(); await wait(300);
+  // โปรเจกต์ใหม่ (หน้าปก + สารบัญ) → เปิดมาที่หน้าปก
+  await page.locator('#page .phead .iconbtn').first().click(); await page.waitForSelector('.nb-add'); await wait(300);
+  await page.locator('.nb-add').click(); await wait(300);
   await page.locator('.bk-in').fill('ศัพท์อังกฤษ'); await page.locator('.bk-colors button').nth(4).click();
-  await page.locator('.mfoot .btn.primary').click(); await page.waitForSelector('#sk.in'); await wait(400);
-  await page.locator('.sk-tool[data-tool="pen"]').click();
+  await page.locator('.mfoot .btn.primary').click(); await page.waitForSelector('#sk.in'); await wait(600);
+  check('0.11 โปรเจกต์ใหม่เปิดมาที่หน้าปก (1 / 2) · สารบัญมี 1 แถว', (await page.locator('.sk-name b').textContent()) === '1 / 2' && (await page.locator('.sk-toc a').count()) === 1);
+  await shot('08a-cover');
+  await page.locator('.sk-toc a').first().click(); await wait(800);
+  check('0.11 แตะแถวสารบัญ = พลิกไปหน้านั้น', (await page.locator('.sk-name b').textContent()) === '2 / 2');
+  await page.locator('.sk-tool[data-tool="text"]').click();
   const box2 = await page.locator('.sk-stage').boundingBox();
-  await page.mouse.move(box2.x + 60, box2.y + 90); await page.mouse.down(); for (let i = 0; i < 20; i++) await page.mouse.move(box2.x + 60 + i * 10, box2.y + 90 + Math.sin(i) * 8); await page.mouse.up();
+  await page.mouse.click(box2.x + 70, box2.y + 110); await wait(150); await page.keyboard.type('Unit 5 คำศัพท์');
+  await page.locator('.sk-tool[data-tool="pen"]').click();
+  await page.mouse.move(box2.x + 60, box2.y + 200); await page.mouse.down(); for (let i = 0; i < 20; i++) await page.mouse.move(box2.x + 60 + i * 10, box2.y + 200 + Math.sin(i) * 8); await page.mouse.up();
+  await page.locator('.sk-pg[aria-label="หน้าก่อน"]').click(); await wait(800);
+  check('0.11 สารบัญอัปเดตเอง: หัวข้อที่พิมพ์ขึ้นในหน้าปก', /Unit 5/.test(await page.locator('.sk-toc a').first().getAttribute('aria-label')));
+  await shot('08b-cover-toc');
   await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(300);
-  await page.locator('#nav a[data-r="notebook"]').click(); await page.waitForSelector('.bk-cover'); await wait(300);
-  check('ชั้นสมุดมี 2 เล่ม', (await page.locator('.bk-cover').count()) === 2);
+  check('0.11 ปิดโปรเจกต์ → หน้าโปรเจกต์ (ทุกหน้า)', await page.evaluate(() => location.hash.startsWith('#/book/')) && (await page.locator('.bk-thumb[data-id]').count()) === 2);
+  await page.locator('#nav a[data-r="notebook"]').click(); await page.waitForSelector('.nb-proj'); await wait(300);
+  check('0.11 หน้าสมุด: โปรเจกต์ 1 เล่ม · การ์ดฟิสิกส์มีหน้าโน้ตจริงซ้อนโผล่', (await page.locator('.nb-proj:not(.empty)').count()) === 1 && (await page.locator('.nb-card', { hasText: 'ฟิสิกส์' }).locator('.nb-peek canvas').count()) === 2);
   await shot('08-shelf');
   await page.locator('#nb-q').fill('นิวตัน');
   check('ค้นในสมุดเจอข้อความที่พิมพ์ในหน้า', (await page.locator('.nb-hit', { hasText: 'หน้า 1' }).count()) === 1);
   await page.locator('#nb-q').fill('');  await page.locator('#nb-q').dispatchEvent('input');
 
   // เปิดใหม่ข้อมูลยังอยู่
-  await page.reload(); await page.waitForSelector('.bk-cover'); await wait(300);
+  await page.reload(); await page.waitForSelector('.nb-proj'); await wait(300);
   const kept = await page.evaluate(() => ({ b: window.__sabaii.state.books.length, p: window.__sabaii.state.pages.length, t: window.__sabaii.state.pages.flatMap(p => p.texts).map(t => t.v) }));
-  check('เปิดแอปใหม่: สมุด/หน้า/ข้อความยังอยู่', kept.b === 2 && kept.p === 4 && kept.t.includes('กฎของนิวตัน'), JSON.stringify(kept));
+  check('เปิดแอปใหม่: สมุด/หน้า/ข้อความยังอยู่', kept.b === 2 && kept.p === 5 && kept.t.includes('กฎของนิวตัน'), JSON.stringify(kept));
 
   // ---------- 0.10.1 ยกระดับ ----------
-  await page.locator('.bk-cover', { hasText: 'ฟิสิกส์' }).click();
-  await page.waitForSelector('.bk-fly'); await wait(330);
-  if (SHOTS) await page.screenshot({ path: `${SHOTS}/09-cover-open.png` });
-  await page.waitForSelector('#sk.in'); await wait(800);
-  check('แตะปก: ปกพลิกเปิด แล้วเข้าหน้าเขียน (ของที่ลอยหายหมด)', (await page.locator('.bk-fly, .bk-fly-dim').count()) === 0 && await page.locator('#sk').isVisible());
+  await page.locator('.nb-card', { hasText: 'ฟิสิกส์' }).click(); await page.waitForSelector('.bk-go'); await wait(300);
+  await shot('09-subject');
+  await page.locator('.bk-go').click(); await page.waitForSelector('#sk.in'); await wait(800);
+  check('แตะการ์ดวิชา → หน้าวิชา → "เขียนต่อ" เปิดหน้าล่าสุด', await page.locator('#sk').isVisible() && (await page.locator('.sk-name b').textContent()) === '1 / 3');
   const cur = () => page.evaluate(() => { const b = window.__sabaii.state.books.find(x => x.title === 'ฟิสิกส์'); return window.__sabaii.state.pages.find(p => p.id === b.last_page); });
   const bx = await page.locator('.sk-stage').boundingBox();
   const Q = (x, y) => [bx.x + bx.width * x, bx.y + bx.height * y];
@@ -228,6 +244,14 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(400);
   await shot('13-overview2');
 
+  // วิชาที่ยังไม่มีสมุด → "เริ่มจด" ได้หน้าปก
+  await page.locator('#nav a[data-r="notebook"]').click(); await page.waitForSelector('.nb-card'); await wait(200);
+  await page.locator('.nb-card', { hasText: 'เคมี' }).click(); await page.waitForSelector('.sv-empty'); await wait(200);
+  await shot('14-empty-subject');
+  await page.locator('.sv-empty .btn').click(); await page.waitForSelector('#sk.in'); await wait(700);
+  check('0.11 วิชาว่าง → "เริ่มจด" = สมุดวิชาพร้อมหน้าปก เปิดที่หน้าปก', (await page.locator('.sk-name b').textContent()) === '1 / 2' && await page.evaluate(() => window.__sabaii.state.pages.some(p => p.cover && window.__sabaii.state.books.find(b => b.id === p.book_id)?.title === 'เคมี')));
+  await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(300);
+
   // ---------- นิ้วจริง (CDP): นิ้วเดียวเขียน · ถ่างสองนิ้ว = ซูม · ปัดสองนิ้ว = พลิกหน้า ----------
   const tctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, serviceWorkers: 'block' });
   await tctx.route('http://sabaii.test/**', r => {
@@ -238,7 +262,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const tp = await tctx.newPage();
   tp.on('pageerror', e => errors.push('นิ้ว: ' + e.message));
   await tp.goto('http://sabaii.test/#/notebook'); await tp.locator('#ob-skip').tap(); await wait(400);
-  await tp.locator('.bk-new').tap(); await wait(400); await tp.locator('.bk-in').fill('นิ้ว'); await tp.locator('.mfoot .btn.primary').tap();
+  await tp.locator('.nb-add').tap(); await wait(400); await tp.locator('.bk-in').fill('นิ้ว'); await tp.locator('.nb-firsts button', { hasText: 'เริ่มเขียนเลย' }).tap(); await tp.locator('.mfoot .btn.primary').tap();
   await tp.waitForSelector('#sk.in'); await wait(600);
   const cdp = await tctx.newCDPSession(tp);
   const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });

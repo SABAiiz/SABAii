@@ -116,11 +116,12 @@ export function createStore(db, { now = () => new Date() } = {}) {
     if (notify) emit();
     return b;
   }
-  async function addBook({ title, color = SUBJECT_COLORS[state.books.length % SUBJECT_COLORS.length], paper = 'lined', subject_id = null }) {
+  /** สมุดใหม่ · cover = มีหน้าปก+สารบัญเป็นหน้าแรก (เปิดครั้งแรกเจอหน้าปก) แล้วตามด้วยหน้าเขียน 1 หน้า */
+  async function addBook({ title, color = SUBJECT_COLORS[state.books.length % SUBJECT_COLORS.length], paper = 'lined', subject_id = null, cover = false }) {
     const b = { id: newId('b'), title: String(title || '').trim() || 'สมุดจด', color, paper, subject_id, created_at: iso(), updated_at: iso(), last_page: null };
-    const p = blankPage(b.id, 0, paper, iso());
-    b.last_page = p.id;
-    await db.put('pages', p); state.pages.push(p);
+    const pages = cover ? [{ ...blankPage(b.id, 0, 'blank', iso()), cover: true }, blankPage(b.id, 1, paper, iso())] : [blankPage(b.id, 0, paper, iso())];
+    b.last_page = pages[0].id;
+    for (const p of pages) { await db.put('pages', p); state.pages.push(p); }
     return putBook(b);
   }
   const updateBook = (id, patch) => putBook({ ...state.books.find(b => b.id === id), ...patch, updated_at: iso() });
@@ -147,7 +148,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
     const list = pagesOf(book_id), at = after ? list.findIndex(p => p.id === after) + 1 : list.length;
     const prev = list[at - 1], book = state.books.find(b => b.id === book_id);
     for (const p of list.slice(at)) { p.order++; await db.put('pages', p); }
-    const p = blankPage(book_id, at, prev?.paper || book?.paper || 'lined', iso());
+    const p = blankPage(book_id, at, (!prev?.cover && prev?.paper) || book?.paper || 'lined', iso());
     await db.put('pages', p); state.pages.push(p);
     return p;
   }
@@ -156,7 +157,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
     const src = state.pages.find(x => x.id === id);
     if (!src) return null;
     const p = await addPage(src.book_id, id);
-    return savePage({ ...p, paper: src.paper, strokes: src.strokes.slice(), texts: src.texts.map(t => ({ ...t })), imgs: src.imgs.map(i => ({ ...i })) }, false);
+    return savePage({ ...p, paper: src.cover ? (state.books.find(b => b.id === src.book_id)?.paper || 'lined') : src.paper, strokes: src.strokes.slice(), texts: src.texts.map(t => ({ ...t })), imgs: src.imgs.map(i => ({ ...i })) }, false);
   }
   async function removePage(id) {
     const p = state.pages.find(x => x.id === id);

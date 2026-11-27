@@ -185,6 +185,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator('#nb-q').fill(''); await page.locator('#nb-q').dispatchEvent('input');
   await shot('06b-notebook');
   await page.locator('.nb-card', { hasText: 'ฟิสิกส์' }).click();
+  await page.locator('.sv-tabs button', { hasText: 'งาน' }).click(); // 0.11: หน้าวิชาเปิดที่แท็บโน้ต
   await page.waitForSelector('#page .tcard');
   check('หน้าวิชาฟิสิกส์: ภาพย่อจากรูปที่ถ่าย', (await page.locator('.tcard .strip .mini').count()) === 1 && (await page.locator('.tcard .strip .mini .nitem.photo').count()) === 1);
   await shot('07-subject');
