@@ -1072,21 +1072,20 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 .tile .ta { position: absolute; left: 0; right: 0; top: 0; height: 84px; pointer-events: none; }
 .tile b { position: relative; z-index: 1; }
 .tile small { position: relative; z-index: 1; }
-/* พูด (0.9.6): เครื่องอัดเสียง — พื้นหมึกเรียบไม่มีแสงเรือง · จุดแดงอัด + เวลาเดิน · คลื่นเส้นบางไหลเข้าหัวอ่าน · ไมค์วงเล็กมุมขวาแบบกล่องถ่ายรูป */
-.tile[data-art="speak"] { background: #111A33; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 16px 26px -20px rgba(11,27,77,.9); }
-.tile[data-art="speak"] b { color: #fff; } .tile[data-art="speak"] small { color: rgba(255,255,255,.55); }
-.ta-rec { position: absolute; left: 16px; top: 19px; display: flex; align-items: center; gap: 7px; font: 600 12.5px var(--disp); color: rgba(255,255,255,.78); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
-.ta-rec i { width: 8px; height: 8px; border-radius: 50%; background: #FF4D4D; animation: tarec 1.4s ease-in-out infinite; }
-@keyframes tarec { 50% { opacity: .25; } }
-.ta-speak .ti-ic { position: absolute; left: auto; right: 12px; top: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; box-shadow: none; }
+/* พูด (0.10.4): เครื่องอัดเสียงโทนพาสเทลส้มอมชมพู ชุดเดียวกับกล่องข้าง ๆ (เจ้าของบอกพื้นหมึกมืดหนักไป) · จุดแดงอัด + เวลาเดิน · คลื่นเส้นบางสีกรมท่าไหลเข้าหัวอ่านแดง · ไมค์วงขาวมุมขวาแบบกล่องถ่ายรูป */
+.tile[data-art="speak"] { background: radial-gradient(90% 90% at 100% 0%, #FFD9D2, transparent 60%), linear-gradient(150deg, #FFF4F1, #FFE7E2); }
+.ta-rec { position: absolute; left: 16px; top: 19px; display: flex; align-items: center; gap: 7px; font: 600 12.5px var(--disp); color: rgba(11,27,77,.66); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.ta-rec i { width: 8px; height: 8px; border-radius: 50%; background: #F0443A; box-shadow: 0 0 0 3px rgba(240,68,58,.16); animation: tarec 1.4s ease-in-out infinite; }
+@keyframes tarec { 50% { opacity: .3; } }
+.ta-speak .ti-ic { position: absolute; left: auto; right: 12px; top: 12px; width: 36px; height: 36px; border-radius: 50%; background: #fff; color: var(--ink); box-shadow: 0 6px 12px -8px rgba(160,40,30,.45); }
 .ta-speak .ti-ic svg { width: 18px; height: 18px; }
 .ta-wave { position: absolute; left: 0; right: 26%; top: 52px; height: 30px; overflow: hidden;
   -webkit-mask: linear-gradient(90deg, transparent 0, #000 22%); mask: linear-gradient(90deg, transparent 0, #000 22%); }
 .ta-strip { position: absolute; right: 3px; top: 0; bottom: 0; display: flex; align-items: center; gap: 3px; animation: tastrip 7s linear infinite; }
-.ta-strip i { width: 2px; flex: none; height: calc(8% + var(--a) * 92%); border-radius: 1px; background: rgba(255,255,255,.82); }
+.ta-strip i { width: 2px; flex: none; height: calc(8% + var(--a) * 92%); border-radius: 1px; background: rgba(11,27,77,.62); }
 @keyframes tastrip { from { transform: translateX(50%); } to { transform: translateX(0); } }
-.ta-head { position: absolute; right: calc(26% - 1px); top: 48px; height: 38px; width: 1.5px; background: #FF4D4D; }
-.ta-head::before { content: ""; position: absolute; left: 50%; top: -1px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #FF4D4D; }
+.ta-head { position: absolute; right: calc(26% - 1px); top: 48px; height: 38px; width: 1.5px; background: #F0443A; }
+.ta-head::before { content: ""; position: absolute; left: 50%; top: -1px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #F0443A; }
 /* แนบรูป: รูปจริง 3 ใบซ้อนกัน */
 .ta-attach i { position: absolute; top: 12px; width: 58px; height: 62px; border-radius: 10px; background: center/cover #ddd; border: 3px solid #fff; box-shadow: 0 10px 18px -10px rgba(11,27,77,.6);
   left: calc(16px + var(--k) * 34px); rotate: calc((var(--k) - 1) * 8deg); z-index: calc(3 - var(--k)); }
