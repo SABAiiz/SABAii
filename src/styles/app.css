@@ -1072,13 +1072,13 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 .tile .ta { position: absolute; left: 0; right: 0; top: 0; height: 84px; pointer-events: none; }
 .tile b { position: relative; z-index: 1; }
 .tile small { position: relative; z-index: 1; }
-/* พูด (0.9.6): เครื่องอัดเสียง — พื้นหมึกเรียบไม่มีแสงเรือง · จุดแดงอัด + เวลาเดิน · คลื่นเส้นบางไหลเข้าหัวอ่าน · ไมค์วงเล็กมุมขวาแบบกล่องถ่ายรูป */
-.tile[data-art="speak"] { background: #111A33; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 16px 26px -20px rgba(11,27,77,.9); }
-.tile[data-art="speak"] b { color: #fff; } .tile[data-art="speak"] small { color: rgba(255,255,255,.55); }
-.ta-rec { position: absolute; left: 16px; top: 19px; display: flex; align-items: center; gap: 7px; font: 600 12.5px var(--disp); color: rgba(255,255,255,.78); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+/* พูด (0.9.6): เครื่องอัดเสียง — พื้นน้ำเงินแอปเรียบไม่มีแสงเรือง · จุดแดงอัด + เวลาเดิน · คลื่นเส้นบางไหลเข้าหัวอ่าน · ไมค์วงเล็กมุมขวาแบบกล่องถ่ายรูป */
+.tile[data-art="speak"] { background: #1450D8; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 16px 26px -18px rgba(20,80,216,.75); }
+.tile[data-art="speak"] b { color: #fff; } .tile[data-art="speak"] small { color: rgba(255,255,255,.75); }
+.ta-rec { position: absolute; left: 16px; top: 19px; display: flex; align-items: center; gap: 7px; font: 600 12.5px var(--disp); color: rgba(255,255,255,.9); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 .ta-rec i { width: 8px; height: 8px; border-radius: 50%; background: #FF4D4D; animation: tarec 1.4s ease-in-out infinite; }
 @keyframes tarec { 50% { opacity: .25; } }
-.ta-speak .ti-ic { position: absolute; left: auto; right: 12px; top: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.1); color: #fff; box-shadow: none; }
+.ta-speak .ti-ic { position: absolute; left: auto; right: 12px; top: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.16); color: #fff; box-shadow: none; }
 .ta-speak .ti-ic svg { width: 18px; height: 18px; }
 .ta-wave { position: absolute; left: 0; right: 26%; top: 52px; height: 30px; overflow: hidden;
   -webkit-mask: linear-gradient(90deg, transparent 0, #000 22%); mask: linear-gradient(90deg, transparent 0, #000 22%); }
