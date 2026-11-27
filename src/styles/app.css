@@ -1524,3 +1524,34 @@ body.sk-on #toast { z-index: 60; }
 /* สารบัญบนหน้าปก: แถวแตะได้ (หน่วยหน้า) */
 .sk-toc a { position: absolute; left: 80px; width: 840px; height: 72px; border-radius: 14px; pointer-events: auto; }
 .sk-toc a:active { background: rgba(10,108,241,.08); }
+
+/* ================= 0.11.1 หน้าในสมุด ↔ โน้ตของงาน ================= */
+.nitem.page { background: #FFFDF8; }
+.nitem.page .zoom { position: absolute; inset: 0; display: block; cursor: pointer; }
+.nitem.page canvas { width: 100%; height: 100%; display: block; object-fit: cover; object-position: top center; }
+.nitem.page .ntag svg { width: 15px; height: 15px; }
+body.ns-4 #stage .nitem.page { background: linear-gradient(170deg, #FFFFFF, #FBF9F4); }
+body.ns-4 #stage .nitem.page .zoom { inset: 12px 12px 52px; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px rgba(11,27,77,.06); }
+/* เลือกหน้าจากสมุด */
+.pk-book h3 { display: flex; align-items: center; gap: 8px; font: 700 15px var(--disp); margin: 14px 0 10px; }
+.pk-book h3 i { width: 10px; height: 14px; border-radius: 2px 4px 4px 2px; }
+.pk-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 10px; }
+.pk-page { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+.pk-page canvas { width: 100%; height: auto; border-radius: 5px; box-shadow: 0 0 0 1px rgba(11,27,77,.07), 0 8px 16px -10px rgba(11,27,77,.5); }
+.pk-page span { font: 500 12px var(--disp); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pk-page:active canvas { transform: scale(.96); }
+.pk-page.on { opacity: .45; }
+/* ส่งไปโน้ตของงาน (ในเมนูหน้าเขียน) */
+.sk-task { gap: 10px; padding: 10px; }
+.sk-task i { flex: none; width: 8px; height: 30px; border-radius: 4px; }
+.sk-task span { flex: 1; min-width: 0; }
+.sk-task b { display: block; font: 600 14.5px/1.3 var(--disp); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sk-task small { display: block; font: 500 12px var(--disp); color: var(--text-2); }
+.sk-task em { font: 700 12px var(--disp); font-style: normal; color: #16B76A; }
+.sk-empty { font: 500 14px var(--disp); color: var(--text-2); padding: 12px 10px; }
+.sk-menu { max-height: calc(100dvh - 160px); overflow-y: auto; }
+/* ปุ่มเพิ่มโน้ตมี 4 อัน (รูป · ข้อความ · เสียง · สมุด) — อยู่แถวเดียวทุกแบบ */
+.pane-note .pills { grid-template-columns: repeat(4, 1fr); }
+.pane-note .pills.seg6 { grid-template-columns: repeat(4, 1fr); }
+body.ns-3 .pane-note .tk-b .cta { white-space: nowrap; min-width: 0; }
+@media (max-width: 380px) { .pane-note .pill.sq { width: 42px; } .pane-note .tk-b { gap: 6px; } body.ns-3 .pane-note .tk-b .cta { font-size: 15px; padding: 0 10px; gap: 4px; } }

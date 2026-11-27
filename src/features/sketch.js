@@ -24,7 +24,7 @@ const P = {
   undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/>', redo: '<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 000 11H13"/>',
   more: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
   pages: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
-  down: '<path d="M7 10l5 5 5-5"/>', dup: '<rect x="7" y="3" width="13" height="17" rx="2"/><path d="M4 7v12a2 2 0 002 2h9"/><path d="M13.5 9v6M10.5 12h6"/>', zoom: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8 11h6"/>',
+  down: '<path d="M7 10l5 5 5-5"/>', send: '<path d="M4 12h12M11 6l6 6-6 6"/><path d="M20 5v14"/>', dup: '<rect x="7" y="3" width="13" height="17" rx="2"/><path d="M4 7v12a2 2 0 002 2h9"/><path d="M13.5 9v6M10.5 12h6"/>', zoom: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8 11h6"/>',
   left: '<path d="M15 5l-7 7 7 7"/>', right: '<path d="M9 5l7 7-7 7"/>', plus: '<path d="M12 5v14M5 12h14"/>', back: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', copy: '<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',
   line: '<path d="M5 19L19 5"/>', arrow: '<path d="M5 19L19 5M10 5h9v9"/>', rect: '<rect x="4" y="6" width="16" height="12" rx="1"/>', circle: '<ellipse cx="12" cy="12" rx="8.5" ry="7"/>',
@@ -258,7 +258,8 @@ const col = t => bag(t)[t === 'shape' ? 'shape' : t];
 const DESK = '#E4E9F1';
 const BOTTOM_ROOM = 150; // เลื่อนท้ายหน้าพ้นแถบเครื่องมือได้
 
-export async function openSketch(bookId, pageId = null, fromEl = null) {
+/** opts.stay = เปิดจากที่อื่น (เช่นโน้ตหน้างานในหน้าหลัก) → ปิดแล้วอยู่ที่เดิม ไม่พาไปหน้าวิชา/โปรเจกต์ */
+export async function openSketch(bookId, pageId = null, fromEl = null, opts = {}) {
   if (ed.open) return;
   const book = S().books.find(b => b.id === bookId);
   if (!book) return;
@@ -271,7 +272,7 @@ export async function openSketch(bookId, pageId = null, fromEl = null) {
     dcolor: { pen: G.CHALKS[0], shape: G.CHALKS[0], text: G.CHALKS[0], ...pr.dcolor }, // สีชอล์กบนกระดานดำ
     z: 1, vx: 0, vy: 0, H: pageH(list[idx]),
     size: { pen: 1, hl: 1, text: 1, eraser: 1, shape: 1, ...pr.size },
-    sel: null, editing: null, hist: new Map(), saveT: 0, busy: false, penSeen: false,
+    sel: null, editing: null, hist: new Map(), saveT: 0, busy: false, penSeen: false, stay: !!opts.stay,
   });
   if (ed.tool === 'img') ed.tool = 'pen';
   build();
@@ -811,9 +812,27 @@ function toggleMenu() {
     h('p.sk-mh', 'กระดาษหน้านี้'),
     h('div.sk-papers', Object.entries(G.PAPERS).map(([k, l]) => h('button', { type: 'button', 'aria-pressed': String(ed.page.paper === k), onclick: () => setPaper(k) }, h('i.pp.pp-' + k), h('span', l)))),
     h('button.sk-mi', { type: 'button', onclick: () => { ed.menu.hidden = true; addAfter(); }, html: si('plus') + '<span>แทรกหน้าใหม่ถัดจากหน้านี้</span>' }),
+    h('button.sk-mi', { type: 'button', onclick: () => sendToTask(), html: si('send') + '<span>ส่งไปโน้ตของงาน</span>' }),
     h('button.sk-mi', { type: 'button', onclick: () => { ed.menu.hidden = true; dupPage(); }, html: si('dup') + '<span>ทำสำเนาหน้านี้</span>' }),
     h('button.sk-mi', { type: 'button', onclick: () => { ed.menu.hidden = true; clearPage(); }, html: si('eraser') + '<span>ล้างหน้านี้</span>' }),
     h('button.sk-mi.danger', { type: 'button', onclick: () => { ed.menu.hidden = true; delPage(); }, html: si('trash') + '<span>ลบหน้านี้</span>' }));
+  ed.menu.hidden = false;
+}
+/** เมนู ⋯ → "ส่งไปโน้ตของงาน": เลือกงาน (วิชาเดียวกับสมุดขึ้นก่อน) → หน้านี้ไปโผล่ในโน้ตหน้างานที่หน้าหลัก */
+function sendToTask() {
+  const sid = ed.book.subject_id;
+  const tasks = S().tasks.filter(t => !t.deleted_at && t.status !== 'done')
+    .sort((a, b) => (b.subject_id === sid) - (a.subject_id === sid) || (a.due_date || '9').localeCompare(b.due_date || '9')).slice(0, 8);
+  const linked = id => S().attachments.some(a => a.task_id === id && a.kind === 'page' && a.page_id === ed.page.id);
+  put(ed.menu,
+    h('p.sk-mh', 'ส่งหน้านี้ไปโน้ตของงาน'),
+    tasks.length ? tasks.map(t => { const s = subj(t.subject_id);
+      return h('button.sk-mi.sk-task', { type: 'button', onclick: async () => {
+        ed.menu.hidden = true; await flush();
+        await app.store.linkPage(t.id, ed.page.id);
+        toast(`เพิ่มไปโน้ตของ "${t.title}" แล้ว · ดูได้ที่หน้าหลัก`);
+      } }, h('i', { style: { background: s.color || '#69778F' } }), h('span', h('b', t.title), h('small', [s.id ? s.name : '', t.due_date ? relDay(t.due_date, toYMD(new Date())) : 'ไม่มีกำหนดส่ง'].filter(Boolean).join(' · '))), linked(t.id) ? h('em', '✓ แล้ว') : '');
+    }) : h('p.sk-empty', 'ยังไม่มีงานค้าง'));
   ed.menu.hidden = false;
 }
 function setPaper(k) {
@@ -915,13 +934,12 @@ export async function closeSketch(fromPop = false) {
   const root = ed.root, pageId = ed.page.id;
   document.removeEventListener('keydown', ed.onKey);
   ed.ro.disconnect();
-  app.svTab = 'notes';
-  if (location.hash !== homeOf(ed.book)) location.hash = homeOf(ed.book);
+  if (!ed.stay) { app.svTab = 'notes'; if (location.hash !== homeOf(ed.book)) location.hash = homeOf(ed.book); }
   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-  const target = document.querySelector(`.bk-thumb[data-id="${pageId}"]`);
+  const target = ed.stay ? document.querySelector(`.nitem.page[data-page="${pageId}"]`) : document.querySelector(`.bk-thumb[data-id="${pageId}"]`);
   document.body.classList.remove('sk-on');
   if (target && !reduced()) {
-    target.scrollIntoView({ block: 'center' });
+    if (!ed.stay) target.scrollIntoView({ block: 'center' });
     setView(1, 0, 0); redraw(); // ภาพย่อเป็นส่วนบนของหน้า → กลับไปบนสุดก่อนย่อ
     const r = target.querySelector('canvas').getBoundingClientRect();
     target.classList.add('landing');
@@ -1067,4 +1085,50 @@ export function bookDialog(b = null) {
     foot: go,
   });
   if (!b) setTimeout(() => name.focus(), 320);
+}
+
+/* =================== หน้าในสมุด ↔ โน้ตของงาน (หน้าหลัก ดึงลง) =================== */
+/** สมุดที่ใช้จดให้งานนี้: งานมีวิชา = สมุดของวิชา (ยังไม่มี = สร้างพร้อมหน้าปก) · ไม่มีวิชา = โปรเจกต์ "โน้ตทั่วไป" */
+async function bookForTask(t) {
+  const s = t.subject_id && S().subjects.find(x => x.id === t.subject_id);
+  if (s) return subjectBook(s.id) || app.store.addBook({ title: s.name, color: s.color, subject_id: s.id, cover: true });
+  return S().books.find(b => !b.subject_id && b.title === 'โน้ตทั่วไป') || app.store.addBook({ title: 'โน้ตทั่วไป', color: '#64748B' });
+}
+/** "เขียนในสมุด" จากโน้ตหน้างาน: หน้าใหม่ท้ายสมุด หัวข้อ = ชื่องาน (ขึ้นสารบัญเอง) · ผูกกับงาน · เปิดเขียนเลย ปิดแล้วกลับมาที่เดิม */
+export async function writeForTask(t) {
+  const b = await bookForTask(t);
+  const list = app.store.pagesOf(b.id), last = list[list.length - 1];
+  const empty = last && !last.cover && !last.strokes.length && !last.texts.length && !last.imgs.length;
+  const p = empty ? last : await app.store.addPage(b.id);
+  const page = await app.store.savePage({ ...p, texts: [{ id: G.pid('t'), x: 140, y: 150, w: 760, s: 52, c: '#0B1B4D', v: t.title }] }, false);
+  await app.store.updateBook(b.id, { last_page: page.id });
+  await app.store.linkPage(t.id, page.id);
+  openSketch(b.id, page.id, null, { stay: true });
+}
+/** "เลือกหน้าจากสมุด": ทุกหน้าของทุกเล่ม (สมุดวิชาของงานขึ้นก่อน) แตะ = ผูกกับงาน */
+export function pickPageForTask(t) {
+  const first = t.subject_id && subjectBook(t.subject_id);
+  const books = [...(first ? [first] : []), ...S().books.filter(b => b !== first)].filter(b => app.store.pagesOf(b.id).some(p => !p.cover));
+  if (!books.length) { toast('ยังไม่มีหน้าในสมุด — ลอง "เขียนในสมุด" ก่อน'); return; }
+  const done = new Set(S().attachments.filter(a => a.task_id === t.id && a.kind === 'page').map(a => a.page_id));
+  openModal({
+    title: 'เลือกหน้าจากสมุด', label: 'เลือกหน้าจากสมุด',
+    body: books.map(b => { const f = bookFace(b), ps = app.store.pagesOf(b.id);
+      return h('section.pk-book', h('h3', h('i', { style: { background: f.color } }), f.title),
+        h('div.pk-grid', ps.map((p, i) => p.cover ? null : h('button.pk-page' + (done.has(p.id) ? '.on' : ''), { type: 'button', 'aria-label': `${f.title} หน้า ${i + 1}`, disabled: done.has(p.id),
+          onclick: async () => { closeModal(); await app.store.linkPage(t.id, p.id); toast('เพิ่มหน้าจากสมุดแล้ว'); } },
+          thumb(p, 180), h('span', done.has(p.id) ? '✓ เพิ่มแล้ว' : G.pageTitle(p) || `หน้า ${i + 1}`)))));
+    }),
+  });
+}
+/** การ์ดหน้าในสมุดในโน้ตหน้างาน (ภาพย่อสด ๆ · แตะ = เปิดเขียนต่อ แล้วปิดกลับมาที่เดิม) */
+export function pageNoteEl(a, tilt, count) {
+  const p = S().pages.find(x => x.id === a.page_id);
+  const b = p && S().books.find(x => x.id === p.book_id);
+  if (!p || !b) return h('div.nitem.sticky.' + tilt, 'หน้านี้ถูกลบออกจากสมุดแล้ว');
+  const f = bookFace(b), n = app.store.pagesOf(b.id).findIndex(x => x.id === p.id) + 1;
+  const cv = thumb(p, 640);
+  return h('div.nitem.page.' + tilt, { 'data-page': p.id },
+    h('button.zoom', { 'aria-label': `เปิด ${f.title} หน้า ${n} เขียนต่อ`, onclick: () => openSketch(b.id, p.id, cv, { stay: true }) }, cv),
+    h('span.ntag', { html: si('pen') }, `สมุด${f.title} · หน้า ${n}`, count || ''));
 }

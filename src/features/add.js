@@ -2,6 +2,7 @@
 // + เพิ่มโน้ตให้งาน · แก้ไขงาน · ดูรูปเต็มจอ
 // กฎ: ไม่เดาเวลาเมื่อผู้ใช้ไม่ได้บอก (สเปก 3.1) · กดบันทึกซ้ำต้องไม่ได้งานซ้ำ · ข้อความที่พิมพ์ค้างต้องถามก่อนทิ้ง (สเปก 3)
 import { h, ic, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
+import { writeForTask, pickPageForTask, pageNoteEl } from './sketch.js';
 import { draftsFromText } from '../domain/parse.js';
 import { TYPES, newId } from '../domain/tasks.js';
 import { pickImage, prepareImage } from './images.js';
@@ -48,7 +49,7 @@ export const sane = ymd => !ymd || (ymd >= addDaysYMD(today(), -366) && ymd <= a
 export async function addTask(kind = 'text', preset = '') {
   if (kind === 'voice') return listenTask(); // ฟังไม่ได้ก็ยังเปิด — พิมพ์/วางแทนได้ในหน้าเดียวกัน
   let img = null;
-  if (kind === 'photo' || kind === 'camera') { img = await getImage(kind === 'camera'); if (!img) return; }
+  if (kind === 'photo' || kind === 'camera') { img =await getImage(kind === 'camera'); if (!img) return; }
   const ta = h('textarea.field.quick', { id: 'add-text', rows: 2, 'aria-label': 'งานที่ต้องทำ',
     placeholder: img ? 'งานในรูปคืออะไร? เช่น "ฟิสิกส์ แบบฝึก 4.1 ส่งศ."' : 'เช่น "คณิต ใบงาน 7 ส่งพน."' });
   ta.value = preset;
@@ -105,7 +106,16 @@ export async function addNote(id, kind) {
       h('button.pill', { onclick: () => addNote(id, 'camera'), html: ic('camera') + 'ถ่ายรูป' }),
       h('button.pill', { onclick: () => addNote(id, 'photo'), html: ic('img') + 'เลือกรูป' }),
       h('button.pill', { onclick: () => addNote(id, 'text'), html: ic('text') + 'จดข้อความ' }),
-      h('button.pill', { onclick: () => addNote(id, 'voice'), html: ic('mic') + 'พูดเป็นข้อความ' })) });
+      h('button.pill', { onclick: () => addNote(id, 'voice'), html: ic('mic') + 'พูดเป็นข้อความ' }),
+      h('button.pill', { onclick: () => addNote(id, 'book'), html: ic('notebook') + 'สมุด' })) });
+    return;
+  }
+  if (kind === 'book') { // 0.11.1: หน้าในสมุด → โน้ตของงานนี้
+    const any = S().pages.some(p => !p.cover);
+    if (!any) { closeModal(); writeForTask(t); return; }
+    openModal({ title: 'โน้ตจากสมุด', body: h('div.pills.col',
+      h('button.pill', { onclick: () => { closeModal(); writeForTask(t); }, html: ic('edit') + 'เขียนหน้าใหม่' }),
+      h('button.pill', { onclick: () => { closeModal(); setTimeout(() => pickPageForTask(t), 320); }, html: ic('notebook') + 'เลือกหน้าที่มีอยู่' })) });
     return;
   }
   if (kind === 'photo' || kind === 'camera') {
@@ -180,6 +190,7 @@ const MINI_W = 300;
 /** การ์ดโน้ต 1 ใบ · ใช้กับ notes.map(noteEl) ได้ตรง ๆ (all = โน้ตทั้งหมดของงาน → ป้ายบอก "1/3") */
 export function noteEl(a, i = 0, all = null) {
   const tilt = i % 2 ? 'tilt-r' : 'tilt-l';
+  if (a.kind === 'page') return pageNoteEl(a, tilt, all?.length > 1 ? h('b.ncount', `${i + 1}/${all.length}`) : null);
   const d = new Date(a.created_at);
   const when = h('span.ntag', { html: ic(a.kind === 'text' ? 'text' : 'camera') },
     `${a.kind === 'text' ? 'จดเมื่อ' : 'ถ่ายเมื่อ'} ${d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' })} ${d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`,
