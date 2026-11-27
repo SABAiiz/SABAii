@@ -1,8 +1,8 @@
 // ที่เก็บข้อมูลในเครื่อง — IndexedDB เป็นหลัก ถ้าเบราว์เซอร์ไม่ให้ใช้ (โหมดส่วนตัวบางตัว) ตกไปใช้หน่วยความจำ
 // แล้วแจ้งผู้ใช้ตรง ๆ ว่าปิดแอปแล้วข้อมูลจะหาย
 export const DB_NAME = 'sabaii';
-export const DB_VERSION = 1;
-export const STORES = ['tasks', 'subjects', 'attachments', 'prefs'];
+export const DB_VERSION = 2; // 2 = สมุดจด (books · pages)
+export const STORES = ['tasks', 'subjects', 'attachments', 'prefs', 'books', 'pages'];
 
 function req(r) {
   return new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -24,6 +24,11 @@ export async function openIDB(idb = globalThis.indexedDB) {
       s.createIndex('task_id', 'task_id');
     }
     if (!db.objectStoreNames.contains('prefs')) db.createObjectStore('prefs', { keyPath: 'key' });
+    if (!db.objectStoreNames.contains('books')) db.createObjectStore('books', { keyPath: 'id' });
+    if (!db.objectStoreNames.contains('pages')) {
+      const s = db.createObjectStore('pages', { keyPath: 'id' });
+      s.createIndex('book_id', 'book_id');
+    }
   };
   const db = await req(r);
   return {

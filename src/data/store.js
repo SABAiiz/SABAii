@@ -1,6 +1,7 @@
 // สถานะของแอปทั้งหมด + การบันทึกลงเครื่อง · จอทุกจออ่านจากที่นี่ที่เดียว
 import { makeTask, updateTask, newId, isLive } from '../domain/tasks.js';
 import { toYMD } from '../domain/dates.js';
+import { blankPage } from '../domain/pages.js';
 
 export const SUBJECT_COLORS = ['#1769D2', '#E45465', '#16B76A', '#F4A340', '#8B5CF6', '#0EA5B7', '#D9468F', '#64748B'];
 
@@ -17,13 +18,13 @@ export const DEFAULT_SUBJECTS = [
 ];
 
 export function createStore(db, { now = () => new Date() } = {}) {
-  const state = { tasks: [], subjects: [], attachments: [], prefs: {}, dbKind: db.kind };
+  const state = { tasks: [], subjects: [], attachments: [], prefs: {}, books: [], pages: [], dbKind: db.kind };
   const listeners = new Set();
   const iso = () => now().toISOString();
   const emit = () => listeners.forEach(fn => fn(state));
 
   async function load() {
-    [state.tasks, state.subjects, state.attachments] = await Promise.all([db.all('tasks'), db.all('subjects'), db.all('attachments')]);
+    [state.tasks, state.subjects, state.attachments, state.books, state.pages] = await Promise.all(['tasks', 'subjects', 'attachments', 'books', 'pages'].map(n => db.all(n)));
     state.prefs = Object.fromEntries((await db.all('prefs')).map(p => [p.key, p.value]));
     if (!state.prefs.seeded) {
       for (const [i, [name, aliases]] of DEFAULT_SUBJECTS.entries()) {
@@ -106,6 +107,65 @@ export function createStore(db, { now = () => new Date() } = {}) {
     if (notify) emit();
   }
 
+  /* ---------- สมุดจด (0.10): สมุด 1 เล่ม = หลายหน้า · หน้าเก็บเส้นปากกา/ข้อความ/รูปเป็นหน่วยหน้ากระดาษ ---------- */
+  const pagesOf = book_id => state.pages.filter(p => p.book_id === book_id).sort((a, b) => a.order - b.order);
+  async function putBook(b, notify = true) {
+    await db.put('books', b);
+    const i = state.books.findIndex(x => x.id === b.id);
+    if (i >= 0) state.books[i] = b; else state.books.push(b);
+    if (notify) emit();
+    return b;
+  }
+  async function addBook({ title, color = SUBJECT_COLORS[state.books.length % SUBJECT_COLORS.length], paper = 'lined', subject_id = null }) {
+    const b = { id: newId('b'), title: String(title || '').trim() || 'สมุดจด', color, paper, subject_id, created_at: iso(), updated_at: iso(), last_page: null };
+    const p = blankPage(b.id, 0, paper, iso());
+    b.last_page = p.id;
+    await db.put('pages', p); state.pages.push(p);
+    return putBook(b);
+  }
+  const updateBook = (id, patch) => putBook({ ...state.books.find(b => b.id === id), ...patch, updated_at: iso() });
+  async function deleteBook(id) {
+    for (const p of pagesOf(id)) await db.del('pages', p.id);
+    state.pages = state.pages.filter(p => p.book_id !== id);
+    await db.del('books', id);
+    state.books = state.books.filter(b => b.id !== id);
+    emit();
+  }
+  /** บันทึกหน้า — ระหว่างเขียนไม่ต้องวาดทั้งแอปใหม่ (notify=false) แจ้งทีเดียวตอนออกจากหน้าเขียน */
+  async function savePage(p, notify = true) {
+    const v = { ...p, updated_at: iso() };
+    await db.put('pages', v);
+    const i = state.pages.findIndex(x => x.id === v.id);
+    if (i >= 0) state.pages[i] = v; else state.pages.push(v);
+    const b = state.books.find(x => x.id === v.book_id);
+    if (b) { b.updated_at = v.updated_at; await db.put('books', b); }
+    if (notify) emit();
+    return v;
+  }
+  /** เพิ่มหน้าต่อจากหน้า after (ไม่ระบุ = ท้ายเล่ม) — กระดาษแบบเดียวกับหน้าก่อนหน้า */
+  async function addPage(book_id, after = null) {
+    const list = pagesOf(book_id), at = after ? list.findIndex(p => p.id === after) + 1 : list.length;
+    const prev = list[at - 1], book = state.books.find(b => b.id === book_id);
+    for (const p of list.slice(at)) { p.order++; await db.put('pages', p); }
+    const p = blankPage(book_id, at, prev?.paper || book?.paper || 'lined', iso());
+    await db.put('pages', p); state.pages.push(p);
+    return p;
+  }
+  /** ทำสำเนาหน้า (วางต่อจากหน้าเดิม) */
+  async function duplicatePage(id) {
+    const src = state.pages.find(x => x.id === id);
+    if (!src) return null;
+    const p = await addPage(src.book_id, id);
+    return savePage({ ...p, paper: src.paper, strokes: src.strokes.slice(), texts: src.texts.map(t => ({ ...t })), imgs: src.imgs.map(i => ({ ...i })) }, false);
+  }
+  async function removePage(id) {
+    const p = state.pages.find(x => x.id === id);
+    if (!p) return;
+    await db.del('pages', id);
+    state.pages = state.pages.filter(x => x.id !== id);
+    for (const [i, x] of pagesOf(p.book_id).entries()) if (x.order !== i) { x.order = i; await db.put('pages', x); }
+  }
+
   const updateSubject = (id, patch) => putSubject({ ...state.subjects.find(s => s.id === id), ...patch });
   /** ลบวิชา — งานที่ผูกอยู่ไม่หาย แค่กลายเป็น "ไม่ระบุวิชา" (หน้าจอถามยืนยันก่อนเรียก) */
   async function deleteSubject(id) {
@@ -121,6 +181,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
       app: 'SABAii.com', version: 1, exported_at: iso(),
       tasks: state.tasks, subjects: state.subjects, prefs: state.prefs,
       notes: state.attachments.filter(a => a.kind === 'text').map(({ blob, ...a }) => a),
+      books: state.books, pages: state.pages.map(p => ({ ...p, imgs: [] })),
     }, null, 2);
   }
 
@@ -166,6 +227,8 @@ export function createStore(db, { now = () => new Date() } = {}) {
       await putTask(t, false); added++;
     }
     for (const n of data.notes || []) if (n?.id && n.task_id && !state.attachments.some(a => a.id === n.id)) { await db.put('attachments', n); state.attachments.push(n); }
+    for (const b of data.books || []) if (b?.id && !state.books.some(x => x.id === b.id)) await putBook(b, false);
+    for (const p of data.pages || []) if (p?.id && p.book_id && Array.isArray(p.strokes) && !state.pages.some(x => x.id === p.id)) { const v = { texts: [], imgs: [], ...p }; await db.put('pages', v); state.pages.push(v); }
     emit();
     return { added, skipped };
   }
@@ -174,7 +237,8 @@ export function createStore(db, { now = () => new Date() } = {}) {
     state, load, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
     addTasks, patchTask, removeTask, restoreTask, purgeTask,
     addAttachment, removeAttachment, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
-    ensureSubject, updateSubject, deleteSubject, setPref, exportJSON, restoreBackup, addSamples, removeSamples,
+    ensureSubject, updateSubject, deleteSubject,
+    addBook, updateBook, deleteBook, pagesOf, savePage, addPage, duplicatePage, removePage, setPref, exportJSON, restoreBackup, addSamples, removeSamples,
     subjectsById: () => Object.fromEntries(state.subjects.map(s => [s.id, s])),
   };
 }

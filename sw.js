@@ -1,12 +1,12 @@
 // แคชไฟล์ของแอปไว้ให้เปิดได้ตอนออฟไลน์ · ข้อมูลผู้ใช้อยู่ใน IndexedDB ไม่ได้อยู่ที่นี่
 // เปลี่ยนไฟล์ในแอปเมื่อไหร่ ต้องขึ้นเลข CACHE ทุกครั้ง
-const CACHE = 'sabaii-v0.9.9-3';
+const CACHE = 'sabaii-v0.10.2';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './src/styles/app.css', './src/main.js', './src/ui/kit.js',
   './src/data/db.js', './src/data/store.js',
-  './src/domain/dates.js', './src/domain/tasks.js', './src/domain/parse.js', './src/domain/thai-parse.js', './src/domain/speech.js', './src/domain/notebook.js', './src/ui/subject-icon.js',
-  './src/features/shared.js', './src/features/home.js', './src/features/add.js', './src/features/tasks.js', './src/features/notebook.js', './src/features/me.js',
+  './src/domain/dates.js', './src/domain/tasks.js', './src/domain/parse.js', './src/domain/thai-parse.js', './src/domain/speech.js', './src/domain/notebook.js', './src/domain/pages.js', './src/ui/subject-icon.js',
+  './src/features/shared.js', './src/features/home.js', './src/features/add.js', './src/features/tasks.js', './src/features/notebook.js', './src/features/sketch.js', './src/features/me.js',
   './src/features/voice.js', './src/features/listen.js', './src/features/images.js',
   './src/features/notestyle.js', './src/features/onboard.js', './src/features/handsfree.js', './src/gesture/hand.js',
   ...[1, 2, 3, 4, 5, 6].map(i => `./assets/note-styles/ns-${i}.jpg`), './assets/landing/note-photo.jpg',
