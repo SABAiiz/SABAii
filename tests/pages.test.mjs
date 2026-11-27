@@ -134,3 +134,20 @@ test('ที่เก็บ: สร้างเล่มแบบมีหน้
   const n = await st.addPage(b.id, ps[0].id); assert.equal(n.paper, 'grid');
   const d = await st.duplicatePage(ps[0].id); assert.equal(d.paper, 'grid'); assert.ok(!d.cover);
 });
+
+// 0.11.1 หน้าในสมุด ↔ โน้ตของงาน
+test('ผูกหน้าเข้าโน้ตงาน: ผูกซ้ำได้อันเดิม · ลบหน้า/ลบเล่ม = โน้ตที่ผูกหายตาม · สำรองรวมลิงก์', async () => {
+  const st = createStore(memoryDB()); await st.load();
+  const [t] = await st.addTasks([{ title: 'การบ้าน', type: 'homework' }]);
+  const b = await st.addBook({ title: 'x' });
+  const p1 = st.pagesOf(b.id)[0], p2 = await st.addPage(b.id);
+  const a1 = await st.linkPage(t.id, p1.id), again = await st.linkPage(t.id, p1.id);
+  assert.equal(a1.id, again.id); assert.equal(a1.kind, 'page'); assert.equal(a1.page_id, p1.id);
+  await st.linkPage(t.id, p2.id);
+  assert.equal(st.attachmentsOf(t.id).length, 2);
+  assert.ok(JSON.parse(st.exportJSON()).notes.some(n => n.kind === 'page' && n.page_id === p1.id));
+  await st.removePage(p1.id);
+  assert.deepEqual(st.attachmentsOf(t.id).map(a => a.page_id), [p2.id]);
+  await st.deleteBook(b.id);
+  assert.equal(st.attachmentsOf(t.id).length, 0);
+});

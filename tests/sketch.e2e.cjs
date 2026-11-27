@@ -252,6 +252,39 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   check('0.11 วิชาว่าง → "เริ่มจด" = สมุดวิชาพร้อมหน้าปก เปิดที่หน้าปก', (await page.locator('.sk-name b').textContent()) === '1 / 2' && await page.evaluate(() => window.__sabaii.state.pages.some(p => p.cover && window.__sabaii.state.books.find(b => b.id === p.book_id)?.title === 'เคมี')));
   await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(300);
 
+  // 0.11.1 หน้าในสมุด → โน้ตของงาน (หน้าหลัก ดึงลง)
+  await page.evaluate(() => window.__sabaii.addSamples()); await wait(300);
+  await page.evaluate(() => { location.hash = '#/home'; }); await wait(400);
+  const [t1, t2] = await page.evaluate(() => window.__ui.homeState().pages.slice(0, 2));
+  const t1title = await page.evaluate(id => window.__sabaii.state.tasks.find(t => t.id === id).title, t1);
+  await page.evaluate(id => window.__ui.openNotes(id), t1); await wait(800);
+  check('0.11.1 โน้ตหน้างานมีปุ่ม "สมุด" (4 ปุ่มแถวเดียว)', (await page.locator('#pane-note .pill').count()) === 4 && await page.locator('#pane-note .pill', { hasText: 'สมุด' }).isVisible());
+  await page.locator('#pane-note .pill', { hasText: 'สมุด' }).click(); await wait(400);
+  await page.locator('.modal .pill', { hasText: 'เขียนหน้าใหม่' }).click(); await page.waitForSelector('#sk.in'); await wait(700);
+  const newPg = await page.evaluate(() => window.__sabaii.state.attachments.find(a => a.kind === 'page'));
+  check('0.11.1 "เขียนหน้าใหม่" = หน้าใหม่ในสมุดวิชา หัวข้อ = ชื่องาน · ผูกกับงานแล้ว', !!newPg && newPg.task_id === t1 && await page.evaluate(([pid, tt]) => window.__sabaii.state.pages.find(p => p.id === pid).texts[0].v === tt, [newPg.page_id, t1title]));
+  const sb = await page.locator('.sk-stage').boundingBox();
+  await page.locator('.sk-tool[data-tool="pen"]').click();
+  await page.mouse.move(sb.x + 60, sb.y + 300); await page.mouse.down(); for (let i = 0; i < 20; i++) await page.mouse.move(sb.x + 60 + i * 12, sb.y + 300 + Math.sin(i) * 8); await page.mouse.up();
+  await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(600);
+  check('0.11.1 ปิดแล้วอยู่ที่โน้ตหน้างานเดิม · มีการ์ดหน้าสมุด', await page.evaluate(() => location.hash === '#/home' && window.__ui.homeState().noteMode) && (await page.locator('#stage .npage').first().locator('.nitem.page').count()) === 1);
+  await shot('15-task-page');
+  await page.evaluate(() => window.__ui.goPage(1)); await wait(700);
+  await page.locator('#pane-note .pill', { hasText: 'สมุด' }).click(); await wait(400);
+  await page.locator('.modal .pill', { hasText: 'เลือกหน้าที่มีอยู่' }).click(); await page.waitForSelector('.pk-page'); await wait(300);
+  await page.locator('.pk-page:not(.on)').first().click(); await wait(600);
+  check('0.11.1 "เลือกหน้าที่มีอยู่" = ผูกหน้าเดิมกับงานที่ 2', await page.evaluate(id => window.__sabaii.state.attachments.some(a => a.task_id === id && a.kind === 'page'), t2));
+  await page.locator('#stage .npage').first().locator('.nitem.page .zoom').click(); await page.waitForSelector('#sk.in'); await wait(600);
+  check('0.11.1 แตะการ์ดหน้าสมุด = เปิดเขียนต่อหน้านั้น', await page.locator('#sk').isVisible());
+  await page.locator('.sk-ib[aria-label="ตั้งค่าหน้า"]').click(); await wait(200);
+  await page.locator('.sk-mi', { hasText: 'ส่งไปโน้ตของงาน' }).click(); await wait(200);
+  await shot('16-send-to-task');
+  const nTask = await page.locator('.sk-task').count();
+  await page.locator('.sk-task:not(:has(em))').first().click(); await wait(500);
+  check('0.11.1 เมนู ⋯ "ส่งไปโน้ตของงาน" = ผูกหน้านี้กับงานอื่น', nTask >= 2 && await page.evaluate(pid => window.__sabaii.state.attachments.filter(a => a.kind === 'page' && a.page_id === pid).length >= 2, newPg.page_id));
+  await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(300);
+  await page.locator('#note-back').click(); await wait(300);
+
   // ---------- นิ้วจริง (CDP): นิ้วเดียวเขียน · ถ่างสองนิ้ว = ซูม · ปัดสองนิ้ว = พลิกหน้า ----------
   const tctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, serviceWorkers: 'block' });
   await tctx.route('http://sabaii.test/**', r => {

@@ -27,7 +27,7 @@ export function notePane(t, s, notes, timer, act) {
   const color = s?.color || '#69778F';
   const editBtn = () => h('button.iconbtn.nedit', { 'aria-label': 'แก้ไขงาน', onclick: act.edit, html: ic('edit') });
   const pill = (kind, icon, label, cls = '') => h('button.pill' + cls, { onclick: () => act.add(kind), 'aria-label': `เพิ่มโน้ต${label}`, html: ic(icon) + `<span>${label}</span>` });
-  const pills = cls => [pill('photo', 'camera', 'รูป', cls), pill('text', 'text', 'ข้อความ', cls), pill('voice', 'mic', 'เสียง', cls)];
+  const pills = cls => [pill('photo', 'camera', 'รูป', cls), pill('text', 'text', 'ข้อความ', cls), pill('voice', 'mic', 'เสียง', cls), pill('book', 'notebook', 'สมุด', cls)];
   const title = () => h('h2', h('span.ht', t.title));
   const extras = [t.est_min ? `~${t.est_min} นาที` : '', t.place || ''].filter(Boolean).join(' · ');
   const button = (label, sub) => doing

@@ -94,12 +94,22 @@ export function createStore(db, { now = () => new Date() } = {}) {
     if (notify) emit();
   }
 
-  async function addAttachment(task_id, { kind, blob = null, text = '', mime_type = '', size = 0 }) {
+  async function addAttachment(task_id, { kind, blob = null, text = '', mime_type = '', size = 0, page_id = null }) {
     const a = { id: newId('a'), task_id, kind, blob, text, mime_type, size, created_at: iso() };
+    if (page_id) a.page_id = page_id; // kind 'page' = หน้าในสมุดที่ผูกกับงาน (ภาพย่อสด ๆ ไม่ได้ก๊อปมา)
     await db.put('attachments', a);
     state.attachments.push(a);
     emit();
     return a;
+  }
+  /** ผูกหน้าในสมุดเข้าโน้ตของงาน (ผูกซ้ำ = ได้อันเดิม) */
+  async function linkPage(task_id, page_id) {
+    return state.attachments.find(a => a.task_id === task_id && a.kind === 'page' && a.page_id === page_id)
+      || addAttachment(task_id, { kind: 'page', page_id });
+  }
+  /** หน้าถูกลบ → โน้ตงานที่ผูกหน้านั้นหายตาม */
+  async function unlinkPages(ids) {
+    for (const a of state.attachments.filter(a => a.kind === 'page' && ids.includes(a.page_id))) await removeAttachment(a.id, false);
   }
   async function removeAttachment(id, notify = true) {
     await db.del('attachments', id);
@@ -126,6 +136,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
   }
   const updateBook = (id, patch) => putBook({ ...state.books.find(b => b.id === id), ...patch, updated_at: iso() });
   async function deleteBook(id) {
+    await unlinkPages(pagesOf(id).map(p => p.id));
     for (const p of pagesOf(id)) await db.del('pages', p.id);
     state.pages = state.pages.filter(p => p.book_id !== id);
     await db.del('books', id);
@@ -162,6 +173,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
   async function removePage(id) {
     const p = state.pages.find(x => x.id === id);
     if (!p) return;
+    await unlinkPages([id]);
     await db.del('pages', id);
     state.pages = state.pages.filter(x => x.id !== id);
     for (const [i, x] of pagesOf(p.book_id).entries()) if (x.order !== i) { x.order = i; await db.put('pages', x); }
@@ -181,7 +193,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
     return JSON.stringify({
       app: 'SABAii.com', version: 1, exported_at: iso(),
       tasks: state.tasks, subjects: state.subjects, prefs: state.prefs,
-      notes: state.attachments.filter(a => a.kind === 'text').map(({ blob, ...a }) => a),
+      notes: state.attachments.filter(a => a.kind === 'text' || a.kind === 'page').map(({ blob, ...a }) => a),
       books: state.books, pages: state.pages.map(p => ({ ...p, imgs: [] })),
     }, null, 2);
   }
@@ -237,7 +249,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
   return {
     state, load, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
     addTasks, patchTask, removeTask, restoreTask, purgeTask,
-    addAttachment, removeAttachment, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
+    addAttachment, removeAttachment, linkPage, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
     ensureSubject, updateSubject, deleteSubject,
     addBook, updateBook, deleteBook, pagesOf, savePage, addPage, duplicatePage, removePage, setPref, exportJSON, restoreBackup, addSamples, removeSamples,
     subjectsById: () => Object.fromEntries(state.subjects.map(s => [s.id, s])),
