@@ -311,11 +311,25 @@ function renderHome() {
 /* ปุ่มเพิ่มงาน 4 แบบ (0.9.3): แต่ละกล่องมีภาพเล่าเรื่องของตัวเอง แบบหน้าแนะนำ
    พูด = กรมท่า คลื่นเสียงขยับ (ทางลัดที่เร็วสุด) · แนบรูป = รูปตัวอย่าง 3 ใบซ้อนกัน · พิมพ์ = ประโยคตัวอย่างพิมพ์เอง · ถ่ายรูป = ช่องเล็งกล้องบนรูปกระดาน */
 const TYPE_EX = ['คณิต ใบงาน 7 ส่งพน.', 'ฟิสิกส์ สอบย่อย อ.หน้า', 'อังกฤษ ท่องศัพท์ ส่งศ.'];
-let typeTimer = 0;
+let typeTimer = 0, recTimer = 0;
+/** ความดังของเสียงพูดหนึ่งช่วง (พยางค์ขึ้นลง + เว้นหายใจ) ใช้วาดคลื่นในกล่อง "พูด" */
+const VOICE = [.18, .32, .58, .9, .66, .4, .74, .52, .22, .1, .08, .26, .62, 1, .78, .46, .7, .38, .16, .3, .54, .82, .6, .34, .12, .08, .1, .44, .72, .56, .88, .5, .28, .42, .2, .1];
 /** รูปตัวอย่างในกล่อง "แนบรูป" — ใช้รูปชุดเดียวกับหน้าแนะนำเสมอ (ไม่ดึงโน้ตที่ผู้ใช้บันทึกไว้มาโชว์ — เจ้าของสั่ง) */
 const photosForTiles = () => ['board', 'notes', 'chalk'].map(f => `assets/landing/photos/${f}.jpg`);
 function tileArt(art) {
-  if (art === 'speak') return h('span.ta.ta-speak', h('span.ti-ic', { html: ic('mic') }), h('span.ta-wave', Array.from({ length: 9 }, (_, i) => h('i', { style: { '--k': i } }))));
+  if (art === 'speak') {
+    // แบบเครื่องอัดเสียง: จุดแดง + เวลาเดิน · คลื่นเสียงเส้นบางรูปทรงคำพูดจริง (มีช่วงเงียบ) ไหลเข้าหัวอ่าน — ไม่ใช่แท่งเท่า ๆ กันเรืองแสง
+    const bars = () => VOICE.map(a => h('i', { style: { '--a': a } }));
+    const clock = h('span.ta-clock', '0:07');
+    clearInterval(recTimer);
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { let sec = 7; recTimer = setInterval(() => {
+      if (!clock.isConnected) return clearInterval(recTimer);
+      if (document.hidden || isNoteMode() || !$('#page').hidden) return;
+      sec = sec >= 24 ? 3 : sec + 1; clock.textContent = `0:${String(sec).padStart(2, '0')}`;
+    }, 1000); }
+    return h('span.ta.ta-speak', h('span.ta-rec', h('i'), clock), h('span.ti-ic', { html: ic('mic') }),
+      h('span.ta-wave', h('span.ta-strip', bars(), bars())), h('i.ta-head'));
+  }
   if (art === 'attach') return h('span.ta.ta-attach', photosForTiles().map((u, i) => h('i', { style: { backgroundImage: `url("${u}")`, '--k': i } })));
   if (art === 'type') {
     const out = h('span.ta-txt'), wrap = h('span.ta.ta-type', h('span.ta-in', out, h('i.ta-caret')));
