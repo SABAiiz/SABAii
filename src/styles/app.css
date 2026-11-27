@@ -1444,3 +1444,78 @@ body.sk-on #toast { z-index: 60; }
 .sk > .sk-zoom { position: absolute; top: calc(62px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 7; }
 .sk:not(.in):not(.zoom) .sk-stage { opacity: 0; transform: scale(.98); }
 @media (max-width: 360px) { .sk-top .sk-ib { width: 38px; height: 38px; } .sk-pg { width: 32px; } }
+
+/* ================= 0.11 วิชา = สมุด (แบบ ข) · โปรเจกต์ · หน้าปก+สารบัญ — เรียบ ๆ เส้นบาง สีเดียว ไม่มีไล่สี ================= */
+.nb-card { overflow: hidden; }
+.nb-card > .si-box, .nb-card > b, .nb-card > small { position: relative; z-index: 1; }
+.nb-peek { position: absolute; z-index: 0; top: 12px; right: -8px; width: 44px; rotate: 5deg; line-height: 0; border-radius: 3px; background: #FFFDF8; box-shadow: 0 0 0 1px rgba(11,27,77,.08), 0 6px 12px -6px rgba(11,27,77,.35); }
+.nb-peek.back { right: 8px; top: 18px; rotate: -6deg; }
+.nb-peek canvas { width: 100%; height: auto; border-radius: 3px; }
+.nb-card small.ex { color: var(--error); font-weight: 600; }
+.nb-add { min-height: 124px; border-radius: 20px; border: 1.5px dashed #CBD3E1; background: #FAFBFD; padding: 11px; display: flex; flex-direction: column; align-items: flex-start; text-align: left; color: var(--text); }
+.nb-add span { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: #fff; box-shadow: inset 0 0 0 1.5px #E3E8F0; color: var(--ink); }
+.nb-add b { margin-top: auto; padding-top: 10px; font: 700 16px/1.25 var(--disp); }
+.nb-add small { font: 400 12px var(--disp); color: var(--text-2); }
+.nb-add:active { transform: scale(.97); }
+.nb-proj { display: flex; align-items: center; gap: 14px; width: 100%; padding: 12px 14px 12px 12px; margin-bottom: 10px; border-radius: 20px; background: #fff; text-align: left;
+  box-shadow: 0 0 0 1px #EDF0F6, 0 10px 20px -16px rgba(11,27,77,.4); }
+.nb-proj:active { transform: scale(.985); }
+.nb-proj .tx { flex: 1; min-width: 0; }
+.nb-proj b { display: block; font: 700 16px/1.3 var(--disp); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb-proj small { display: block; font: 400 12.5px var(--disp); color: var(--text-2); }
+.nb-proj > i { display: grid; color: #A3ACBF; } .nb-proj > i svg { width: 18px; height: 18px; }
+.nb-proj.empty { background: #FAFBFD; box-shadow: none; border: 1.5px dashed #CBD3E1; }
+/* ปกสมุดแบบเรียบ: สีเดียว สันเข้มนิด ป้ายขาว */
+.nb-book { position: relative; flex: none; width: 40px; height: 52px; border-radius: 3px 8px 8px 3px; background: var(--c, #0B1B4D); box-shadow: inset 5px 0 0 rgba(0,0,0,.16), 0 6px 12px -8px rgba(11,27,77,.6); }
+.nb-book::after { content: ""; position: absolute; left: 12px; right: 7px; top: 10px; height: 9px; border-radius: 2px; background: rgba(255,255,255,.92); }
+.nb-book.ghost { background: #E9EDF4; box-shadow: inset 5px 0 0 rgba(11,27,77,.06); }
+.nb-book.big { width: 108px; height: 144px; border-radius: 4px 14px 14px 4px; box-shadow: inset 9px 0 0 rgba(0,0,0,.16), 3px 2px 0 -1px #fff, 3px 2px 0 0 #DCE2EC, 0 18px 26px -16px rgba(11,27,77,.6); padding: 16px 12px 12px 20px; display: flex; flex-direction: column; justify-content: flex-end; color: #fff; }
+.nb-book.big::after { left: 20px; right: 14px; top: 18px; height: 14px; }
+.nb-book.big b { font: 700 15px/1.2 var(--disp); word-break: break-word; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.nb-book.big small { font: 500 11px var(--disp); opacity: .85; margin-top: 2px; }
+/* กล่องเล่มใหม่ */
+.nb-seg { display: flex; padding: 4px; border-radius: 14px; background: var(--surface); margin-bottom: 4px; }
+.nb-seg button { flex: 1; height: 38px; border-radius: 11px; font: 600 14.5px var(--disp); color: var(--text-2); }
+.nb-seg button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(11,27,77,.12); }
+.nb-firsts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.nb-firsts button { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 16px; text-align: left; box-shadow: inset 0 0 0 1.5px #E3E8F0; }
+.nb-firsts button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--ink); background: #F7F9FC; }
+.nb-firsts b { display: block; font: 700 13.5px/1.25 var(--disp); } .nb-firsts small { display: block; font: 400 11.5px/1.3 var(--disp); color: var(--text-2); }
+.nb-firsts i { flex: none; width: 36px; height: 50px; border-radius: 3px; background: #FFFDF8; box-shadow: 0 0 0 1px #E1E7F2; position: relative; }
+.pf-cover::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c); border-radius: 3px 0 0 3px; }
+.pf-cover::after { content: ""; position: absolute; left: 9px; right: 6px; top: 10px; height: 5px; background: #0B1B4D; border-radius: 1px; box-shadow: 0 9px 0 -1.5px #CBD3E1, 0 15px 0 -1.5px #CBD3E1, 0 21px 0 -1.5px #CBD3E1; }
+.pf-plain { background-image: repeating-linear-gradient(transparent 0 6px, rgba(10,108,241,.22) 6px 7px) !important; }
+/* หน้าวิชา / หน้าโปรเจกต์ */
+.sv-hero { display: flex; align-items: center; gap: 14px; margin: 2px 0 14px; }
+.sv-hero h1 { font: 700 30px/1.15 var(--disp); letter-spacing: -.02em; }
+.sv-hero small { display: block; font: 600 12.5px var(--disp); color: var(--text-2); }
+.sv-hero p { font: 500 13.5px var(--disp); color: var(--text-2); margin-top: 2px; }
+.si-box.lg { width: 56px; height: 56px; border-radius: 18px; }
+.si-box.lg svg { width: 28px; height: 28px; }
+.sv-book { flex: none; width: 46px; height: 60px; border-radius: 3px 9px 9px 3px; background: var(--c); box-shadow: inset 6px 0 0 rgba(0,0,0,.16), 0 8px 14px -8px rgba(11,27,77,.6); position: relative; }
+.sv-book::after { content: ""; position: absolute; left: 14px; right: 8px; top: 11px; height: 10px; border-radius: 2px; background: rgba(255,255,255,.92); }
+.sv-stats { display: flex; gap: 8px; margin-bottom: 16px; }
+.sv-stats span { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1.5px #EDF0F6; font: 500 12px var(--disp); color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sv-stats b { display: block; font: 700 22px/1.15 Inter, var(--disp); color: var(--ink); }
+.sv-stats .ex { flex: 1.4; box-shadow: inset 0 0 0 1.5px #FBD3CD; background: #FFF6F4; }
+.sv-stats .ex b { color: var(--error); }
+.sv-tabs { display: flex; gap: 6px; padding: 4px; border-radius: 16px; background: var(--surface); margin-bottom: 16px; }
+.sv-tabs button { flex: 1; height: 40px; border-radius: 12px; font: 600 15px var(--disp); color: var(--text-2); }
+.sv-tabs button[aria-selected="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(11,27,77,.12); }
+.sv-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 26px 16px 30px; border-radius: 22px; background: #FAFBFD; box-shadow: inset 0 0 0 1.5px #EDF0F6; }
+.sv-empty > b { font: 700 18px var(--disp); margin-top: 18px; }
+.sv-empty > p { font: 500 14px var(--disp); color: var(--text-2); margin: 4px 0 16px; }
+.sv-stack { position: relative; width: 92px; height: 120px; }
+.sv-stack i { position: absolute; inset: 0; border-radius: 3px 10px 10px 3px; background: #FFFDF8; box-shadow: 0 0 0 1px #E1E7F2; }
+.sv-stack i:nth-child(1) { rotate: -8deg; translate: -10px 4px; }
+.sv-stack i:nth-child(2) { rotate: 5deg; translate: 8px 2px; }
+.sv-stack i:nth-child(3) { background: var(--c); box-shadow: inset 8px 0 0 rgba(0,0,0,.16), 0 14px 22px -12px rgba(11,27,77,.6); display: flex; align-items: flex-end; padding: 0 10px 12px 18px; }
+.sv-stack i:nth-child(3)::after { content: ""; position: absolute; left: 18px; right: 10px; top: 14px; height: 12px; border-radius: 2px; background: rgba(255,255,255,.92); }
+.sv-stack b { font: 700 12.5px/1.2 var(--disp); color: #fff; text-align: left; }
+.bk-thumb > span { display: flex; flex-direction: column; align-items: center; max-width: 100%; line-height: 1.25; }
+.bk-thumb > span b { font: 600 12.5px Inter, sans-serif; color: var(--text-2); }
+.bk-thumb > span small { font: 500 11.5px var(--disp); color: var(--text); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-thumb.last > span b { color: var(--ink); }
+/* สารบัญบนหน้าปก: แถวแตะได้ (หน่วยหน้า) */
+.sk-toc a { position: absolute; left: 80px; width: 840px; height: 72px; border-radius: 14px; pointer-events: auto; }
+.sk-toc a:active { background: rgba(10,108,241,.08); }

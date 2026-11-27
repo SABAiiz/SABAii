@@ -7,6 +7,7 @@ import { isLive } from '../domain/tasks.js';
 import { app, S, subj, today, dueInfo, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
 import { addTask, addNote, editTask, miniOf } from './add.js';
 import { finish, focusSearch } from './home.js';
+import { notesPanel, subjectBook } from './sketch.js';
 
 const tv = { calOpen: false, cursor: null, sel: null, filter: 'all' };
 const FILTERS = { all: 'ทั้งหมด', soon: 'ใกล้ส่ง', exam: 'สอบ', done: 'เสร็จแล้ว' };
@@ -90,12 +91,24 @@ export function subjectView(root, id) {
   const sid = id === 'none' ? '' : id, s = sid ? subj(sid) : NONE;
   const list = live().filter(x => sid ? x.subject_id === sid : !subjExists(x.subject_id))
     .sort((a, b) => (a.status === 'done') - (b.status === 'done') || dueSortKey(a) - dueSortKey(b));
-  const nNotes = list.reduce((n, x) => n + notesOf(x.id).length, 0);
+  // 0.11: หน้าวิชา = สมุดของวิชา — หัววิชา + ตัวเลข · แท็บ "โน้ต" (ทุกหน้าของสมุด) / "งาน" (ของเดิม)
+  const open = list.filter(x => x.status !== 'done');
+  const book = sid ? subjectBook(sid) : null, nPages = book ? app.store.pagesOf(book.id).length : 0;
+  const exam = open.filter(x => x.type === 'exam' && x.due_date && daysBetween(today(), x.due_date) >= 0).sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
+  const tab = sid ? (app.svTab || 'notes') : 'tasks';
+  const setTab = k => { app.svTab = k; app.refresh(); };
+  const exLabel = exam && (() => { const n = daysBetween(today(), exam.due_date); return n === 0 ? 'วันนี้' : n === 1 ? 'พรุ่งนี้' : `${n} วัน`; })();
   put(root,
-    h('div.phead', h('button.iconbtn', { 'aria-label': 'กลับสมุด', html: ic('back'), onclick: () => { location.hash = '#/notebook'; } }),
-      h('span.si-box', { style: { '--c': s.color || '#69778F' }, html: subjIcon(s) }), h('h1.mid', s.name)),
-    h('p.muted', { style: { marginBottom: '12px' } }, `${list.filter(x => x.status !== 'done').length} งานค้าง · โน้ต ${nNotes} รายการ`),
-    h('div.board', list.map(t => h('article.tcard' + (t.status === 'done' ? '.done' : ''),
+    h('div.phead', h('button.iconbtn', { 'aria-label': 'กลับสมุด', html: ic('back'), onclick: () => { location.hash = '#/notebook'; } })),
+    h('div.sv-hero', h('span.si-box.lg', { style: { '--c': s.color || '#69778F' }, html: subjIcon(s) }),
+      h('div', h('small', sid ? 'วิชา' : 'งานที่ยังไม่ได้ระบุวิชา'), h('h1', s.name))),
+    h('div.sv-stats',
+      sid ? h('span', h('b', String(nPages)), 'หน้าโน้ต') : '',
+      h('span', h('b', String(open.length)), 'งานค้าง'),
+      exam ? h('span.ex', h('b', exLabel), exam.title) : ''),
+    sid ? h('div.sv-tabs', { role: 'tablist' }, [['notes', `โน้ต${nPages ? ' ' + nPages : ''}`], ['tasks', `งาน${list.length ? ' ' + list.length : ''}`]].map(([k, l]) =>
+      h('button', { type: 'button', role: 'tab', 'aria-selected': String(tab === k), onclick: () => setTab(k) }, l))) : '',
+    tab === 'notes' ? notesPanel(sid) : h('div.board', list.map(t => h('article.tcard' + (t.status === 'done' ? '.done' : ''),
       h('div.top', h('div', h('b', t.title), h('small.muted.block', t.status === 'done' ? 'เสร็จแล้ว' : dueLine(t))),
         h('button.iconbtn', { 'aria-label': `แก้ไข ${t.title}`, html: ic('edit'), onclick: () => editTask(t.id) })),
       h('div.strip', notesOf(t.id).map(a => miniOf(a)), t.status !== 'done' ? h('button.s-add', { 'aria-label': 'เพิ่มโน้ต', onclick: () => addNote(t.id, 'pick') }, '+') : ''),
