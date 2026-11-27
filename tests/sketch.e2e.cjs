@@ -34,9 +34,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await shot('01-new-book');
   await page.locator('.mfoot .btn.primary').click();
   await page.waitForSelector('#sk.in'); await wait(500);
-  check('สร้างแล้วเข้าหน้าเขียนทันที · หน้า 1 / 1', (await page.locator('.sk-name small').textContent()) === 'หน้า 1 / 1');
+  check('สร้างแล้วเข้าหน้าเขียนทันที · หน้า 1 / 1', (await page.locator('.sk-name b').textContent()) === '1 / 1');
+  const full = await page.evaluate(() => { const r = document.querySelector('.sk-stage').getBoundingClientRect(); return [r.width, r.height, innerWidth, innerHeight]; });
+  check('กระดาษเต็มจอ ขอบชนขอบ', full[0] === full[2] && full[1] === full[3], full.join(','));
 
-  const box = await page.locator('.sk-paper').boundingBox();
+  const box = await page.locator('.sk-stage').boundingBox();
   const P = (x, y) => [box.x + box.width * x, box.y + box.height * y];
   async function draw(pts) {
     await page.mouse.move(...P(...pts[0])); await page.mouse.down();
@@ -65,11 +67,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   // รูปทรง: ลูกศร + กรอบ
   await page.locator('.sk-tool[data-tool="shape"]').click();
   await page.locator('.sk-seg button[aria-label="ลูกศร"]').click();
-  await draw([[.2, .66], [.45, .66]]);
+  await draw([[.2, .58], [.45, .58]]);
   await page.locator('.sk-seg button[aria-label="สี่เหลี่ยม"]').click();
-  await draw([[.5, .6], [.84, .74]]);
+  await draw([[.5, .54], [.84, .64]]);
   await page.locator('.sk-seg button[aria-label="วงกลม"]').click();
-  await draw([[.14, .78], [.34, .9]]);
+  await draw([[.14, .68], [.34, .78]]);
   await page.locator('.sk-tool[data-tool="pen"]').click(); await wait(600);
   const n1 = await strokes();
   check('ปากกา/ไฮไลต์/รูปทรงได้เส้นครบ (บันทึกเองระหว่างเขียน)', n1 === 14, String(n1));
@@ -78,7 +80,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   // ยางลบ → เลิกทำ → ทำซ้ำ
   await page.locator('.sk-tool[data-tool="eraser"]').click();
-  await draw([[.5, .5], [.5, .54]]);
+  await draw([[.3, .5], [.3, .54]]);
   await wait(600);
   const erased = await page.evaluate(() => window.__sabaii.state.pages[0].strokes.length);
   check('ยางลบ: ลากผ่านเส้นแดง → ลบทั้งเส้น', erased === n1 - 1, String(erased));
@@ -87,20 +89,36 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   // บ่วงเลือก → ย้าย
   await page.locator('.sk-tool[data-tool="lasso"]').click();
-  await draw([[.1, .75], [.4, .75], [.4, .95], [.1, .95], [.1, .76]]);
+  await draw([[.08, .66], [.42, .66], [.42, .8], [.08, .8], [.08, .67]]);
   check('บ่วงเลือก: มีกรอบเลือก + แถบ ลบ/ทำสำเนา', await page.locator('.sk-selbox').isVisible() && await page.locator('.sk-selbar').isVisible());
   await shot('03-lasso');
   const before = await page.evaluate(() => window.__sabaii.state.pages[0].strokes.at(-1).p[0]);
-  await draw([[.24, .84], [.5, .84]]); await wait(600);
+  await draw([[.24, .73], [.5, .73]]); await wait(600);
   const after = await page.evaluate(() => window.__sabaii.state.pages[0].strokes.at(-1).p[0]);
   check('ลากในกรอบ = ย้ายวงกลม', after - before > 200, `${before} → ${after}`);
   await page.locator('.sk-tool[data-tool="pen"]').click();
 
+  // เลื่อนลง (ล้อเมาส์) · เขียนใกล้ท้ายหน้า → หน้ายาวขึ้นเอง
+  const vyOf = () => page.evaluate(() => Number(document.querySelector('.sk-layer').style.transform.match(/-?[\d.]+/g)[1]));
+  await page.mouse.move(...P(.5, .5)); await page.mouse.wheel(0, 3000); await wait(300);
+  const vyEnd = await vyOf();
+  check('ล้อเมาส์ = เลื่อนหน้าลง', vyEnd < -50, String(vyEnd));
+  const h0 = await page.evaluate(() => window.__sabaii.state.pages[0].h || 1414);
+  await page.locator('.sk-tool[data-tool="pen"]').click();
+  await draw(wave(.7, .16, .7, .006)); await wait(600);
+  const h1 = await page.evaluate(() => window.__sabaii.state.pages[0].h || 0);
+  check('เขียนใกล้ท้ายหน้า → หน้ายาวขึ้นเอง เลื่อนต่อได้', h1 > h0 + 500, `${h0} → ${h1}`);
+  await page.mouse.wheel(0, 3000); await wait(300);
+  check('หน้ายาวขึ้นแล้วเลื่อนลงได้อีก', (await vyOf()) < vyEnd - 100);
+  await shot('03b-long-page');
+  await page.mouse.wheel(0, -20000); await wait(300);
+  check('เลื่อนกลับบนสุดได้', (await vyOf()) === 0);
+
   // พลิกไปหน้าใหม่
-  await page.locator('.sk-turn.add').click(); await wait(250);
+  await page.locator('.sk-pg.add').click(); await wait(250);
   await shot('04-flip');
   await wait(500);
-  check('ปุ่ม + = เพิ่มหน้าใหม่ แล้วพลิกไป · หน้า 2 / 2', (await page.locator('.sk-name small').textContent()) === 'หน้า 2 / 2');
+  check('ปุ่ม + = เพิ่มหน้าใหม่ แล้วพลิกไป · หน้า 2 / 2', (await page.locator('.sk-name b').textContent()) === '2 / 2');
   await page.locator('.sk-tool[data-tool="text"]').click();
   await page.mouse.click(...P(.16, .08)); await wait(150);
   await page.keyboard.type('แบบฝึกหัด 4.1');
@@ -110,11 +128,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator('.sk-ib[aria-label="ตั้งค่าหน้า"]').click(); await wait(250);
   await shot('05-menu');
   await page.locator('.sk-papers button', { hasText: 'ตาราง' }).click(); await wait(200);
-  await page.locator('.sk-turn.add').click(); await wait(800);
+  await page.locator('.sk-pg.add').click(); await wait(800);
   await page.locator('.sk-tool[data-tool="hl"]').click();
   await draw([[.2, .3], [.7, .3]]);
-  await page.locator('.sk-ib[aria-label="หน้าก่อน"], .sk-turn[aria-label="หน้าก่อน"]').first().click(); await wait(800);
-  check('ปุ่ม ‹ = หน้าก่อน', (await page.locator('.sk-name small').textContent()) === 'หน้า 2 / 3');
+  await page.locator('.sk-ib[aria-label="หน้าก่อน"], .sk-pg[aria-label="หน้าก่อน"]').first().click(); await wait(800);
+  check('ปุ่ม ‹ = หน้าก่อน', (await page.locator('.sk-name b').textContent()) === '2 / 3');
 
   // ออก → เห็นทุกหน้า
   await page.locator('.sk-close').click(); await wait(250);
@@ -126,7 +144,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
   // แตะภาพย่อ = เปิดหน้านั้น · ปุ่มย้อนกลับของเครื่อง = ออก
   await page.locator('.bk-thumb[data-id]').nth(0).click(); await page.waitForSelector('#sk.in'); await wait(500);
-  check('แตะภาพย่อหน้า 1 → เปิดหน้า 1', (await page.locator('.sk-name small').textContent()) === 'หน้า 1 / 3');
+  check('แตะภาพย่อหน้า 1 → เปิดหน้า 1', (await page.locator('.sk-name b').textContent()) === '1 / 3');
   await page.goBack(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(200);
   check('ปุ่มย้อนกลับของเครื่อง = ออกจากหน้าเขียน กลับไปทุกหน้า', await page.evaluate(() => location.hash.startsWith('#/book/')));
 
@@ -136,7 +154,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.locator('.bk-in').fill('ศัพท์อังกฤษ'); await page.locator('.bk-colors button').nth(4).click();
   await page.locator('.mfoot .btn.primary').click(); await page.waitForSelector('#sk.in'); await wait(400);
   await page.locator('.sk-tool[data-tool="pen"]').click();
-  const box2 = await page.locator('.sk-paper').boundingBox();
+  const box2 = await page.locator('.sk-stage').boundingBox();
   await page.mouse.move(box2.x + 60, box2.y + 90); await page.mouse.down(); for (let i = 0; i < 20; i++) await page.mouse.move(box2.x + 60 + i * 10, box2.y + 90 + Math.sin(i) * 8); await page.mouse.up();
   await page.locator('.sk-close').click(); await page.waitForSelector('#sk', { state: 'detached' }); await wait(300);
   await page.locator('#nav a[data-r="notebook"]').click(); await page.waitForSelector('.bk-cover'); await wait(300);
@@ -158,12 +176,12 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.waitForSelector('#sk.in'); await wait(800);
   check('แตะปก: ปกพลิกเปิด แล้วเข้าหน้าเขียน (ของที่ลอยหายหมด)', (await page.locator('.bk-fly, .bk-fly-dim').count()) === 0 && await page.locator('#sk').isVisible());
   const cur = () => page.evaluate(() => { const b = window.__sabaii.state.books.find(x => x.title === 'ฟิสิกส์'); return window.__sabaii.state.pages.find(p => p.id === b.last_page); });
-  const bx = await page.locator('.sk-paper').boundingBox();
+  const bx = await page.locator('.sk-stage').boundingBox();
   const Q = (x, y) => [bx.x + bx.width * x, bx.y + bx.height * y];
   await page.locator('.sk-name').click(); await wait(300);
   check('แตะ "หน้า x / y" = แถบภาพย่อทุกหน้า', await page.locator('.sk-strip').isVisible() && (await page.locator('.sk-film canvas').count()) === 3);
   await page.locator('.sk-film').nth(2).click(); await wait(800);
-  check('แตะภาพย่อในแถบ = ไปหน้านั้น', (await page.locator('.sk-name small').textContent()) === 'หน้า 3 / 3' && !(await page.locator('.sk-strip').isVisible()));
+  check('แตะภาพย่อในแถบ = ไปหน้านั้น', (await page.locator('.sk-name b').textContent()) === '3 / 3' && !(await page.locator('.sk-strip').isVisible()));
   // ค้างไว้ = รูปทรงเป๊ะ
   await page.locator('.sk-tool[data-tool="pen"]').click();
   await page.mouse.move(...Q(.5 + .25, .5)); await page.mouse.down();
@@ -182,18 +200,19 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   const zl = await page.locator('.sk-zoom').textContent().catch(() => '');
   check('ซูมเข้าได้ · มีปุ่มบอก % และกลับขนาดเดิม', await page.locator('.sk-zoom').isVisible() && /\d+%/.test(zl) && parseInt(zl) > 150, zl);
   await page.locator('.sk-tool[data-tool="pen"]').click();
-  const zx = await page.locator('.sk-paper').boundingBox();
+  const zx = await page.locator('.sk-stage').boundingBox();
   const n0 = (await cur()).strokes.length;
-  await page.mouse.move(zx.x + 300, zx.y + 400); await page.mouse.down(); await page.mouse.move(zx.x + 360, zx.y + 420, { steps: 6 }); await page.mouse.up(); await wait(600);
+  const [vx, vy, vs] = await page.evaluate(() => document.querySelector('.sk-layer').style.transform.match(/-?[\d.]+/g).map(Number));
+  await page.mouse.move(zx.x + 200, zx.y + 400); await page.mouse.down(); await page.mouse.move(zx.x + 260, zx.y + 420, { steps: 6 }); await page.mouse.up(); await wait(600);
   const zs = (await cur()).strokes.at(-1);
-  check('ตอนซูม เขียนตรงตำแหน่งนิ้ว', (await cur()).strokes.length === n0 + 1 && Math.abs(zs.p[0] - (300 / zx.width) * 1000) < 6, `${zs.p[0]}`);
+  check('ตอนซูม เขียนตรงตำแหน่งนิ้ว', (await cur()).strokes.length === n0 + 1 && Math.abs(zs.p[0] - (200 - vx) / vs) < 3 && Math.abs(zs.p[1] - (400 - vy) / vs) < 3, `${zs.p[0]},${zs.p[1]} · ${vx},${vy},${vs}`);
   await shot('10-zoom');
   await page.locator('.sk-zoom').click(); await wait(400);
   check('แตะปุ่ม % = กลับ 100%', !(await page.locator('.sk-zoom').isVisible()));
   // ทำสำเนาหน้า · กระดานดำใช้สีชอล์ก
   await page.locator('.sk-ib[aria-label="ตั้งค่าหน้า"]').click(); await wait(200);
   await page.locator('.sk-mi', { hasText: 'ทำสำเนาหน้านี้' }).click(); await wait(900);
-  check('ทำสำเนาหน้า → หน้า 4 / 4 มีเส้นครบเท่าหน้าเดิม', (await page.locator('.sk-name small').textContent()) === 'หน้า 4 / 4' && (await cur()).strokes.length >= n0 + 1);
+  check('ทำสำเนาหน้า → หน้า 4 / 4 มีเส้นครบเท่าหน้าเดิม', (await page.locator('.sk-name b').textContent()) === '4 / 4' && (await cur()).strokes.length >= n0 + 1);
   await page.locator('.sk-ib[aria-label="ตั้งค่าหน้า"]').click(); await wait(200);
   await page.locator('.sk-menu .sk-papers button', { hasText: 'กระดานดำ' }).click(); await wait(300);
   await page.locator('.sk-tool[data-tool="pen"]').click();
@@ -223,7 +242,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await tp.waitForSelector('#sk.in'); await wait(600);
   const cdp = await tctx.newCDPSession(tp);
   const touch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
-  const tb = await tp.locator('.sk-paper').boundingBox(), cx = tb.x + tb.width / 2, cy = tb.y + tb.height / 2;
+  const tb = await tp.locator('.sk-stage').boundingBox(), cx = tb.x + tb.width / 2, cy = tb.y + tb.height / 2;
   await touch('touchStart', [[cx - 80, cy]]); for (let i = 1; i <= 12; i++) await touch('touchMove', [[cx - 80 + i * 12, cy + Math.sin(i) * 10]]); await touch('touchEnd', []); await wait(600);
   const tStrokes = () => tp.evaluate(() => window.__sabaii.state.pages[0].strokes.length);
   check('นิ้ว: นิ้วเดียว = เขียน', (await tStrokes()) === 1);
@@ -236,7 +255,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await touch('touchStart', [[cx + 60, cy - 20], [cx + 60, cy + 20]]);
   for (let i = 1; i <= 10; i++) await touch('touchMove', [[cx + 60 - i * 14, cy - 20], [cx + 60 - i * 14, cy + 20]]);
   await touch('touchEnd', []); await wait(900);
-  check('นิ้ว: ปัดสองนิ้วไปซ้ายที่หน้าสุดท้าย = หน้าใหม่ พลิกไป', (await tp.locator('.sk-name small').textContent()) === 'หน้า 2 / 2' && (await tStrokes()) === 1);
+  check('นิ้ว: ปัดสองนิ้วไปซ้ายที่หน้าสุดท้าย = หน้าใหม่ พลิกไป', (await tp.locator('.sk-name b').textContent()) === '2 / 2' && (await tStrokes()) === 1);
   await tctx.close();
 
   check('ไม่มีข้อผิดพลาดในหน้า', !errors.length, errors.join(' | '));
