@@ -59,6 +59,26 @@ async function device(cloud) {
 }
 const live = s => s.state.tasks.filter(t => !t.deleted_at).map(t => t.title).sort();
 
+test('image thumbnails stay local while the original still reaches other devices', async () => {
+  const srv = fakeServer();
+  const first = await device(srv.cloudFor('thumb-user'));
+  const [task] = await first.store.addTasks([{ title: 'Image fixture' }]);
+  const original = new Blob(['original image bytes'], { type: 'image/jpeg' });
+  const thumbnail = new Blob(['thumbnail'], { type: 'image/jpeg' });
+  const attachment = await first.store.addAttachment(task.id, { kind: 'image', blob: original, thumbnail });
+  await first.sync.syncNow();
+  const remote = srv.rows.get('thumb-user|attachment|' + attachment.id);
+  assert.equal('thumbnail' in remote.data, false);
+  assert.equal(await srv.files.get('thumb-user/' + attachment.id).text(), 'original image bytes');
+  await first.store.load();
+  assert.equal(await first.store.attachmentsOf(task.id)[0].thumbnail.text(), 'thumbnail');
+  const second = await device(srv.cloudFor('thumb-user'));
+  await second.sync.syncNow();
+  const [image] = second.store.attachmentsOf(task.id);
+  assert.equal(image.thumbnail, undefined);
+  assert.equal(await image.blob.text(), 'original image bytes');
+});
+
 test('เครื่อง A เพิ่มงาน → เครื่อง B เห็น · วิชาตั้งต้นไม่ซ้ำ', async () => {
   const srv = fakeServer();
   const A = await device(srv.cloudFor('u1'));

@@ -38,10 +38,10 @@ async function loadBitmap(blob) {
   } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
 }
 
-function draw(src, rotation = 0) {
+function draw(src, rotation = 0, maxSide = MAX_SIDE, quality = 0.82) {
   const w0 = src.width, h0 = src.height;
-  const scale = Math.min(1, MAX_SIDE / Math.max(w0, h0));
-  const w = Math.round(w0 * scale), h = Math.round(h0 * scale);
+  const scale = Math.min(1, maxSide / Math.max(w0, h0));
+  const w = Math.max(1, Math.round(w0 * scale)), h = Math.max(1, Math.round(h0 * scale));
   const swap = rotation % 180 !== 0;
   const c = document.createElement('canvas');
   c.width = swap ? h : w; c.height = swap ? w : h;
@@ -49,15 +49,22 @@ function draw(src, rotation = 0) {
   ctx.translate(c.width / 2, c.height / 2);
   ctx.rotate(rotation * Math.PI / 180);
   ctx.drawImage(src, -w / 2, -h / 2, w, h);
-  return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('ย่อรูปไม่สำเร็จ')), 'image/jpeg', 0.82));
+  return new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error('ย่อรูปไม่สำเร็จ')), 'image/jpeg', quality));
 }
 
 /** คืน { blob, url, rotated(deg) } */
-export async function prepareImage(file) {
+export async function prepareImage(file, { withThumbnail = false } = {}) {
   const err = checkFile(file);
   if (err) throw new Error(err);
   let bmp;
   try { bmp = await loadBitmap(file); } catch { throw new Error('เปิดรูปนี้ไม่ได้ ลองรูปอื่น'); }
   const blob = await draw(bmp);
-  return { blob, url: URL.createObjectURL(blob), rotated: deg => draw(bmp, deg) };
+  let thumbnail = null;
+  if (withThumbnail) {
+    try {
+      const small = await draw(bmp, 0, 640, 0.76);
+      if (small.size < blob.size) thumbnail = small;
+    } catch {} // A preview is optional even when the decoder is under memory pressure.
+  }
+  return { blob, thumbnail, url: URL.createObjectURL(blob), rotated: deg => draw(bmp, deg) };
 }

@@ -4,6 +4,7 @@
 //                        แผ่นเหลือการ์ดงาน: เพิ่มโน้ต รูป/ข้อความ/เสียง + ทำเลย (จับเวลา) → เสร็จแล้ว
 import { h, ic, ART, toast, badge, shortOf, tintOf, subjIcon, $, onBack, pushBack, dropBack, modalOpen } from '../ui/kit.js';
 import { daysBetween } from '../domain/dates.js';
+import { previewBackground } from '../ui/load-art.js';
 import { app, S, subj, task, ranked, today, dueLine, fullTitle, notesOf, urlOf } from './shared.js';
 const DOWL = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์'], MON = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 import { addTask, addNote, editTask, noteEl } from './add.js';
@@ -148,13 +149,13 @@ function renderStage() {
   const keep = pages[cur];
   pages = ranked().slice(0, TOP).map(t => t.id);
   if (extra && task(extra) && !pages.includes(extra)) pages.push(extra); else if (!task(extra)) extra = null;
-  stage.replaceChildren(...pages.map(id => {
+  stage.replaceChildren(...pages.map((id, pageIndex) => {
     const t = task(id), s = subj(t.subject_id), notes = notesOf(id);
-    const row = h('div.nrow', notes.length ? notes.map(noteEl) : h('div.nitem.empty',
+    const row = h('div.nrow', notes.length ? notes.map((a, i) => noteEl(a, i, notes, pageIndex === 0 && i === 0)) : h('div.nitem.empty',
       h('div', h('b', 'ยังไม่มีโน้ตของงานนี้'), h('p.muted', 'ถ่ายกระดาน ใบงาน หรือจดสิ่งที่ครูบอกไว้ตรงนี้'),
         h('button.go', { onclick: () => addNote(id, 'camera') }, '+ ถ่ายรูป'))));
     const img = notes.find(a => a.kind === 'image' && a.blob);
-    return h('section.npage', { 'data-id': id, style: { '--tint': tintOf(s), '--sc': s.color || '#69778F', ...(img ? { '--ph': `url("${urlOf(img)}")` } : {}) } },
+    return h('section.npage', { 'data-id': id, style: { '--tint': tintOf(s), '--sc': s.color || '#69778F', ...(img ? { '--ph': `url("${urlOf(img, true)}")` } : {}) } },
       h('div.wash'), h('div.wm', { 'aria-hidden': 'true' }, s.id ? shortOf(s) : ''), row);
   }));
   if (!pages.length) stage.append(h('section.npage', h('div.nrow', h('div.nitem.empty', h('div', h('b', 'ยังไม่มีงาน'), h('p.muted', 'เพิ่มงานแล้วรูปกระดาน ใบงาน และโน้ตจะมาอยู่ตรงนี้'))))));
@@ -297,7 +298,7 @@ function renderHome() {
       h('button.chip', { type: 'button', 'aria-label': `กรองตามวัน: ${WHEN[hs.when]}`, onclick: () => { const ks = Object.keys(WHEN); hs.when = ks[(ks.indexOf(hs.when) + 1) % ks.length]; renderHome(); }, html: ic('cal') + `<span>${WHEN[hs.when]}</span>` })),
     h('div.sec', h('h2', !focus ? 'ผลการค้นหา' : 'ใกล้ส่ง'), h('span', !focus && list.length ? `${list.length} งาน` : '')),
     list.length ? h('ul.tlist', shown.map((t, i) => h('li.trow', { style: { '--c': subj(t.subject_id).color || '#69778F', '--k': i } },
-      h('button.main', { onclick: () => openNotes(t.id) }, thumbOf(t) || badge(subj(t.subject_id)),
+      h('button.main', { onclick: () => openNotes(t.id) }, thumbOf(t, i < TOP) || badge(subj(t.subject_id)),
         h('div', h('b', t.pinned_at ? h('span', { html: ic('pin'), class: 'pinmark', 'aria-label': 'ปักหมุด' }) : '', fullTitle(t)),
           h('small', dueLine(t), t.source === 'sample' ? h('span.tag', 'ตัวอย่าง') : t.source === 'teacher' ? h('span.tag.teach', 'ฟังครู') : ''))),
       h('button.go' + (t.status === 'doing' ? '.doing' : ''), { onclick: () => openNotes(t.id), 'aria-label': `${t.status === 'doing' ? 'กำลังทำ' : 'ทำเลย'} ${t.title}` }, t.status === 'doing' ? 'กำลังทำ' : h('i')))))
@@ -315,7 +316,6 @@ let typeTimer = 0, recTimer = 0;
 /** ความดังของเสียงพูดหนึ่งช่วง (พยางค์ขึ้นลง + เว้นหายใจ) ใช้วาดคลื่นในกล่อง "พูด" */
 const VOICE = [.18, .32, .58, .9, .66, .4, .74, .52, .22, .1, .08, .26, .62, 1, .78, .46, .7, .38, .16, .3, .54, .82, .6, .34, .12, .08, .1, .44, .72, .56, .88, .5, .28, .42, .2, .1];
 /** รูปตัวอย่างในกล่อง "แนบรูป" — ใช้รูปชุดเดียวกับหน้าแนะนำเสมอ (ไม่ดึงโน้ตที่ผู้ใช้บันทึกไว้มาโชว์ — เจ้าของสั่ง) */
-const photosForTiles = () => ['board', 'notes', 'chalk'].map(f => `assets/landing/photos/${f}.jpg`);
 function tileArt(art) {
   if (art === 'speak') {
     // แบบเครื่องอัดเสียง: จุดแดง + เวลาเดิน · คลื่นเสียงเส้นบางรูปทรงคำพูดจริง (มีช่วงเงียบ) ไหลเข้าหัวอ่าน — ไม่ใช่แท่งเท่า ๆ กันเรืองแสง
@@ -330,7 +330,7 @@ function tileArt(art) {
     return h('span.ta.ta-speak', h('span.ta-rec', h('i'), clock), h('span.ti-ic', { html: ic('mic') }),
       h('span.ta-wave', h('span.ta-strip', bars(), bars())), h('i.ta-head'));
   }
-  if (art === 'attach') return h('span.ta.ta-attach', photosForTiles().map((u, i) => h('i', { style: { backgroundImage: `url("${u}")`, '--k': i } })));
+  if (art === 'attach') return h('span.ta.ta-attach', ['board', 'notes', 'chalk'].map((name, i) => h('i', { style: { backgroundImage: previewBackground(name), '--k': i } })));
   if (art === 'type') {
     const out = h('span.ta-txt'), wrap = h('span.ta.ta-type', h('span.ta-in', out, h('i.ta-caret')));
     clearInterval(typeTimer);
@@ -345,9 +345,12 @@ function tileArt(art) {
     }, 90); }
     return wrap;
   }
-  return h('span.ta.ta-shoot', { style: { backgroundImage: `url("assets/landing/photos/chalk.jpg")` } }, h('span.ta-vf'), h('span.ti-ic', { html: ic('camera') }));
+  return h('span.ta.ta-shoot', { style: { backgroundImage: previewBackground('chalk') } }, h('span.ta-vf'), h('span.ti-ic', { html: ic('camera') }));
 }
 const tile = (art, name, sub, onclick) => h('button.tile', { onclick, 'data-art': art, 'aria-label': `${name} — ${sub}` }, tileArt(art), h('b', name), h('small', sub));
 /** รูปย่อจากรูปโน้ตล่าสุดของงาน (ไม่มีรูป = ใช้ป้ายวิชาเดิม) */
-const thumbOf = t => { const img = [...notesOf(t.id)].reverse().find(n => n.kind === 'image' && n.blob); return img ? h('span.thumb', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : null; };
+const thumbOf = (t, eager) => {
+  const img = notesOf(t.id).findLast(n => n.kind === 'image' && n.blob);
+  return img ? h('img.thumb', { src: urlOf(img, true), alt: '', width: 50, height: 50, decoding: 'async', loading: eager ? 'eager' : 'lazy' }) : null;
+};
 export const focusSearch = () => { setSnap(2); setTimeout(() => $('#home-q')?.focus(), 350); };

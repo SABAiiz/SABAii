@@ -1,0 +1,42 @@
+name: SABAii performance validation
+
+"on":
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sabaii-performance-validation
+  cancel-in-progress: false
+
+jobs:
+  compare:
+    if: github.event.pull_request.head.ref == 'perf/instant-validation' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      CI: "true"
+      TZ: Asia/Bangkok
+      VALIDATION_ARTIFACTS: ${{ runner.temp }}/sabaii-performance-artifacts
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+      - name: Run Chromium suites and paired benchmarks
+        run: bash validation/run-ci.sh
+      - name: Save available validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: sabaii-performance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.VALIDATION_ARTIFACTS }}
+          if-no-files-found: warn
+          retention-days: 30

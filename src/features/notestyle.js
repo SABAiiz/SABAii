@@ -71,7 +71,7 @@ export function notePane(t, s, notes, timer, act) {
         editBtn()),
       h('div.b6bento',
         h('div.bx.bdue' + (due.urgent ? '.urgent' : ''), h('small', 'กำหนดส่ง'), h('b', due.text.replace(/^(ส่ง|สอบ)/, '') || due.text)),
-        h('div.bx.bnote', img ? h('img', { src: urlOf(img), alt: '' }) : '', h('div', h('small', 'โน้ต'), h('b', n ? `${n} รายการ` : 'ยังไม่มี')))),
+        h('div.bx.bnote', img ? h('img', { src: urlOf(img, true), alt: '', decoding: 'async' }) : '', h('div', h('small', 'โน้ต'), h('b', n ? `${n} รายการ` : 'ยังไม่มี')))),
       h('div.pills.seg6', pills()),
       button('ทำเลย', 'เริ่มจับเวลา'),
     ];

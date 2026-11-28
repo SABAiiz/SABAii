@@ -199,7 +199,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
     if (name === 'style') {
       const strip = h('div.ob-styles', { role: 'radiogroup', 'aria-label': 'หน้าตาหน้าโน้ตงาน' });
       const cards = NOTE_STYLES.map(st => h('button.ob-style', { role: 'radio', 'data-id': st.id, onclick: () => pick(st.id, true) },
-        h('span.ob-shot', h('img', { src: stylePreview(st.id), alt: `ตัวอย่างแบบ ${st.name}`, loading: 'lazy' }), tick()), h('b', st.name)));
+        h('span.ob-shot', h('img', { src: stylePreview(st.id), alt: `ตัวอย่างแบบ ${st.name}`, width: 440, height: 951, decoding: 'async', loading: st.id === ans.style ? 'eager' : 'lazy' }), tick()), h('b', st.name)));
       strip.append(...cards);
       const dots = h('div.ob-dots', { 'aria-hidden': 'true' }, NOTE_STYLES.map(() => h('i')));
       const pick = (id, scroll) => {
@@ -243,7 +243,7 @@ export function openOnboarding({ redo = false, start = 0 } = {}) {
       const subs = [...S().subjects].filter(x => ans.subj.has(x.id)).sort((a, b) => a.order - b.order);
       const pos = [[8, 'l'], [4, 'r'], [40, 'l'], [36, 'r'], [72, 'l'], [68, 'r']];
       stage.append(h('div.ob-final',
-        h('span.ob-phone', h('img', { src: stylePreview(ans.style), alt: `หน้าโน้ตแบบ ${styleName(ans.style)}` })),
+      h('span.ob-phone', h('img', { src: stylePreview(ans.style), alt: `หน้าโน้ตแบบ ${styleName(ans.style)}`, width: 440, height: 951, decoding: 'async' })),
         ...subs.slice(0, 6).map((sj, k) => h('span.ob-fchip.' + pos[k][1], { style: { '--c': sj.color, '--y': pos[k][0] + '%', '--k': k } }, h('i'), sj.name.replace(/^ภาษา/, '')))));
       view.append(head(ans.name.trim() ? `พร้อมแล้ว ${ans.name.trim()}!` : 'พร้อมแล้ว!'), stage);
       next.textContent = 'เข้าแอป';

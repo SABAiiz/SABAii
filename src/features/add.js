@@ -2,12 +2,10 @@
 // + เพิ่มโน้ตให้งาน · แก้ไขงาน · ดูรูปเต็มจอ
 // กฎ: ไม่เดาเวลาเมื่อผู้ใช้ไม่ได้บอก (สเปก 3.1) · กดบันทึกซ้ำต้องไม่ได้งานซ้ำ · ข้อความที่พิมพ์ค้างต้องถามก่อนทิ้ง (สเปก 3)
 import { h, ic, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
-import { writeForTask, pickPageForTask, pageNoteEl } from './sketch.js';
 import { draftsFromText } from '../domain/parse.js';
 import { TYPES, newId } from '../domain/tasks.js';
 import { pickImage, prepareImage } from './images.js';
 import { speechSupported, startListening } from './voice.js';
-import { listenTask } from './listen.js';
 import { app, S, subj, task, today, dueInfo, fullTitle, notesOf, urlOf, visibleSubjects } from './shared.js';
 import { badge } from '../ui/kit.js';
 import { addDaysYMD, fromYMD, relDay, DOW_SHORT } from '../domain/dates.js';
@@ -18,7 +16,7 @@ const micBlock = msg => h('div', { style: { textAlign: 'center' } }, h('div.mic'
 async function getImage(camera) {
   const f = await pickImage({ camera });
   if (!f) return null;
-  try { return await prepareImage(f); } catch (e) { toast(e.message); return null; }
+  try { return await prepareImage(f, { withThumbnail: true }); } catch (e) { toast(e.message); return null; }
 }
 
 /* ---------- ชิปเลือกเร็ว (แทนช่องกรอก) ---------- */
@@ -47,7 +45,10 @@ export const sane = ymd => !ymd || (ymd >= addDaysYMD(today(), -366) && ymd <= a
 
 /** เพิ่มงานแบบเร็ว: พิมพ์ → เห็นผลทันที → แตะชิปแก้ → บันทึก (ไม่มีหน้าตรวจสอบแยก) · kind: text · photo · camera · voice (→ listen.js) */
 export async function addTask(kind = 'text', preset = '') {
-  if (kind === 'voice') return listenTask(); // ฟังไม่ได้ก็ยังเปิด — พิมพ์/วางแทนได้ในหน้าเดียวกัน
+  if (kind === 'voice') {
+    try { return (await import('./listen.js')).listenTask(); }
+    catch { toast('เปิดตัวช่วยฟังเสียงไม่สำเร็จ ลองใหม่อีกครั้ง'); return; }
+  }
   let img = null;
   if (kind === 'photo' || kind === 'camera') { img =await getImage(kind === 'camera'); if (!img) return; }
   const ta = h('textarea.field.quick', { id: 'add-text', rows: 2, 'aria-label': 'งานที่ต้องทำ',
@@ -81,7 +82,7 @@ export async function addTask(kind = 'text', preset = '') {
     saving = true; saveBtn.disabled = true;
     try {
       const saved = await app.store.addTasks(items);
-      if (img && saved[0]) await app.store.addAttachment(saved[0].id, { kind: 'image', blob: img.blob, size: img.blob.size, mime_type: img.blob.type });
+      if (img && saved[0]) await app.store.addAttachment(saved[0].id, { kind: 'image', blob: img.blob, thumbnail: img.thumbnail, size: img.blob.size, mime_type: img.blob.type });
       closeModal();
       toast(`บันทึก ${saved.length} งานแล้ว`, saved[0] ? { label: 'ดูโน้ต', run: () => app.openNotes(saved[0].id) } : null);
     } catch (e) { saving = false; saveBtn.disabled = false; toast(e.message || 'บันทึกไม่สำเร็จ'); }
@@ -93,6 +94,7 @@ export async function addTask(kind = 'text', preset = '') {
     body: h('div', img ? h('img.preview.small', { src: img.url, alt: 'รูปที่เลือก' }) : '', ta, preview),
     foot: saveBtn,
     isDirty: () => !saving && (!!ta.value.trim() || !!img),
+    onClose: () => { if (img) URL.revokeObjectURL(img.url); },
   });
   paint();
   setTimeout(() => ta.focus(), 320);
@@ -111,6 +113,10 @@ export async function addNote(id, kind) {
     return;
   }
   if (kind === 'book') { // 0.11.1: หน้าในสมุด → โน้ตของงานนี้
+    let sketch;
+    try { sketch = await import('./sketch.js'); }
+    catch { toast('เปิดสมุดไม่สำเร็จ ลองใหม่อีกครั้ง'); return; }
+    const { writeForTask, pickPageForTask } = sketch;
     const any = S().pages.some(p => !p.cover);
     if (!any) { closeModal(); writeForTask(t); return; }
     openModal({ title: 'โน้ตจากสมุด', body: h('div.pills.col',
@@ -121,9 +127,12 @@ export async function addNote(id, kind) {
   if (kind === 'photo' || kind === 'camera') {
     closeModal();
     const img = await getImage(kind === 'camera'); if (!img) return;
-    await app.store.addAttachment(id, { kind: 'image', blob: img.blob, size: img.blob.size, mime_type: img.blob.type });
-    URL.revokeObjectURL(img.url);
-    toast('เพิ่มรูปแล้ว'); return;
+    try {
+      await app.store.addAttachment(id, { kind: 'image', blob: img.blob, thumbnail: img.thumbnail, size: img.blob.size, mime_type: img.blob.type });
+      toast('เพิ่มรูปแล้ว');
+    } catch (e) { toast(e.message || 'บันทึกรูปไม่สำเร็จ'); }
+    finally { URL.revokeObjectURL(img.url); }
+    return;
   }
   if (kind === 'voice' && !speechSupported()) { toast('เครื่องนี้ใช้พูดไม่ได้ — จดแทนนะ'); kind = 'text'; }
   const ta = h('textarea.field', { id: 'note-text', 'aria-label': 'ข้อความโน้ต', placeholder: 'ครูบอกอะไร? จำอะไรไว้? เช่น "ทำแค่ข้อคี่"' });
@@ -188,18 +197,24 @@ export function editTask(id) {
 /** ภาพย่อโน้ตแบบ Canva: วาดโน้ตจริงขนาดเต็ม (กว้าง 300) แล้วย่อทั้งแผ่น */
 const MINI_W = 300;
 /** การ์ดโน้ต 1 ใบ · ใช้กับ notes.map(noteEl) ได้ตรง ๆ (all = โน้ตทั้งหมดของงาน → ป้ายบอก "1/3") */
-export function noteEl(a, i = 0, all = null) {
+export function noteEl(a, i = 0, all = null, eager = false) {
   const tilt = i % 2 ? 'tilt-r' : 'tilt-l';
-  if (a.kind === 'page') return pageNoteEl(a, tilt, all?.length > 1 ? h('b.ncount', `${i + 1}/${all.length}`) : null);
+  if (a.kind === 'page') {
+    const holder = h('div.nitem.empty.' + tilt, h('p.muted', 'กำลังเปิดหน้าในสมุด…'));
+    import('./sketch.js').then(({ pageNoteEl }) => {
+      if (holder.isConnected) holder.replaceWith(pageNoteEl(a, tilt, all?.length > 1 ? h('b.ncount', `${i + 1}/${all.length}`) : null));
+    }, () => { holder.textContent = 'เปิดหน้าในสมุดไม่ได้'; });
+    return holder;
+  }
   const d = new Date(a.created_at);
   const when = h('span.ntag', { html: ic(a.kind === 'text' ? 'text' : 'camera') },
     `${a.kind === 'text' ? 'จดเมื่อ' : 'ถ่ายเมื่อ'} ${d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric', month: 'short' })} ${d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`,
     all?.length > 1 ? h('b.ncount', `${i + 1}/${all.length}`) : '');
   if (a.kind === 'image') {
     // รูปเต็มกรอบ (ตัดขอบส่วนเกิน · เจ้าของสั่ง 26 พ.ย.) — แตะเพื่อดูทั้งใบไม่ตัดขอบ
-    const src = urlOf(a);
+    const src = urlOf(a, true);
     return h('div.nitem.photo.' + tilt, { style: { '--src': `url("${src}")` } },
-      h('button.zoom', { 'aria-label': 'ดูรูปเต็มจอ', onclick: () => viewPhoto(src) }, h('img', { src, alt: 'รูปโน้ตของงาน', loading: 'lazy' }), h('span.nexp', { 'aria-hidden': 'true', html: ic('expand') })), when);
+      h('button.zoom', { 'aria-label': 'ดูรูปเต็มจอ', onclick: () => viewPhoto(urlOf(a)) }, h('img', { src, alt: 'รูปโน้ตของงาน', loading: eager ? 'eager' : 'lazy', decoding: 'async' }), h('span.nexp', { 'aria-hidden': 'true', html: ic('expand') })), when);
   }
   return h('div.nitem.sticky.' + tilt, a.text, when);
 }
