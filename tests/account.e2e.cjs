@@ -15,7 +15,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 
 // ---------- Supabase ปลอม ----------
 const UID = '11111111-2222-3333-4444-555555555555', EMAIL = 'mint@example.com', NAME = 'มิ้นท์ ทดสอบ';
-const rows = new Map(), files = new Map(); let seq = 0; const calls = []; let denyNext = false, lastVerifier = null, refreshDead = false;
+const rows = new Map(), files = new Map(); let seq = 0; const calls = []; const profilePatches = []; let denyNext = false, lastVerifier = null, refreshDead = false;
 async function supa(route) {
   const req = route.request(), u = new URL(req.url()), p = u.pathname;
   calls.push(req.method() + ' ' + p);
@@ -65,6 +65,8 @@ async function supa(route) {
     }
     return json(200, n);
   }
+  if (p === '/rest/v1/rpc/touch_last_seen') return route.fulfill({ status: 204, headers: { 'access-control-allow-origin': '*' } });
+  if (p === '/rest/v1/profiles' && req.method() === 'PATCH') { profilePatches.push(body); return json(200, [{ id: UID, ...body }]); }
   return json(404, { message: 'not in fake' });
 }
 
@@ -135,6 +137,7 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   await A.page.evaluate(() => { const t = window.__sabaii.state.tasks.find(t => t.title.startsWith('ทำการบ้าน')); return window.__sabaii.patchTask(t.id, { status: 'done' }); });
   await wait(2500);
   check('แก้งานแล้วส่งขึ้นบัญชีเองภายในไม่กี่วินาที', [...rows.values()].some(r => r.kind === 'task' && r.data.status === 'done'));
+  check('เปิดแอป → บอกเซิร์ฟเวอร์ว่ายังใช้อยู่ · โปรไฟล์ได้เขตเวลาของเครื่อง (ส่งครั้งเดียว ไม่ส่ง role)', calls.includes('POST /rest/v1/rpc/touch_last_seen') && profilePatches.length === 1 && profilePatches[0].timezone === 'Asia/Bangkok' && !('role' in profilePatches[0]), JSON.stringify(profilePatches));
 
   // ----- เครื่อง B -----
   const B = await newDevice(browser);

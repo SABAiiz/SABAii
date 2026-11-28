@@ -1,5 +1,5 @@
 // คุยกับหลังบ้าน (Supabase โปรเจกต์ "sabaii") ด้วย fetch ล้วน — ไม่มีไลบรารี ไม่มีขั้นตอน build
-// บัญชี: เข้าสู่ระบบด้วย Google / Facebook / Apple (OAuth + PKCE) หรืออีเมล (รหัส 6 หลักทางอีเมล) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
+// บัญชี: โปรไฟล์ในตาราง profiles (สร้างเองตอนสมัคร) · เข้าสู่ระบบด้วย Google / Facebook / Apple (OAuth + PKCE) หรืออีเมล (รหัส 6 หลักทางอีเมล) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
 export const SUPABASE_URL = 'https://mojdvfzalfemenpxsoub.supabase.co';
 export const SUPABASE_KEY = 'sb_publishable_fEGsNd2FTZw-7mLK90Nlhg_rmulCvqC'; // คีย์สาธารณะ (ใส่ในแอปได้) — สิทธิ์จริงคุมด้วย RLS
 const AUTH_KEY = 'sabaii-auth', PKCE_KEY = 'sabaii-pkce';
@@ -165,8 +165,28 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       if (!ids.length) return;
       await api(`/storage/v1/object/${BUCKET}`, { method: 'DELETE', body: { prefixes: ids.map(id => `${user().id}/${id}`) } });
     },
-    /** ลบบัญชีถาวร: รูปทั้งหมด → แถวทั้งหมด + บัญชี (ฝั่งเซิร์ฟเวอร์) → ออกจากระบบ */
-    async deleteAccount() {
+    /** โปรไฟล์บนเซิร์ฟเวอร์ (ตาราง profiles — สร้างเองตอนสมัคร) · null = ยังไม่มี (บัญชีเพิ่งสร้างกำลังเขียน) */
+    async profile() {
+      const r = await api(`/rest/v1/profiles?select=*&id=eq.${encodeURIComponent(user()?.id || '')}`);
+      return (await r.json())[0] || null;
+    },
+    /** แก้ได้แค่: display_name avatar_url locale timezone onboarded_at terms_version terms_accepted_at (role แก้ไม่ได้) */
+    async updateProfile(patch) {
+      const ok = ['display_name', 'avatar_url', 'locale', 'timezone', 'onboarded_at', 'terms_version', 'terms_accepted_at'];
+      const body = Object.fromEntries(Object.entries(patch || {}).filter(([k]) => ok.includes(k)));
+      if (!Object.keys(body).length) return this.profile();
+      const r = await api(`/rest/v1/profiles?id=eq.${encodeURIComponent(user()?.id || '')}`, { method: 'PATCH', body, headers: { Prefer: 'return=representation' } });
+      return (await r.json())[0] || null;
+    },
+    /** เปิดแอป = ยังใช้อยู่ (เซิร์ฟเวอร์เขียนจริงอย่างมาก 1 ครั้ง / 10 นาที) · ล้มก็ไม่เป็นไร */
+    async touch() { try { await api('/rest/v1/rpc/touch_last_seen', { method: 'POST', body: {} }); } catch {} },
+    /** ประวัติบัญชีล่าสุด (สมัคร · เข้าสู่ระบบ · ผูกวิธีเข้าใหม่) */
+    async accountEvents(limit = 20) {
+      const r = await api(`/rest/v1/account_events?select=type,provider,created_at&order=created_at.desc&limit=${Number(limit) || 20}`);
+      return r.json();
+    },
+    /** ลบบัญชีถาวร: รูปทั้งหมด → แถวทั้งหมด + บัญชี (ฝั่งเซิร์ฟเวอร์) → ออกจากระบบ · reason = เหตุผล (ไม่ใส่ก็ได้ เก็บแบบไม่ระบุตัวตน) */
+    async deleteAccount(reason = '') {
       const uid = user()?.id;
       if (!uid) throw new CloudError('ยังไม่ได้เข้าสู่ระบบ', { status: 401 });
       for (;;) {
@@ -176,7 +196,7 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
         await api(`/storage/v1/object/${BUCKET}`, { method: 'DELETE', body: { prefixes: files.map(f => `${uid}/${f.name}`) } });
         if (files.length < 1000) break;
       }
-      await api('/rest/v1/rpc/delete_my_account', { method: 'POST', body: {} });
+      await api('/rest/v1/rpc/delete_my_account', { method: 'POST', body: reason ? { p_reason: String(reason).slice(0, 500) } : {} });
       save(null);
     },
   };
