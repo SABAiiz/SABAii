@@ -31,7 +31,7 @@ export function showLogin(cloud, { error = '', again = false } = {}) {
   const inApp = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 
   document.body.append(h('div', { id: 'login', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'lg-title' },
-    h('header.lg-top', h('img', { src: 'icon.svg', alt: '', width: 26, height: 26 }), h('span', 'SABAii')),
+    h('header.lg-top', h('img', { src: 'icon-192.png', alt: '', width: 26, height: 26 }), h('span', 'SABAii')),
     h('main.lg-card',
       h('div.lg-stack', { 'aria-hidden': 'true' }, PHOTOS.map((src, i) => h('img', { src, alt: '', style: { '--i': i } }))),
       h('h1', { id: 'lg-title' }, again ? 'เข้าสู่ระบบอีกครั้ง' : 'ยินดีต้อนรับสู่ SABAii'),

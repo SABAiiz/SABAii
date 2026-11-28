@@ -991,6 +991,24 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 .mseg { display: inline-flex; flex: none; padding: 3px; border-radius: 12px; background: var(--surface); }
 .mseg button { height: 32px; padding: 0 12px; border-radius: 9px; font: 600 13.5px var(--disp); color: var(--text-2); transition: background .2s, color .2s, box-shadow .2s; white-space: nowrap; }
 .mseg button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 2px 6px rgba(11,27,77,.12), 0 0 0 1px rgba(11,27,77,.05); }
+.studycard { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px; border-radius: 22px; background: linear-gradient(135deg, #0A6CF1, #3B8BFF); color: #fff; box-shadow: 0 10px 24px -14px rgba(10,108,241,.8); }
+.studycard:active { transform: scale(.98); }
+.studycard .sc-i { width: 40px; height: 40px; border-radius: 13px; background: rgba(255,255,255,.18); display: grid; place-items: center; flex: none; }
+.studycard .sc-i svg { width: 20px; height: 20px; }
+.studycard .sc-t { flex: 1; min-width: 0; }
+.studycard .sc-t b { display: block; font: 700 15.5px/1.3 var(--disp); }
+.studycard .sc-t small { display: block; margin-top: 2px; font: 500 12.5px/1.4 var(--disp); color: rgba(255,255,255,.82); }
+.studycard .sc-go { flex: none; padding: 8px 12px; border-radius: 12px; background: #fff; color: #0A6CF1; font: 700 13.5px var(--disp); white-space: nowrap; }
+.studycard.done { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1.5px #EDF0F5; }
+.studycard.done .sc-i { background: #E3F6EC; color: #1E8A52; }
+.studycard.done .sc-t small { color: var(--text-2); }
+.studycard.done .sc-go { background: var(--surface); color: var(--ink); }
+.studysheet { position: fixed; inset: 0; z-index: 58; display: flex; flex-direction: column; background: #fff; transform: translateY(100%); transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+.studysheet.show { transform: none; }
+.studysheet .ss-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px 18px; border-bottom: 1px solid #EEF1F6; font: 700 16px var(--disp); }
+.studysheet iframe { flex: 1; width: 100%; border: 0; }
+@media (prefers-reduced-motion: reduce) { .studysheet { transition: none; } }
+.study-share { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; } .study-share > * { flex: 1 1 auto; text-align: center; }
 .msoon { color: #A3ACBF; }
 .soon-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .soon-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 12px; min-height: 104px; border-radius: 18px; background: #F7F9FC; border: 1.5px dashed #DCE2EC; }

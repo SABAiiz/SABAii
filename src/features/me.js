@@ -1,6 +1,6 @@
 // หน้า "ฉัน" (0.9 · ยกระดับ 26 พ.ย.) — หัววงรุ้ง + ชื่อไล่สี + วันต่อเนื่อง · การ์ดกรมท่า (วง 7 วัน · กราฟ · ค้าง/ใกล้ส่ง/ถึงสอบ แตะได้)
 //   · ตั้งค่า (ไอคอนสี · สลับโหมดปุ่มพูดในแถว) · ข้อมูลของฉัน · "เร็ว ๆ นี้" เป็นการ์ดเล็ก · ท้ายหน้า = รุ่น + เกี่ยวกับ
-import { h, ic, put, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
+import { h, ic, put, toast, openModal, closeModal, confirmBox, onBack, pushBack, dropBack } from '../ui/kit.js';
 import { toYMD, fromYMD, addDaysYMD, daysBetween, DOW_SHORT } from '../domain/dates.js';
 import { summary, isLive, nextExam, streakOf } from '../domain/tasks.js';
 import { SUBJECT_COLORS } from '../data/store.js';
@@ -80,6 +80,13 @@ export function meView(root) {
       row('save', 'teal', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData),
       row('restore', 'teal', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
       row('lock', 'slate', 'ข้อมูลและความเป็นส่วนตัว', app.cloud?.user() ? 'เครื่อง + บัญชี' : s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal)),
+    // แบบสอบถาม "เสียงนักเรียน" (/study/) — เปิดเต็มจอในแอป ตอบเสร็จการ์ดเปลี่ยนเป็นขอบคุณ
+    h('h2.msec', 'ช่วยเราหน่อย'),
+    h('button.studycard' + (s.prefs.study_done ? '.done' : ''), { onclick: s.prefs.study_done ? shareStudy : openStudy },
+      h('span.sc-i', { html: ic(s.prefs.study_done ? 'check' : 'edit') }),
+      h('span.sc-t', h('b', s.prefs.study_done ? 'ตอบแล้ว ขอบคุณมาก' : 'เล่าให้เราฟังหน่อย งานเยอะตรงไหน'),
+        h('small', s.prefs.study_done ? 'ส่งลิงก์ให้เพื่อนในห้องช่วยตอบด้วยนะ' : '14 ข้อ ประมาณ 3 นาที ไม่ต้องใส่ชื่อ · ใช้ปรับ SABAii ให้ตรงกับนักเรียนจริง')),
+      h('span.sc-go', s.prefs.study_done ? 'ส่งต่อ' : 'เริ่มตอบ')),
     // ยังไม่เปิด: การ์ดเล็ก 3 ใบ จาง ๆ
     h('h2.msec.msoon', 'เร็ว ๆ นี้'),
     h('div.soon-grid',
@@ -97,6 +104,44 @@ function accountRow(row) {
   const st = h('span.lv', { id: 'me-sync' }, syncLabel());
   return h('button.list-btn', { onclick: openAccount },
     avatarEl(u, 'span.mi.accpic'), h('span.lk', u.name || 'บัญชีและซิงก์', h('small', u.email)), st, h('span.chev', { html: ic('right') }));
+}
+
+/* ---------- แบบสอบถาม "เสียงนักเรียน" แบบเต็มจอ (iframe ของ /study/ — ต้องออนไลน์) ---------- */
+let studyEl = null;
+function closeStudy(fromPop = false) {
+  if (!studyEl) return;
+  const el = studyEl; studyEl = null;
+  if (!fromPop) dropBack('study');
+  el.classList.remove('show'); setTimeout(() => el.remove(), 250);
+}
+onBack(() => { if (!studyEl) return false; closeStudy(true); return true; });
+window.addEventListener('message', e => {
+  if (e.origin !== location.origin || e.data?.type !== 'sabaii-study') return;
+  if (e.data.done && !S().prefs.study_done) app.store.setPref('study_done', true);
+  if (e.data.close) { closeStudy(); toast('ขอบคุณที่ช่วยตอบ'); }
+});
+function openStudy() {
+  if (!navigator.onLine) { toast('ต้องต่ออินเทอร์เน็ตก่อน แบบสอบถามถึงจะเปิดได้'); return; }
+  if (studyEl) return;
+  const src = new URL('/study/?src=app&embed=1', location.origin).href;
+  studyEl = h('section.studysheet', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'แบบสอบถาม เสียงนักเรียน' },
+    h('div.ss-head', h('b', 'เสียงนักเรียน'), h('button.iconbtn', { 'aria-label': 'ปิด', onclick: () => closeStudy(), html: ic('close') })),
+    h('iframe', { src, title: 'แบบสอบถาม เสียงนักเรียน' }));
+  document.body.append(studyEl);
+  requestAnimationFrame(() => studyEl?.classList.add('show'));
+  pushBack({ study: 1 });
+}
+
+function shareStudy() {
+  const url = new URL('/study/', location.origin).href;
+  const msg = 'ช่วยตอบแบบสอบถามสั้น ๆ (3 นาที) เรื่องงานเยอะ ลืมส่ง จดไม่ทัน หน่อยนะ ไม่ต้องใส่ชื่อ\n' + url;
+  openModal({ title: 'ชวนเพื่อนตอบ', body: h('div',
+    h('p.muted', 'ยิ่งเพื่อนตอบเยอะ แอปยิ่งตรงกับที่นักเรียนต้องการ'),
+    h('p', h('b', url)),
+    h('div.study-share',
+      h('a.btn.primary', { href: 'https://line.me/R/share?text=' + encodeURIComponent(msg), target: '_blank', rel: 'noopener' }, 'ส่งทาง LINE'),
+      h('button.btn.ghost', { onclick: async () => { try { await navigator.clipboard.writeText(url); toast('คัดลอกลิงก์แล้ว'); } catch { toast('คัดลอกไม่ได้ กดค้างที่ลิงก์แทน'); } } }, 'คัดลอกลิงก์'),
+      h('button.btn.ghost', { onclick: () => { closeModal(); openStudy(); } }, 'ตอบอีกครั้ง'))) });
 }
 
 function aboutModal() {

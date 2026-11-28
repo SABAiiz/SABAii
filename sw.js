@@ -2,7 +2,7 @@
 // เปลี่ยนไฟล์ในแอปเมื่อไหร่ ต้องขึ้นเลข CACHE ทุกครั้ง
 const CACHE = 'sabaii-v0.13.2';
 const SHELL = [
-  './', './index.html', './manifest.webmanifest', './icon.svg',
+  './', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.png',
   './src/styles/app.css', './src/main.js', './src/ui/kit.js',
   './src/data/db.js', './src/data/store.js', './src/data/cloud.js', './src/data/sync.js',
   './src/domain/dates.js', './src/domain/tasks.js', './src/domain/parse.js', './src/domain/thai-parse.js', './src/domain/speech.js', './src/domain/notebook.js', './src/domain/pages.js', './src/ui/subject-icon.js',

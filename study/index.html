@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>เสียงนักเรียน</title>
+<meta name="description" content="แบบสอบถามสั้นเรื่องการบ้าน งานส่ง และการจดโน้ตของนักเรียน ใช้เวลาประมาณ 3 นาที ไม่ต้องใส่ชื่อ">
+<meta property="og:title" content="เสียงนักเรียน — งานเยอะ ลืมส่ง จดไม่ทัน เล่าให้เราฟังหน่อย">
+<meta property="og:description" content="3 นาที ไม่ต้องใส่ชื่อ สำหรับนักเรียน ม.ต้น ม.ปลาย อาชีวะ และมหาวิทยาลัย">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly older-sibling, short words, no lecture
+   IDEA: a stack of homework sheets — each answer adds a sheet to the pile
+   PICTURE: one question per screen, big tappable answers
+   COLOUR and TYPE: SABAii blue on white, navy ink; Inter + Noto Sans Thai Looped (the app's fonts)
+   LAYOUT: one calm column; fixed bottom bar with back / next */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0c1224);--ink:light-dark(#0B1B4D,#EEF2FB);--mute:light-dark(#5E6B85,#A7B1CB);--soft:light-dark(#E7F0FE,#1b2a52);--line:light-dark(#E1E7F2,#263256);--blue:light-dark(#0A6CF1,#5B9BFF);--on:light-dark(#ffffff,#08122b);--card:light-dark(#ffffff,#131b33)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Inter","Noto Sans Thai Looped",system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{line-height:1.25;letter-spacing:-.01em;margin:0 0 .35em;text-wrap:balance}
+h1{font-size:clamp(28px,6.4vw,40px);font-weight:800}h2{font-size:24px;font-weight:800}h3{font-size:17px}
+a{color:var(--blue)}
+.wrap{max-width:620px;margin:0 auto;padding:clamp(16px,4vw,36px) max(16px,5vw) 130px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;min-height:40px}
+.brand{font-weight:800;font-size:18px;display:flex;align-items:center;gap:8px}
+.brand i{width:14px;height:14px;border-radius:4px;background:var(--blue)}
+.small{font-size:14px;color:var(--mute)}
+.prog{height:8px;border-radius:4px;background:var(--soft);overflow:hidden;margin:0 0 24px}
+.prog i{display:block;height:100%;width:0;background:var(--blue);border-radius:4px;transition:width .3s}
+.hero{background:var(--soft);border-radius:22px;padding:clamp(22px,5vw,32px);margin-bottom:16px}
+.hero p{margin:.4em 0}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 2px;padding:0;list-style:none}
+.facts li{background:var(--card);border-radius:99px;padding:5px 14px;font-size:15px;font-weight:600}
+.kick{font-size:14px;color:var(--blue);font-weight:700;margin:0 0 6px}
+.hint{font-size:15px;color:var(--mute);margin:-4px 0 14px}
+.opts{display:grid;gap:9px}
+.opts.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opt{position:relative;display:block}
+.opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer;width:100%;height:100%}
+.opt>span{display:flex;align-items:center;gap:12px;min-height:54px;padding:10px 16px;border:1.5px solid var(--line);border-radius:16px;background:var(--card);transition:border-color .15s,background .15s}
+.opt>span::before{content:"";flex:none;width:22px;height:22px;border:2px solid var(--line);border-radius:50%}
+.opt input[type=checkbox]+span::before{border-radius:7px}
+.opt input:checked+span{border-color:var(--blue);background:var(--soft)}
+.opt input:checked+span::before{background:var(--blue);border-color:var(--blue);box-shadow:inset 0 0 0 3px var(--card)}
+.opt input:focus-visible+span{outline:3px solid var(--blue);outline-offset:2px}
+.opt input:disabled+span{opacity:.4}
+@media (hover:hover){.opt:hover>span{border-color:var(--blue)}}
+.scale{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.scale .opt>span{justify-content:center;font-weight:800;font-size:22px;min-height:62px;padding:0}
+.scale .opt>span::before{display:none}
+.scale .opt input:checked+span{background:var(--blue);color:var(--on)}
+.ends{display:flex;justify-content:space-between;gap:12px;font-size:14px;color:var(--mute);margin-top:6px}
+textarea,input[type=text],input[type=password]{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:13px 15px}
+textarea{min-height:140px;resize:vertical}
+textarea:focus,input:focus{outline:3px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px max(16px,5vw) calc(12px + env(safe-area-inset-bottom));z-index:5}
+.bar .in{max-width:620px;margin:0 auto;display:flex;gap:10px}
+button{font:inherit;font-weight:700;font-size:17px;min-height:52px;border-radius:16px;padding:0 20px;cursor:pointer;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+button.go{flex:1;background:var(--blue);border-color:var(--blue);color:var(--on)}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+button:disabled{opacity:.6;cursor:wait}
+.err{color:#D9443A;font-size:15px;min-height:1.4em;margin:12px 0 0}
+#screen{animation:in .22s ease}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#screen{animation:none}.prog i{transition:none}}
+.done{text-align:center;padding-top:24px}
+.done .big{width:96px;height:96px;margin:0 auto 18px;border-radius:50%;background:var(--soft);display:grid;place-items:center;color:var(--blue)}
+.share{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:18px}
+.share a{display:inline-flex;align-items:center;min-height:52px;padding:0 22px;border-radius:16px;background:#06c755;color:#fff;font-weight:700;text-decoration:none}
+/* team */
+.team{max-width:1120px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:0 0 20px}
+.kpi{background:var(--soft);border-radius:16px;padding:14px 16px;font-size:15px}
+.kpi b{display:block;font-size:clamp(26px,5vw,32px);line-height:1.1;font-weight:800;color:var(--blue)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:14px}
+.panel{border:1px solid var(--line);border-radius:18px;padding:16px 18px;background:var(--card)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:8px;align-items:end;margin:9px 0;font-size:15px}
+.row .lab{display:flex;flex-direction:column;gap:4px}
+.track{height:10px;background:var(--soft);border-radius:5px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--blue);border-radius:5px}
+.row .n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+.quote{border-left:4px solid var(--blue);background:var(--soft);border-radius:0 14px 14px 0;padding:12px 16px;margin:10px 0;font-size:16px}
+.quote small{display:block;color:var(--mute);margin-top:6px}
+.tools{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 16px}
+.tools button{font-size:15px;min-height:44px}
+.sec{margin:28px 0 12px;font-size:22px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.on{opacity:1}
+html.embed .top{display:none}
+html.embed .wrap{padding-top:16px}
+</style>
+</head>
+<body>
+
+<div id="survey" class="wrap">
+  <div class="top"><div class="brand"><i></i>เสียงนักเรียน</div><span class="small">โดยทีม SABAii</span></div>
+  <div class="prog" aria-hidden="true"><i id="prog"></i></div>
+  <div id="screen"></div>
+  <p class="err" id="err" role="alert"></p>
+</div>
+<div class="bar" id="bar"><div class="in"><button type="button" id="back">ย้อนกลับ</button><button type="button" class="go" id="next">เริ่มเลย</button></div></div>
+
+<div id="team" class="wrap team" hidden>
+  <div class="top"><div class="brand"><i></i>เสียงนักเรียน · ผลสำหรับทีม</div><a class="small" href="#">ไปหน้าแบบสอบถาม</a></div>
+  <div id="gate">
+    <h2>ใส่รหัสทีม</h2>
+    <p class="hint">รหัสเดียวกับหน้าผลของ "เสียงคนดูแล"</p>
+    <form id="gateForm" style="display:flex;gap:10px;max-width:440px"><input type="password" id="code" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" placeholder="รหัสทีม"><button class="go" style="flex:none">ดูผล</button></form>
+    <p class="err" id="gateErr"></p>
+  </div>
+  <div id="dash" hidden></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+{
+/* ---------- config ---------- */
+const SB_URL='https://yunbytxtgghizrdqftvj.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1bmJ5dHh0Z2doaXpyZHFmdHZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ0MjA2ODksImV4cCI6MjA5OTk5NjY4OX0.DQbwU3hklRbuWEyqBPDw6jqnjmfB5wt91XzoV3PIH0o';
+const H={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const VERSION=1, LS='study_v1';
+
+/* ---------- questions (each maps to a claim in the SABAii pitch) ---------- */
+const PAIN={clash:'งานหลายวิชาชนกันในสัปดาห์เดียว',forget:'ลืมว่ามีงาน หรือจำวันส่งผิด',order:'ไม่รู้จะเริ่มงานไหนก่อน',delay:'ผัดไปเรื่อย ๆ จนใกล้ส่ง',lost:'หาโน้ต รูปกระดาน หรือไฟล์ที่ครูให้ไม่เจอ',exam:'อ่านสอบไม่ทัน',group:'งานกลุ่ม นัดเพื่อนยาก',slow:'จดไม่ทันตอนครูพูด'};
+const Q=[
+ {id:'level',t:'one',q:'ตอนนี้เรียนอยู่ระดับไหน',o:{m13:'ม.1–3',m46:'ม.4–6',voc:'ปวช. / ปวส.',uni:'มหาวิทยาลัย',other:'อื่น ๆ'}},
+ {id:'load',t:'one',q:'สัปดาห์นี้มีงาน การบ้าน หรือสอบย่อย ประมาณกี่ชิ้น',o:{l2:'0–2 ชิ้น',l5:'3–5 ชิ้น',l10:'6–10 ชิ้น',l11:'มากกว่า 10 ชิ้น'}},
+ {id:'from',t:'many',q:'ครูสั่งงานผ่านทางไหนบ้าง',hint:'เลือกได้หลายข้อ',o:{say:'พูดในห้อง',board:'เขียนบนกระดาน',line:'กลุ่ม LINE ห้อง',gc:'Google Classroom',paper:'ใบงานกระดาษ',other:'ทางอื่น'}},
+ {id:'note',t:'many',q:'ตอนนี้คุณจดงานไว้ที่ไหน',hint:'เลือกได้หลายข้อ',o:{none:'ไม่จด จำเอา',book:'สมุด หรือกระดาษ',shot:'แคปหน้าจอ / ถ่ายรูปกระดาน',memo:'โน้ตในมือถือ',app:'ปฏิทิน หรือแอปจัดงาน',friend:'ถามเพื่อนเอาตอนใกล้ส่ง'}},
+ {id:'late',t:'one',q:'เดือนที่แล้ว ลืมส่งงาน หรือส่งช้า กี่ครั้ง',o:{n0:'ไม่เคยเลย',n2:'1–2 ครั้ง',n5:'3–5 ครั้ง',n6:'มากกว่า 5 ครั้ง'}},
+ {id:'pains',t:'many',max:3,q:'เรื่องไหนทำให้เหนื่อยหรือเครียดที่สุด',hint:'เลือกได้ไม่เกิน 3 ข้อ',o:PAIN},
+ {id:'top',t:'top',from:'pains',q:'จากที่เลือก ข้อไหนหนักที่สุด'},
+ {id:'stress',t:'scale',q:'ช่วงนี้เครียดเรื่องเรียนแค่ไหน',lo:'ไม่เครียดเลย',hi:'เครียดมาก'},
+ {id:'story',t:'text',req:1,q:'ครั้งล่าสุดที่งานถล่ม หรือลืมส่งงาน เกิดอะไรขึ้น',hint:'เล่าสั้น ๆ ก็ได้ รู้ตัวตอนไหน แล้วแก้ยังไง'},
+ {id:'device',t:'many',q:'ใช้อะไรเรียนหรือจดโน้ตบ้าง',hint:'เลือกได้หลายข้อ',o:{android:'มือถือ Android',iphone:'iPhone',tablet:'iPad หรือแท็บเล็ต',laptop:'โน้ตบุ๊ก หรือคอมพิวเตอร์'}},
+ {id:'want',t:'one',q:'ถ้ามีแอปช่วย อยากได้ข้อไหนที่สุด',o:{voice:'พูดครั้งเดียว แอปแยกเป็นงานให้',photo:'ถ่ายรูปกระดาน แอปอ่านเป็นงานให้',remind:'เตือนก่อนถึงวันส่ง',top3:'บอกแค่ 3 งานที่ควรทำก่อน',book:'สมุดวิชาเก็บโน้ต รูป เสียงครู ที่เดียว',review:'เตือนให้ทวนก่อนสอบ',class:'เพื่อนทั้งห้องเห็นงานชุดเดียวกัน'}},
+ {id:'wtp',t:'one',q:'ถ้าแอปนี้ช่วยได้จริง ยอมจ่ายเดือนละเท่าไร',hint:'ตอบตามจริง ไม่จ่ายก็ได้ ข้อนี้สำคัญกับเรามาก',o:{w0:'ไม่จ่าย ใช้แค่แบบฟรี',w29:'ไม่เกิน 29 บาท',w49:'30–49 บาท',w99:'50–99 บาท',w100:'100 บาทขึ้นไป'}},
+ {id:'payer',t:'one',q:'ถ้าต้องจ่าย ใครน่าจะเป็นคนจ่าย',o:{me:'ตัวเอง',parent:'ผู้ปกครอง',school:'โรงเรียนควรซื้อให้',unsure:'ไม่แน่ใจ'}},
+ {id:'contact',t:'contact',q:'อยากเป็นตัวแทนห้อง ลองใช้แอปก่อนใครไหม',hint:'ไม่บังคับ ใส่ LINE ID หรือ IG ใช้ติดต่อเรื่องนี้เรื่องเดียว'}
+];
+const qById=id=>Q.find(q=>q.id===id);
+
+/* ---------- survey ---------- */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const qs=new URLSearchParams(location.search),src=(qs.get('src')||'').slice(0,40)||null;
+const embed=qs.get('embed')==='1'&&window.parent!==window;
+const tell=m=>{if(embed)try{parent.postMessage({type:'sabaii-study',...m},location.origin)}catch(e){}};
+if(embed)document.documentElement.classList.add('embed');
+let a={},i=-1,sending=false,goingBack=false,adv=null;
+const screen=$('screen'),err=$('err'),next=$('next'),back=$('back'),bar=$('bar');
+function save(){try{localStorage.setItem(LS,JSON.stringify({a,i}))}catch(e){}}
+function restore(){try{const d=JSON.parse(localStorage.getItem(LS)||'null');if(d&&d.a){a=d.a;i=d.i??-1}}catch(e){}}
+const topOpts=q=>(a[q.from]||[]).map(k=>[k,qById(q.from).o[k]]);
+const optHtml=(type,name,k,v,on,dis)=>`<label class="opt"><input type="${type}" name="${name}" value="${esc(k)}"${on?' checked':''}${dis?' disabled':''}><span>${esc(v)}</span></label>`;
+const progress=()=>{$('prog').style.width=(i<0?0:Math.min(1,i/Q.length))*100+'%'};
+
+function render(){
+  err.textContent='';
+  if(i>=Q.length){renderDone();return}
+  bar.hidden=false;
+  if(i<0){
+    screen.innerHTML=`<div class="hero"><h1>งานเยอะ ลืมส่ง จดไม่ทัน เล่าให้เราฟังหน่อย</h1>
+    <p>เราเป็นทีมนักศึกษากำลังทำแอป SABAii ช่วยนักเรียนจดงานส่งและโน้ตแต่ละวิชา ก่อนจะทำต่อ อยากรู้ว่าเพื่อน ๆ เจออะไรจริง</p>
+    <ul class="facts"><li>ประมาณ 3 นาที</li><li>ไม่ต้องใส่ชื่อ</li><li>ไม่มีคำตอบผิด</li></ul></div>
+    <p class="small">ข้อมูลใช้เพื่อพัฒนาแอปและนำเสนอโครงการเท่านั้น สรุปเป็นภาพรวม ไม่เผยแพร่รายคน ช่องติดต่อท้ายแบบสอบถามไม่บังคับ ถ้าอายุต่ำกว่า 18 ปี เว้นช่องนั้นไว้ได้เลย การกด "เริ่มเลย" ถือว่ายินยอมตามนี้</p>`;
+    back.style.display='none';next.textContent='เริ่มเลย';progress();return;
+  }
+  const q=Q[i];
+  if(q.t==='top'&&topOpts(q).length<2){a.top=topOpts(q)[0]?.[0]||null;i+=goingBack?-1:1;save();render();return}
+  let body='';
+  if(q.t==='one')body=`<div class="opts">${Object.entries(q.o).map(([k,v])=>optHtml('radio',q.id,k,v,a[q.id]===k)).join('')}</div>`;
+  else if(q.t==='top')body=`<div class="opts">${topOpts(q).map(([k,v])=>optHtml('radio',q.id,k,v,a.top===k)).join('')}</div>`;
+  else if(q.t==='many'){const sel=a[q.id]||[];body=`<div class="opts">${Object.entries(q.o).map(([k,v])=>optHtml('checkbox',q.id,k,v,sel.includes(k),q.max&&!sel.includes(k)&&sel.length>=q.max)).join('')}</div>`}
+  else if(q.t==='scale')body=`<div class="scale">${[1,2,3,4,5].map(k=>optHtml('radio',q.id,k,k,a[q.id]===k)).join('')}</div><div class="ends"><span>${q.lo}</span><span>${q.hi}</span></div>`;
+  else if(q.t==='text')body=`<textarea id="txt" maxlength="2000" placeholder="พิมพ์ที่นี่">${esc(a[q.id]||'')}</textarea>`;
+  else if(q.t==='contact')body=`<input type="text" id="cval" maxlength="120" placeholder="LINE ID หรือ IG" value="${esc(a.contact||'')}">`;
+  screen.innerHTML=`<p class="kick">ข้อ ${i+1} จาก ${Q.length}</p><h2>${esc(q.q)}</h2>${q.hint?`<p class="hint">${esc(q.hint)}</p>`:''}${body}`;
+  screen.style.animation='none';void screen.offsetWidth;screen.style.animation='';
+  back.style.display='';setNextLabel();progress();
+}
+function setNextLabel(){
+  const q=Q[i];if(!q)return;
+  if(i===Q.length-1){next.textContent='ส่งคำตอบ';return}
+  next.textContent='ต่อไป';
+}
+screen.addEventListener('change',e=>{
+  const q=Q[i],t=e.target;if(!q)return;err.textContent='';
+  if(q.t==='one'||q.t==='top')a[q.id]=t.value;
+  else if(q.t==='scale')a[q.id]=+t.value;
+  else if(q.t==='many'){
+    let sel=[...screen.querySelectorAll('input:checked')].map(x=>x.value);
+    if(t.value==='none'&&t.checked)sel=['none'];else sel=sel.filter(x=>x!=='none');
+    a[q.id]=sel;
+    if(q.id==='pains'&&a.top&&!sel.includes(a.top))delete a.top;
+    screen.querySelectorAll('input').forEach(x=>{x.checked=sel.includes(x.value);x.disabled=!!q.max&&!x.checked&&sel.length>=q.max});
+  }
+  save();
+  if(['one','top','scale'].includes(q.t)){clearTimeout(adv);adv=setTimeout(go,260)}
+});
+screen.addEventListener('input',e=>{
+  const q=Q[i];if(!q)return;
+  if(e.target.id==='txt')a[q.id]=e.target.value;
+  if(e.target.id==='cval')a.contact=e.target.value;
+  save();
+});
+screen.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();go()}});
+function valid(q){
+  if(['one','top','scale'].includes(q.t)&&(a[q.id]==null||a[q.id]===''))return 'แตะเลือกคำตอบก่อนนะ';
+  if(q.t==='many'&&!(a[q.id]||[]).length)return 'เลือกอย่างน้อย 1 ข้อ';
+  if(q.t==='text'&&q.req&&(a[q.id]||'').trim().length<4)return 'เล่าสั้น ๆ สักประโยคก็ได้';
+  return '';
+}
+function go(){
+  clearTimeout(adv);goingBack=false;
+  if(i<0){i=0;save();render();return}
+  const m=valid(Q[i]);if(m){err.textContent=m;return}
+  if(i===Q.length-1){submit();return}
+  i++;save();render();window.scrollTo({top:0});
+}
+next.onclick=go;
+back.onclick=()=>{clearTimeout(adv);goingBack=true;if(i>=0){i--;save();render();window.scrollTo({top:0})}goingBack=false};
+
+async function submit(){
+  if(sending)return;sending=true;next.disabled=true;next.textContent='กำลังส่ง…';
+  const ans={v:VERSION};
+  Q.forEach(q=>{if(q.t==='contact')return;const v=a[q.id];if(v!=null&&v!==''&&!(Array.isArray(v)&&!v.length))ans[q.id]=typeof v==='string'?v.trim():v});
+  const body={source:src,answers:ans,contact:(a.contact||'').trim().slice(0,120)||null,consent:true};
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/study_survey_responses',{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error(r.status);
+    try{localStorage.removeItem(LS)}catch(e){}
+    tell({done:true});
+    i=Q.length;renderDone();
+  }catch(e){err.textContent='ส่งไม่สำเร็จ ลองกดอีกครั้ง หรือเช็กอินเทอร์เน็ต คำตอบยังอยู่ ไม่หาย';next.textContent='ส่งคำตอบ'}
+  next.disabled=false;sending=false;
+}
+const shareUrl=location.origin+location.pathname+(src&&!embed?'?src='+encodeURIComponent(src):'');
+function renderDone(){
+  bar.hidden=true;$('prog').style.width='100%';
+  screen.innerHTML=`<div class="done"><div class="big"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+  <h2>ขอบคุณมาก</h2><p>คำตอบของคุณช่วยให้เราทำแอปที่ใช้ได้จริง<br>ช่วยส่งต่อให้เพื่อนในห้องหน่อยนะ ยิ่งหลายคนยิ่งแม่น</p>
+  <div class="share"><a href="https://line.me/R/share?text=${encodeURIComponent('ช่วยตอบแบบสอบถามสั้น ๆ (3 นาที) เรื่องงานเยอะ ลืมส่ง จดไม่ทัน หน่อยนะ ไม่ต้องใส่ชื่อ\n'+shareUrl)}" target="_blank" rel="noopener">ส่งต่อทาง LINE</a><button type="button" id="copyLink">คัดลอกลิงก์</button></div>
+  ${embed?'<p style="margin-top:22px"><button type="button" class="go" id="toApp" style="width:100%">กลับไปที่แอป</button></p>':'<p class="small" style="margin-top:22px"><a href="#" id="again">ตอบอีกครั้ง (สำหรับเพื่อนที่ใช้เครื่องนี้)</a></p>'}</div>`;
+  $('copyLink').onclick=()=>copy(shareUrl);
+  if(embed)$('toApp').onclick=()=>tell({close:true});
+  else $('again').onclick=e=>{e.preventDefault();a={};i=-1;save();render()};
+}
+const toast=t=>{const el=$('toast');el.textContent=t;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1800)};
+async function copy(t){try{await navigator.clipboard.writeText(t);toast('คัดลอกแล้ว')}catch(e){toast('คัดลอกไม่ได้')}}
+
+/* ---------- team results (#team) ---------- */
+let rows=[],lvl='all';
+const view=()=>lvl==='all'?rows:rows.filter(r=>r.answers.level===lvl);
+const cnt=(set,fn)=>set.filter(fn).length;
+const pct=(c,n)=>n?Math.round(c/n*100)+'%':'—';
+function bars(id,title,set){
+  const q=qById(id),n=set.filter(r=>r.answers[id]!=null).length;
+  const opts=id==='top'?PAIN:q.o;
+  const list=Object.entries(opts).map(([k,v])=>[v,cnt(set,r=>{const x=r.answers[id];return Array.isArray(x)?x.includes(k):x===k})]);
+  if(id!=='from'&&id!=='device'&&!q.max&&q.t==='many')list.sort((x,y)=>y[1]-x[1]);
+  const max=Math.max(1,...list.map(x=>x[1]));
+  return `<div class="panel"><h3>${esc(title||q.q)}</h3><p class="hint">${n} คนตอบ${q.t==='many'?' · เลือกได้หลายข้อ':''}</p>${n?list.map(([k,v])=>`<div class="row"><div class="lab">${esc(k)}<div class="track"><i style="width:${v/max*100}%"></i></div></div><div class="n">${v}</div></div>`).join(''):'<p class="hint">ยังไม่มีข้อมูล</p>'}</div>`;
+}
+function renderDash(){
+  const s=view(),n=s.length;
+  const late=cnt(s,r=>['n2','n5','n6'].includes(r.answers.late)),noApp=cnt(s,r=>!(r.answers.note||[]).includes('app'));
+  const pay=cnt(s,r=>r.answers.wtp&&r.answers.wtp!=='w0'),pay49=cnt(s,r=>['w49','w99','w100'].includes(r.answers.wtp));
+  const st=s.filter(r=>r.answers.stress),avg=st.length?(st.reduce((t,r)=>t+r.answers.stress,0)/st.length).toFixed(1):'—';
+  const lv=Object.entries(qById('level').o);
+  $('dash').innerHTML=`
+  <div class="tools">${[['all','ทุกระดับ'],...lv].map(([k,v])=>`<button type="button" data-l="${k}" style="${k===lvl?'background:var(--ink);color:var(--bg);border-color:var(--ink)':''}">${esc(v)} (${k==='all'?rows.length:cnt(rows,r=>r.answers.level===k)})</button>`).join('')}<button type="button" id="csv">ดาวน์โหลด CSV</button><button type="button" id="reload">โหลดใหม่</button></div>
+  <div class="kpis">
+    <div class="kpi"><b>${n}</b>คนตอบ</div>
+    <div class="kpi"><b>${pct(late,n)}</b>ลืมส่งหรือส่งช้าอย่างน้อย 1 ครั้งเมื่อเดือนที่แล้ว</div>
+    <div class="kpi"><b>${pct(noApp,n)}</b>ไม่ได้ใช้แอปจัดงานเลย</div>
+    <div class="kpi"><b>${avg}</b>ความเครียดเฉลี่ย (เต็ม 5)</div>
+    <div class="kpi"><b>${pct(pay,n)}</b>ยอมจ่าย (ใส่ในหน้า pitch แทน 2.1%) · 30 บาทขึ้นไป ${pct(pay49,n)}</div>
+  </div>
+  <div class="grid2">${bars('pains','เรื่องที่เหนื่อยหรือเครียด (เลือกได้ 3 ข้อ)',s)}${bars('top','ข้อที่หนักที่สุด',s)}${bars('note',null,s)}${bars('from',null,s)}${bars('late',null,s)}${bars('load',null,s)}${bars('want',null,s)}${bars('wtp',null,s)}${bars('payer',null,s)}${bars('device',null,s)}${bars('level',null,rows)}</div>
+  <h2 class="sec">เรื่องเล่าจริง (${cnt(s,r=>r.answers.story)})</h2>
+  ${s.filter(r=>r.answers.story).map(r=>`<div class="quote">${esc(r.answers.story)}<small>${esc(qById('level').o[r.answers.level]||'')} · หนักสุด: ${esc(PAIN[r.answers.top]||'—')} · ${new Date(r.created_at).toLocaleDateString('th-TH')}</small></div>`).join('')||'<p class="hint">ยังไม่มี</p>'}
+  <h2 class="sec">อยากเป็นตัวแทนห้อง (${cnt(s,r=>r.contact)})</h2>
+  ${s.filter(r=>r.contact).map(r=>`<span class="quote" style="display:inline-block;margin:4px">${esc(r.contact)} <small style="display:inline">${esc(qById('level').o[r.answers.level]||'')}</small></span>`).join('')||'<p class="hint">ยังไม่มี</p>'}`;
+  $('dash').querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{lvl=b.dataset.l;renderDash()});
+  $('reload').onclick=load;
+  $('csv').onclick=()=>{
+    const cols=Q.filter(q=>q.t!=='contact').map(q=>q.id);
+    const cell=v=>'"'+String(Array.isArray(v)?v.join('|'):v??'').replace(/"/g,'""')+'"';
+    const txt='﻿'+['created_at','source',...cols,'contact'].join(',')+'\n'+s.map(r=>[r.created_at,r.source,...cols.map(c=>r.answers[c]),r.contact].map(cell).join(',')).join('\n');
+    const url=URL.createObjectURL(new Blob([txt],{type:'text/csv'}));const l=document.createElement('a');l.href=url;l.download='study-survey.csv';l.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+}
+async function load(){
+  let code='';try{code=sessionStorage.getItem('care_code')||''}catch(e){}
+  code=$('code').value.replace(/\s+/g,'').toLowerCase()||code;
+  const ge=$('gateErr');ge.textContent='กำลังโหลด…';
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/rpc/study_survey_results',{method:'POST',headers:H,body:JSON.stringify({p_code:code})});
+    if(!r.ok)throw new Error('code');
+    rows=(await r.json()).map(x=>({...x,answers:x.answers||{}}));
+    try{sessionStorage.setItem('care_code',code)}catch(e){}
+    ge.textContent='';$('gate').hidden=true;$('dash').hidden=false;renderDash();
+  }catch(e){try{sessionStorage.removeItem('care_code')}catch(_){};$('gate').hidden=false;$('dash').hidden=true;ge.textContent='รหัสไม่ถูกต้อง หรือเชื่อมต่อไม่ได้'}
+}
+$('gateForm').addEventListener('submit',e=>{e.preventDefault();load()});
+function route(){
+  const t=location.hash==='#team';
+  $('survey').hidden=t;bar.style.display=t?'none':'';$('team').hidden=!t;
+  if(t){document.title='เสียงนักเรียน · ทีม';let c=null;try{c=sessionStorage.getItem('care_code')}catch(e){}if(c)load()}
+  else{document.title='เสียงนักเรียน';render()}
+}
+restore();
+window.addEventListener('hashchange',route);route();
+}
+</script>
+</body>
+</html>
