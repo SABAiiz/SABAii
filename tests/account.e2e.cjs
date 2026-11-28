@@ -25,7 +25,7 @@ async function supa(route) {
   if (p === '/auth/v1/authorize') {
     // หน้าเลือกบัญชี Google ปลอม: เด้งกลับไปที่ redirect_to ทันที
     const back = new URL(u.searchParams.get('redirect_to'));
-    if (u.searchParams.get('provider') !== 'google' || u.searchParams.get('code_challenge_method') !== 's256' || !u.searchParams.get('code_challenge')) back.searchParams.set('error', 'invalid_request');
+    if (!['google', 'facebook', 'apple'].includes(u.searchParams.get('provider')) || u.searchParams.get('code_challenge_method') !== 's256' || !u.searchParams.get('code_challenge')) back.searchParams.set('error', 'invalid_request');
     else if (denyNext) { denyNext = false; back.searchParams.set('error', 'access_denied'); back.searchParams.set('error_description', 'denied'); }
     else back.searchParams.set('code', 'GOOD:' + u.searchParams.get('code_challenge'));
     return route.fulfill({ status: 200, contentType: 'text/html', body: `<!doctype html><title>Google (ปลอม)</title><script>location.replace(${JSON.stringify(back.toString())})</script>` });
@@ -38,6 +38,11 @@ async function supa(route) {
     if (challenge !== want) return json(400, { error_code: 'bad_code_verifier' });
     return json(200, { access_token: 'AT', refresh_token: 'RT', expires_in: 3600, user: { id: UID, email: EMAIL, user_metadata: { full_name: NAME } } });
   }
+  // อีเมล: ขอรหัส → กรอกรหัส (รหัสที่ถูกคือ 123456)
+  if (p === '/auth/v1/otp') return body.email && body.create_user ? json(200, {}) : json(400, { error_code: 'validation_failed' });
+  if (p === '/auth/v1/verify') return body.type === 'email' && body.token === '123456'
+    ? json(200, { access_token: 'AT', refresh_token: 'RT', expires_in: 3600, user: { id: UID, email: body.email, user_metadata: {} } })
+    : json(403, { error_code: 'otp_expired', msg: 'Token has expired or is invalid' });
   if (p.startsWith('/storage/v1/object/')) {
     const name = decodeURIComponent(p.replace(/^\/storage\/v1\/object\/(authenticated\/)?attachments\/?/, ''));
     if (req.method() === 'POST') { files.set(name, req.postDataBuffer()); return json(200, { Key: name }); }
@@ -161,7 +166,33 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   await B.page.waitForLoadState('load'); await B.page.waitForSelector('#login', { timeout: 8000 }).catch(() => {});
   check('ออกจากระบบ → เครื่องถูกล้าง · กลับมาหน้าเข้าสู่ระบบ', await gated(B.page) && await B.page.evaluate(() => !localStorage.getItem('sabaii-auth') && !window.__sabaii));
 
-  check('ไม่มี error ใน console', !A.errors.length && !B.errors.length, [...A.errors, ...B.errors].join(' | '));
+  // ----- เครื่อง C: เข้าด้วยอีเมล (รหัส 6 หลัก) -----
+  const C = await newDevice(browser);
+  await C.page.goto(BASE); await C.page.waitForSelector('#login');
+  check('หน้าเข้าสู่ระบบมีครบ 4 ทาง: Google · Facebook · Apple · อีเมล', (await Promise.all(['#acc-google', '#acc-facebook', '#acc-apple', '#acc-email'].map(s => C.page.locator(s).isVisible()))).every(Boolean));
+  await shot(C.page, 'acc-4-choices');
+  await C.page.click('#acc-email');
+  await C.page.fill('#acc-email-in', 'mind@'); await C.page.click('#acc-send');
+  check('อีเมลผิดรูปแบบ → บอกให้แก้ ไม่ยิงไปเซิร์ฟเวอร์', /ใส่อีเมลให้ถูก/.test(await C.page.locator('.lg-err').textContent()) && !calls.includes('POST /auth/v1/otp'));
+  await C.page.fill('#acc-email-in', 'mind@school.ac.th'); await C.page.click('#acc-send');
+  await C.page.waitForSelector('#acc-code-in', { state: 'visible' });
+  check('ส่งรหัสแล้ว → ช่องกรอกรหัส + บอกอีเมลที่ส่งไป', /mind@school\.ac\.th/.test(await C.page.locator('.lg-note').textContent()));
+  await shot(C.page, 'acc-5-code');
+  await C.page.fill('#acc-code-in', '000000'); await wait(500);
+  check('รหัสผิด → ข้อความไทย · ยังไม่เข้า', /รหัสหมดอายุหรือไม่ถูกต้อง/.test(await C.page.locator('.lg-err').textContent()) && await gated(C.page));
+  await Promise.all([C.page.waitForEvent('load'), C.page.fill('#acc-code-in', '123456')]);
+  await C.page.waitForSelector('#onboard, #nav'); await wait(500);
+  check('รหัสถูก → เปิดแอป (แบบสอบถามครั้งแรก) · จำบัญชีไว้', !(await C.page.locator('#login').count()) && await C.page.evaluate(() => JSON.parse(localStorage.getItem('sabaii-auth')).user.email === 'mind@school.ac.th'));
+
+  // ----- เครื่อง D: เข้าด้วย Facebook -----
+  const D = await newDevice(browser);
+  await D.page.goto(BASE); await D.page.waitForSelector('#login');
+  const fbBack = D.page.waitForEvent('framenavigated', { predicate: f => f === D.page.mainFrame() && /[?&]code=/.test(f.url()) });
+  await D.page.click('#acc-facebook'); await fbBack;
+  await D.page.waitForLoadState('load'); await D.page.waitForSelector('#onboard, #nav'); await wait(500);
+  check('Facebook → ไปหน้า authorize (provider=facebook) → กลับมาเข้าแอปได้', !(await D.page.locator('#login').count()) && await D.page.evaluate(() => !!localStorage.getItem('sabaii-auth')));
+
+  check('ไม่มี error ใน console', !A.errors.length && !B.errors.length && !C.errors.length && !D.errors.length, [...A.errors, ...B.errors, ...C.errors, ...D.errors].join(' | '));
   await browser.close();
   const ok = results.filter(Boolean).length;
   console.log(`\nรวม ${ok}/${results.length} ผ่าน`);
