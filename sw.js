@@ -1,6 +1,6 @@
 // แคชไฟล์ของแอปไว้ให้เปิดได้ตอนออฟไลน์ · ข้อมูลผู้ใช้อยู่ใน IndexedDB ไม่ได้อยู่ที่นี่
 // เปลี่ยนไฟล์ในแอปเมื่อไหร่ ต้องขึ้นเลข CACHE ทุกครั้ง
-const CACHE = 'sabaii-v0.13.2';
+const CACHE = 'sabaii-v0.14.0';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.png',
   './src/styles/app.css', './src/main.js', './src/ui/kit.js',
@@ -8,7 +8,7 @@ const SHELL = [
   './src/domain/dates.js', './src/domain/tasks.js', './src/domain/parse.js', './src/domain/thai-parse.js', './src/domain/speech.js', './src/domain/notebook.js', './src/domain/pages.js', './src/ui/subject-icon.js',
   './src/features/shared.js', './src/features/home.js', './src/features/add.js', './src/features/tasks.js', './src/features/notebook.js', './src/features/sketch.js', './src/features/me.js',
   './src/features/voice.js', './src/features/listen.js', './src/features/images.js',
-  './src/features/account.js', './src/features/login.js', './src/features/notestyle.js', './src/features/onboard.js', './src/features/handsfree.js', './src/gesture/hand.js',
+  './src/features/account.js', './src/features/login.js', './src/features/notify.js', './src/features/notestyle.js', './src/features/onboard.js', './src/features/handsfree.js', './src/gesture/hand.js',
   ...[1, 2, 3, 4, 5, 6].map(i => `./assets/note-styles/ns-${i}.jpg`), './assets/landing/note-photo.jpg',
   ...['board', 'chalk', 'notes', 'sticky'].map(n => `./assets/landing/photos/${n}.jpg`),
 ];
@@ -28,4 +28,23 @@ self.addEventListener('fetch', e => {
   } else if (url.hostname.endsWith('fonts.googleapis.com') || url.hostname.endsWith('fonts.gstatic.com')) {
     e.respondWith(caches.match(e.request).then(r => r || fetch(e.request).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); return res; })));
   }
+});
+
+// แจ้งเตือนก่อนวันส่ง (0.14): เซิร์ฟเวอร์ส่ง { title, body, tag, url } → แสดง · แตะ = เปิดแอปหน้านั้น (มีหน้าต่างอยู่แล้วใช้อันเดิม)
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data?.text() }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'SABAii', {
+    body: d.body || '', icon: 'icon-192.png', badge: 'icon-192.png', tag: d.tag || 'sabaii', renotify: true, lang: 'th',
+    data: { url: d.url || '#/tasks' },
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL(e.notification.data?.url || '#/tasks', self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(ws => {
+    const w = ws.find(w => w.url.startsWith(self.registration.scope));
+    if (w) { w.navigate?.(url).catch(() => {}); return w.focus(); }
+    return self.clients.openWindow(url);
+  }));
 });

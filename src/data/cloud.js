@@ -137,6 +137,15 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       return r.json();
     },
 
+    /** เรียกฟังก์ชันในฐานข้อมูล (rpc) ในนามผู้ใช้ */
+    async rpc(name, body = {}) {
+      const r = await api(`/rest/v1/rpc/${name}`, { method: 'POST', body });
+      const t = await r.text?.();
+      try { return t ? JSON.parse(t) : null; } catch { return t; }
+    },
+    /** เรียก Edge Function ในนามผู้ใช้ */
+    async fn(name, body = {}) { return (await api(`/functions/v1/${name}`, { method: 'POST', body })).json(); },
+
     filePath: id => `${user()?.id}/${id}`,
     async upload(id, blob) {
       await api(`/storage/v1/object/${BUCKET}/${user().id}/${encodeURIComponent(id)}`, { method: 'POST', body: blob, json: false, headers: { 'Content-Type': blob.type || 'image/jpeg', 'x-upsert': 'true', 'cache-control': '31536000' } });

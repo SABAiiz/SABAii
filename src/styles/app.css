@@ -1625,3 +1625,13 @@ html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html
 .lg-back, .lg-space { margin-top: 32px; }
 .lg-back { color: var(--text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .lg-stack img { animation: none; } }
+
+/* 0.14 แจ้งเตือนก่อนวันส่ง */
+.ntimes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.ntimes button { flex: 1; min-width: 58px; height: 44px; border-radius: 12px; background: var(--surface); color: var(--ink); font: 600 15px var(--disp, inherit); }
+.ntimes button[aria-checked="true"] { background: var(--ink); color: #fff; }
+.nacts { display: grid; gap: 8px; }
+.nt-off { color: var(--error); }
+.nwarn { padding: 12px 14px; border-radius: 12px; background: #FFF4D1; color: #6B4A00; font-size: 14.5px; line-height: 1.5; }
+.nios ol { margin: 10px 0 6px; padding-left: 22px; line-height: 1.7; font-size: 15px; }
+.nw { white-space: nowrap; }

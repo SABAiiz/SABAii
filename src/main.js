@@ -6,6 +6,7 @@ import { createCloud } from './data/cloud.js';
 import { createSync } from './data/sync.js';
 import { afterSignIn } from './features/account.js';
 import { showLogin } from './features/login.js';
+import { refreshPush } from './features/notify.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { tasksView, subjectView } from './features/tasks.js';
@@ -15,7 +16,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.13.2';
+globalThis.SABAII_VERSION = '0.14.0';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', book: 'สมุดจด' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -89,7 +90,7 @@ async function boot() {
   // ครั้งแรก: แบบสอบถามก่อนเข้าแอป · กดมาจากหน้าแนะนำ (?from=landing) ข้ามหน้าต้อนรับไปข้อ 1 เลย
   const fromLanding = new URLSearchParams(location.search).get('from') === 'landing';
   if (location.search) history.replaceState(history.state, '', location.pathname + location.hash);
-  if (needsOnboarding()) openOnboarding({ start: fromLanding || signedIn ? 1 : 0 }); // เพิ่งผ่านหน้าเข้าสู่ระบบ = ทักทายไปแล้ว
+  if (needsOnboarding()) openOnboarding(); // ผู้ใช้ใหม่: หน้าต้อนรับการ์ดลอยก่อน (เจ้าของขอคืน 28 พ.ย.) แล้วค่อยคำถาม
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
   addEventListener('offline', () => toast(cloud.user() ? 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ต่อเน็ตแล้วจะซิงก์เอง' : 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง'));
@@ -99,6 +100,7 @@ async function boot() {
   document.addEventListener('visibilitychange', syncIfIn);
   setInterval(syncIfIn, 60_000);
   if (signedIn) afterSignIn(cloud.user()); else syncIfIn();
+  refreshPush(); // เปิดแจ้งเตือนไว้ = บอกเซิร์ฟเวอร์ซ้ำว่าเครื่องนี้ยังรับอยู่
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }
