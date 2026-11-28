@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>SABAii เรื่องสำคัญบนหน้าหลัก</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Mali:wght@500;600;700&display=swap">
+<style>
+  /* ภาพเสนอ (28 พ.ย. 69): เรื่องสำคัญบนหน้าหลัก 6 แบบ + เลือกเวลาแจ้งเตือนเอง 2 แบบ */
+  :root { --ink: #0B1B4D; --blue: #0A6CF1; --t2: #5E6B85; --red: #E2453A; --font: "Anuphan", "Noto Sans Thai Looped", sans-serif; --hand: "Mali", cursive; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 56px 56px 64px; background: #DDE3EC; font-family: var(--font); color: var(--ink); }
+  .sheet-h { margin: 0 0 6px; font-size: 30px; font-weight: 700; } .sheet-p { margin: 0 0 40px; color: var(--t2); font-size: 17px; }
+  .sec { margin: 56px 0 22px; font-size: 22px; font-weight: 700; }
+  .grid { display: grid; grid-template-columns: repeat(4, 360px); gap: 56px 44px; }
+  .opt > p { margin: 18px 4px 0; font-size: 15px; line-height: 1.5; color: var(--t2); }
+  .opt > p b { display: block; color: var(--ink); font-size: 19px; margin-bottom: 2px; }
+  .ph { position: relative; width: 360px; height: 720px; border-radius: 44px; overflow: hidden; background: #fff; box-shadow: 0 0 0 8px #0E1424, 0 30px 60px -20px rgba(11,27,77,.45); padding: 50px 20px 0; }
+  .date { display: flex; justify-content: space-between; align-items: center; color: var(--t2); font-size: 15px; }
+  .av { width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(from 210deg, #0A6CF1, #7C4DFF, #E0457B, #F08A24, #0A6CF1); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
+  .hh { margin: 10px 0 16px; font-size: 32px; font-weight: 700; letter-spacing: -.01em; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; opacity: .9; }
+  .tiles i { height: 112px; border-radius: 22px; display: flex; align-items: flex-end; padding: 14px; font-style: normal; font-weight: 700; font-size: 19px; }
+  .tiles i:nth-child(1) { background: #1D5BE0; color: #fff; } .tiles i:nth-child(2) { background: #EFE9FF; } .tiles i:nth-child(3) { background: #E6F7EE; } .tiles i:nth-child(4) { background: #E9EDF3; }
+  .chip { display: inline-grid; place-items: center; min-width: 34px; height: 24px; padding: 0 7px; border-radius: 8px; font-size: 11px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 14%, #fff); }
+  .red { color: var(--red); }
+
+  /* A ประโยคเดียว */
+  .a .line { margin: 8px 0 16px; font-size: 26px; line-height: 1.32; font-weight: 700; letter-spacing: -.01em; }
+  .a .line u { text-decoration: none; background: linear-gradient(transparent 62%, #FFE27A 62%); }
+  .a .line small { display: block; margin-top: 6px; font-size: 14.5px; font-weight: 500; color: var(--t2); }
+
+  /* B การ์ดกรมท่า */
+  .b .card { margin: 0 0 14px; padding: 16px 16px 12px; border-radius: 22px; background: var(--ink); color: #fff; }
+  .b .card .top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #A9B6D8; }
+  .b .card .top span:last-child { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,.1); display: grid; place-items: center; font-size: 13px; }
+  .b .card h3 { margin: 4px 0 10px; font-size: 20px; }
+  .b .row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid rgba(255,255,255,.12); font-size: 14.5px; }
+  .b .row .chip { background: rgba(255,255,255,.14); color: #fff; } .b .row em { margin-left: auto; font-style: normal; color: #FFB4AC; font-size: 13px; }
+
+  /* C แถบนับถอยหลัง */
+  .c .rail { display: flex; gap: 10px; margin: 0 -20px 16px; padding: 0 20px; overflow: hidden; }
+  .c .pill { flex: none; width: 150px; padding: 12px; border-radius: 20px; background: #F3F5F9; }
+  .c .pill .n { font-size: 30px; font-weight: 700; line-height: 1; } .c .pill .n small { font-size: 13px; margin-left: 4px; color: var(--t2); font-weight: 600; }
+  .c .pill b { display: block; margin-top: 8px; font-size: 14px; } .c .pill span { font-size: 12.5px; color: var(--t2); }
+  .c .pill.hot { background: #FFF0EE; } .c .pill.hot .n { color: var(--red); }
+  .c .hh { margin-bottom: 12px; }
+
+  /* D เม็ดยาด้านบน */
+  .d .pillbar { position: absolute; top: 12px; left: 50%; translate: -50% 0; display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 8px; border-radius: 999px; background: #0E1424; color: #fff; font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 24px -10px rgba(0,0,0,.5); white-space: nowrap; }
+  .d .pillbar i { width: 22px; height: 22px; border-radius: 50%; background: var(--red); display: grid; place-items: center; font-style: normal; font-size: 12px; }
+  .d .expand { margin: 0 0 16px; padding: 14px; border-radius: 20px; background: #0E1424; color: #fff; }
+  .d .expand div { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; } .d .expand div span { color: #9AA6C4; }
+  .d .cap { font-size: 12px; color: var(--t2); text-align: center; margin: -8px 0 10px; }
+
+  /* E โพสต์อิท */
+  .e .note { position: relative; margin: 4px 6px 18px; padding: 22px 18px 16px; background: #FFE98A; rotate: -1.6deg; font-family: var(--hand); color: #23315A; box-shadow: 0 14px 22px -16px rgba(90,70,0,.6); border-radius: 2px 2px 14px 2px; }
+  .e .note::before { content: ""; position: absolute; top: -10px; left: 50%; width: 84px; height: 22px; translate: -50% 0; rotate: 2deg; background: rgba(255,255,255,.6); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .e .note h3 { margin: 0 0 6px; font-size: 22px; font-weight: 700; } .e .note p { margin: 3px 0; font-size: 16px; }
+  .e .note p s { color: #8A7A3A; }
+
+  /* F ข้อความจาก SABAii */
+  .f .msg { display: flex; gap: 10px; margin: 0 0 16px; }
+  .f .msg img { width: 34px; height: 34px; border-radius: 10px; flex: none; }
+  .f .bub { flex: 1; padding: 12px 14px; border-radius: 4px 18px 18px 18px; background: #F1F4FA; font-size: 15px; line-height: 1.5; }
+  .f .bub b { font-weight: 700; } .f .acts { display: flex; gap: 8px; margin-top: 10px; }
+  .f .acts span { padding: 7px 12px; border-radius: 999px; background: #fff; font-size: 13px; font-weight: 600; box-shadow: inset 0 0 0 1px #DCE2EC; }
+  .f .acts span:first-child { background: var(--ink); color: #fff; box-shadow: none; }
+
+  /* เวลา */
+  .sheetm { position: absolute; inset: auto 0 0; padding: 20px 22px 30px; background: #fff; border-radius: 26px 26px 0 0; box-shadow: 0 -10px 40px -10px rgba(11,27,77,.3); }
+  .dim { position: absolute; inset: 0; background: rgba(15,26,48,.38); }
+  .sheetm h3 { margin: 0 0 4px; font-size: 21px; } .sheetm .s { margin: 0 0 16px; color: var(--t2); font-size: 14px; }
+  .wheel { position: relative; display: flex; justify-content: center; gap: 4px; height: 190px; overflow: hidden; font-size: 24px; font-weight: 600; }
+  .wheel::before { content: ""; position: absolute; left: 0; right: 0; top: 72px; height: 46px; border-radius: 12px; background: #F1F4FA; z-index: 0; }
+  .wheel .col { position: relative; z-index: 1; width: 90px; text-align: center; line-height: 46px; margin-top: -20px; }
+  .wheel .col span { display: block; color: #B6BFD0; } .wheel .col span.on { color: var(--ink); font-size: 28px; }
+  .wheel .sep { position: relative; z-index: 1; line-height: 46px; padding-top: 72px; font-size: 28px; }
+  .wheel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(#fff, rgba(255,255,255,0) 35%, rgba(255,255,255,0) 65%, #fff); z-index: 2; pointer-events: none; }
+  .btnp { display: grid; place-items: center; height: 52px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 600; margin-top: 16px; }
+  .big { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 6px 0 14px; }
+  .big b { font-size: 56px; letter-spacing: -.02em; } .big span { width: 48px; height: 48px; border-radius: 50%; background: #F1F4FA; display: grid; place-items: center; font-size: 24px; font-weight: 600; }
+  .presets { display: flex; gap: 8px; } .presets span { flex: 1; height: 40px; border-radius: 12px; background: #F1F4FA; display: grid; place-items: center; font-weight: 600; font-size: 14px; }
+  .presets span.on { background: var(--ink); color: #fff; }
+  .twice { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: #F7F8FB; font-size: 14px; }
+  .tog { width: 44px; height: 26px; border-radius: 999px; background: var(--blue); position: relative; } .tog::after { content: ""; position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; }
+</style>
+</head>
+<body>
+<h1 class="sheet-h">เรื่องสำคัญบนหน้าหลัก: เลือกแบบที่ชอบ</h1>
+<p class="sheet-p">เรื่องที่ขึ้น = สอบใกล้ (ภายใน 3 วัน) · งานเลยกำหนด · งานส่งวันนี้/พรุ่งนี้ · ไม่มีเรื่องด่วน = ส่วนนี้หายไป หน้าหลักเหมือนเดิม</p>
+
+<div class="grid">
+  <section class="opt"><div class="ph a">
+    <div class="date">เสาร์ 28 พ.ย.<span class="av">ฉ</span></div>
+    <p class="line">พรุ่งนี้<u>สอบฟิสิกส์</u> และต้องส่งแบบฝึกหัดเลข 08:00<small>แตะเพื่อดูงานทั้งสอง</small></p>
+    <div class="tiles"><i>พูด</i><i>แนบรูป</i><i>พิมพ์</i><i>ถ่ายรูป</i></div>
+  </div><p><b>A  ประโยคเดียวแทนหัวข้อ</b>"จดงานอะไรดี?" เปลี่ยนเป็นประโยคบอกเรื่องสำคัญที่สุด ไฮไลต์คำสำคัญเหมือนปากกาเน้นข้อความ เรียบที่สุด</p></section>
+
+  <section class="opt"><div class="ph b">
+    <div class="date">เสาร์ 28 พ.ย.<span class="av">ฉ</span></div>
+    <div class="hh">จดงานอะไรดี?</div>
+    <div class="card"><div class="top"><span>สำคัญ</span><span>✕</span></div><h3>พรุ่งนี้มี 2 เรื่อง</h3>
+      <div class="row"><span class="chip">ฟิส</span>สอบย่อยไฟฟ้า<em>สอบ 10:00</em></div>
+      <div class="row"><span class="chip">เลข</span>แบบฝึกหัดบทที่ 3<em>ส่ง 08:00</em></div></div>
+    <div class="tiles"><i>พูด</i><i>แนบรูป</i><i>พิมพ์</i><i>ถ่ายรูป</i></div>
+  </div><p><b>B  การ์ดกรมท่า</b>การ์ดเข้มเด่นเหนือปุ่มเพิ่มงาน แสดงสูงสุด 3 เรื่อง ปัดทิ้ง (✕) ได้ วันพรุ่งนี้ค่อยขึ้นใหม่</p></section>
+
+  <section class="opt"><div class="ph c">
+    <div class="date">เสาร์ 28 พ.ย.<span class="av">ฉ</span></div>
+    <div class="hh">จดงานอะไรดี?</div>
+    <div class="rail">
+      <div class="pill hot"><div class="n">1<small>วัน</small></div><b>สอบฟิสิกส์</b><span>จ. 10:00</span></div>
+      <div class="pill hot"><div class="n">1<small>วัน</small></div><b>แบบฝึกหัดเลข</b><span>ส่ง 08:00</span></div>
+      <div class="pill"><div class="n">3<small>วัน</small></div><b>ท่องศัพท์</b><span>อังกฤษ</span></div>
+    </div>
+    <div class="tiles"><i>พูด</i><i>แนบรูป</i><i>พิมพ์</i><i>ถ่ายรูป</i></div>
+  </div><p><b>C  นับถอยหลัง</b>การ์ดเล็กเลื่อนข้างได้ ตัวเลขใหญ่ "อีกกี่วัน" เหลือ 1 วันเป็นสีแดง เห็นภาพรวมทั้งสัปดาห์</p></section>
+
+  <section class="opt"><div class="ph d">
+    <div class="pillbar"><i>!</i>พรุ่งนี้สอบฟิสิกส์ + ส่ง 1 งาน</div>
+    <div class="date" style="margin-top:22px">เสาร์ 28 พ.ย.<span class="av">ฉ</span></div>
+    <div class="hh">จดงานอะไรดี?</div>
+    <div class="expand"><div>สอบย่อยไฟฟ้า <span>พรุ่งนี้ 10:00</span></div><div>แบบฝึกหัดบทที่ 3 <span>พรุ่งนี้ 08:00</span></div></div>
+    <p class="cap">(แตะเม็ดยาด้านบน = กางออกแบบนี้)</p>
+    <div class="tiles"><i>พูด</i><i>แนบรูป</i><i>พิมพ์</i><i>ถ่ายรูป</i></div>
+  </div><p><b>D  เม็ดยาด้านบน</b>ป้ายดำเล็ก ๆ ลอยบนสุดคล้าย Dynamic Island ไม่กินที่ แตะแล้วกางรายละเอียด</p></section>
+
+  <section class="opt"><div class="ph e">
+    <div class="date">เสาร์ 28 พ.ย.<span class="av">ฉ</span></div>
+    <div class="hh">จดงานอะไรดี?</div>
+    <div class="note"><h3>อย่าลืมนะ!</h3><p>พรุ่งนี้สอบฟิสิกส์ 10 โมง</p><p>ส่งแบบฝึกหัดเลขก่อน 8 โมง</p><p><s>ท่องศัพท์ Unit 5</s> ✓</p></div>
+    <div class="tiles"><i>พูด</i><i>แนบรูป</i><i>พิมพ์</i><i>ถ่ายรูป</i></div>
+  </div><p><b>E  โพสต์อิทแปะ</b>กระดาษโน้ตสีเหลือง ลายมือ มีเทปแปะ เข้ากับสมุดของแอป งานที่ทำเสร็จถูกขีดฆ่า</p></section>
+
+  <section class="opt"><div class="ph f">
+    <div class="date">เสาร์ 28 พ.ย.<span class="av">ฉ</span></div>
+    <div class="hh">จดงานอะไรดี?</div>
+    <div class="msg"><img src="../icon-192.png"><div class="bub">พรุ่งนี้มี<b>สอบฟิสิกส์ 10:00</b> และต้องส่ง<b>แบบฝึกหัดเลข</b>ก่อน 8 โมง คืนนี้ทำแบบฝึกหัดก่อนดีไหม
+      <div class="acts"><span>เริ่มทำเลย</span><span>ดูงาน</span></div></div></div>
+    <div class="tiles"><i>พูด</i><i>แนบรูป</i><i>พิมพ์</i><i>ถ่ายรูป</i></div>
+  </div><p><b>F  ข้อความจาก SABAii</b>แบบผู้ช่วยพิมพ์บอก (คล้าย Grok) แต่มีปุ่มกดทำต่อได้เลย และแนะนำว่าควรทำอะไรก่อน</p></section>
+</div>
+
+<h2 class="sec">เลือกเวลาแจ้งเตือนเอง (หน้าฉัน → แจ้งเตือน)</h2>
+<div class="grid">
+  <section class="opt"><div class="ph">
+    <div class="dim"></div>
+    <div class="sheetm"><h3>เตือนตอนกี่โมง</h3><p class="s">ตอนเย็นก่อนวันส่ง</p>
+      <div class="wheel"><div class="col"><span>17</span><span>18</span><span class="on">19</span><span>20</span><span>21</span></div><div class="sep">:</div><div class="col"><span>20</span><span>25</span><span class="on">30</span><span>35</span><span>40</span></div></div>
+      <div class="btnp">บันทึก 19:30</div></div>
+  </div><p><b>T1  วงล้อหมุน</b>หมุนเลือกชั่วโมง/นาที (ทีละ 5 นาที) แบบนาฬิกาปลุกในมือถือ คุ้นมือที่สุด</p></section>
+
+  <section class="opt"><div class="ph">
+    <div class="dim"></div>
+    <div class="sheetm"><h3>เตือนตอนกี่โมง</h3><p class="s">ตอนเย็นก่อนวันส่ง</p>
+      <div class="big"><span>−</span><b>19:30</b><span>+</span></div>
+      <div class="presets"><span>18:00</span><span>19:00</span><span class="on">19:30</span><span>20:00</span></div>
+      <div class="twice"><span>เตือนอีกรอบเช้าวันส่ง 06:30</span><span class="tog"></span></div>
+      <div class="btnp">บันทึก</div></div>
+  </div><p><b>T2  ตัวเลขใหญ่ + / −</b>กดทีละ 15 นาที หรือแตะเวลายอดนิยม · เปิด "เตือนอีกรอบเช้าวันส่ง" เพิ่มได้</p></section>
+</div>
+</body>
+</html>
