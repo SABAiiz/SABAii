@@ -97,10 +97,10 @@ export function meView(root) {
   );
 }
 
-/** แถวบัญชี: ยังไม่เข้า = ปุ่มชวนเข้าสู่ระบบด้วย Google · เข้าแล้ว = รูป + อีเมล + สถานะซิงก์ */
+/** แถวบัญชี: ยังไม่เข้า = ปุ่มชวนเข้าสู่ระบบ (Google / Facebook) · เข้าแล้ว = รูป + อีเมล + สถานะซิงก์ */
 function accountRow(row) {
   const u = app.cloud?.user();
-  if (!u) return row('cloud', 'blue', 'เข้าสู่ระบบด้วย Google', null, openAccount, { sub: 'งานและสมุดไม่หายเมื่อเปลี่ยนเครื่อง' });
+  if (!u) return row('cloud', 'blue', 'เข้าสู่ระบบ', null, openAccount, { sub: 'งานและสมุดไม่หายเมื่อเปลี่ยนเครื่อง' });
   const st = h('span.lv', { id: 'me-sync' }, syncLabel());
   return h('button.list-btn', { onclick: openAccount },
     avatarEl(u, 'span.mi.accpic'), h('span.lk', u.name || 'บัญชีและซิงก์', h('small', u.email)), st, h('span.chev', { html: ic('right') }));
