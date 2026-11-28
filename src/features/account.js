@@ -60,13 +60,16 @@ export function withPhoto(el, u = app.cloud?.user()) {
   return el;
 }
 
-async function signOut() {
+/** ออกจากระบบ (ใช้ทั้งในกล่องบัญชีและปุ่มท้ายหน้าฉัน): ซิงก์ก่อน → ยืนยัน → ออก → ล้างเครื่อง → หน้าเข้าสู่ระบบ */
+export async function signOut() {
+  if (!app.cloud?.user()) return;
   await app.sync.syncNow();
   const pending = await app.sync.pendingCount();
   const ok = await confirmBox({ title: 'ออกจากระบบ?',
     body: pending ? `ยังมี ${pending} รายการที่ยังไม่ได้ขึ้นบัญชี (ไม่มีเน็ต?) ถ้าออกตอนนี้รายการเหล่านี้จะหาย` : 'งานทั้งหมดอยู่ในบัญชีแล้ว · เครื่องนี้จะถูกล้าง เข้าสู่ระบบอีกครั้งงานจะกลับมา',
     ok: 'ออกจากระบบ', danger: !!pending });
   if (!ok) return;
+  app.leaving = true; // ออกเอง ไม่ใช่หลุด → ไม่ต้องโชว์ "เข้าสู่ระบบอีกครั้ง" ระหว่างล้างเครื่อง
   await app.cloud.signOut();
   await wipeDevice();
 }
@@ -74,8 +77,9 @@ async function signOut() {
 async function deleteAccount() {
   const ok = await confirmBox({ title: 'ลบบัญชีถาวร?', body: 'บัญชี งาน วิชา โน้ต และรูปทั้งหมดบนคลาวด์จะถูกลบ กู้คืนไม่ได้ · งานในเครื่องนี้จะถูกล้างด้วย', ok: 'ลบบัญชีถาวร', danger: true });
   if (!ok) return;
+  app.leaving = true;
   try { await app.cloud.deleteAccount(); }
-  catch (e) { toast(e.offline ? 'ต้องต่อเน็ตก่อนจึงจะลบบัญชีได้' : `ลบบัญชีไม่สำเร็จ: ${e.message}`); return; }
+  catch (e) { app.leaving = false; toast(e.offline ? 'ต้องต่อเน็ตก่อนจึงจะลบบัญชีได้' : `ลบบัญชีไม่สำเร็จ: ${e.message}`); return; }
   await wipeDevice();
 }
 

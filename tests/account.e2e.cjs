@@ -162,6 +162,11 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   refreshDead = false;
 
   // B ออกจากระบบ → ล้างเครื่อง → หน้าเข้าสู่ระบบ
+  check('หน้าฉันมีปุ่มออกจากระบบให้เห็นเลย (ไม่ต้องเปิดกล่องบัญชี)', await B.page.locator('#me-out').isVisible());
+  await B.page.locator('#me-out').scrollIntoViewIfNeeded(); await shot(B.page, 'acc-5b-me-signout');
+  await B.page.click('#me-out'); await wait(600);
+  check('กดออกจากระบบ → ถามยืนยันก่อน ยังไม่ออก', await B.page.locator('.confirm').isVisible() && await B.page.evaluate(() => !!localStorage.getItem('sabaii-auth')));
+  await B.page.locator('.confirm button').first().click(); await wait(300);
   await B.page.getByText(NAME).first().click(); await wait(400);
   await B.page.click('#acc-out'); await wait(600);
   await shot(B.page, 'acc-6-signout-confirm');
