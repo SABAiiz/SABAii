@@ -1555,3 +1555,24 @@ body.ns-4 #stage .nitem.page .zoom { inset: 12px 12px 52px; border-radius: 2px; 
 .pane-note .pills.seg6 { grid-template-columns: repeat(4, 1fr); }
 body.ns-3 .pane-note .tk-b .cta { white-space: nowrap; min-width: 0; }
 @media (max-width: 380px) { .pane-note .pill.sq { width: 42px; } .pane-note .tk-b { gap: 6px; } body.ns-3 .pane-note .tk-b .cta { font-size: 15px; padding: 0 10px; gap: 4px; } }
+
+/* 0.12 บัญชี (เข้าสู่ระบบด้วย Google) และซิงก์ */
+.gbtn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 52px; margin: 14px 0 4px; padding: 0 18px;
+  border: 1.5px solid #DADCE0; border-radius: 999px; background: #fff; color: #1F1F1F; font: 600 16px var(--disp); }
+.gbtn span { display: grid; width: 22px; height: 22px; } .gbtn svg { width: 22px; height: 22px; }
+.gbtn:active { background: #F6F8FC; } .gbtn:disabled { opacity: .6; }
+.accnote { margin-top: 12px; font-size: 13px; }
+.ferr { color: var(--error); font-size: 14px; margin: 6px 0 0; }
+.ferr:empty { display: none; }
+.accuser { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.accuser b { display: block; word-break: break-all; } .accuser small { display: block; color: var(--text-2); font-size: 13px; word-break: break-all; }
+.avatar { position: relative; overflow: hidden; }
+.avatar img, .accpic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.mi.accpic { position: relative; overflow: hidden; border-radius: 50%; background: var(--blue-light); color: var(--blue); font-weight: 700; display: grid; place-items: center; }
+.accsync { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; font-weight: 600; }
+.accsync small { flex-basis: 100%; color: var(--text-2); font-weight: 500; font-size: 13px; }
+.accsync .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--text-2); }
+.accsync .dot.ok { background: #16B76A; } .accsync .dot.busy { background: var(--blue); animation: accpulse 1s infinite alternate; } .accsync .dot.warn { background: #F4A340; }
+@keyframes accpulse { to { opacity: .3; } }
+.btn span svg { width: 18px; height: 18px; vertical-align: -3px; }
+.list-btn.dangertext .lk { color: var(--error); }

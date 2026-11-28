@@ -1,7 +1,15 @@
-# SABAii.com — รุ่น 0.11.1 (ในเครื่อง)
+# SABAii.com — รุ่น 0.12.0 (ในเครื่อง + บัญชี Google)
 
 แอปจัดการงานสำหรับนักเรียน · **แอปใหม่ทั้งหมด ไม่ใช้โค้ด ข้อมูล หรือชื่อของแอปเดิมในราก repo** (เจ้าของสั่ง 16 พ.ย. 69 — ห้ามโยงกัน)
 **เว็บจริง: https://sabaii.vercel.app/** (หน้าแนะนำ) → `/app/` (แอป) — Vercel สร้างเว็บใหม่เองทุกครั้งที่ merge เข้า `main` (`vercel.json` → `scripts/build-site.sh` → `dist/`) · ลิงก์ทดลองบน claude.ai (อัปเป็น 0.5.0 แล้ว 19 พ.ย. 69): https://claude.ai/artifact/47pz99QLbKfpoZAbvJtaoK (ส่วนตัว — เปิดได้เฉพาะเจ้าของจนกว่าจะแชร์) · หน้าของลิงก์คือ `artifact.html`
+
+**0.12.0 (28 พ.ย. 69):** **เข้าสู่ระบบด้วย Google + ซิงก์** — หน้าฉัน → หมวด "บัญชี" → ปุ่ม Google → เลือกบัญชี → กลับมาที่แอป ซิงก์เอง · ไม่เข้าสู่ระบบก็ใช้ได้ครบเหมือนเดิม · งาน วิชา โน้ต/รูป ค่าตั้ง **และสมุดจด** (เล่ม + หน้า: หัวหน้าเป็นแถว · เนื้อหาเป็นไฟล์ `page-<id>.json` · รูปในหน้าเป็นไฟล์รูปแยก) · งานที่มีอยู่ก่อนรุ่นนี้ขึ้นบัญชีตอนเข้าสู่ระบบครั้งแรก · ใครแก้ทีหลังชนะ · ออฟไลน์เก็บคิวไว้ส่งทีหลัง · ออกจากระบบ = ล้างเครื่อง · ลบบัญชีถาวรได้ · ต่อยอดจากงานขั้น 1 ที่ไม่เคย merge (`claude/upbeat-fermi-ge5pth` — อีเมล + รหัส 6 หลัก ถูกแทนด้วย Google)
+- โค้ด: `src/data/cloud.js` (fetch ล้วน · Google OAuth แบบ PKCE: `googleUrl()` → `/auth/v1/authorize` · กลับมา `?code=` → `finishRedirect()` → `/auth/v1/token?grant_type=pkce`) · `src/data/sync.js` · `src/features/account.js` · SQL `supabase/migrations/` (0002 ใส่ในโปรเจกต์ `sabaii` แล้ว)
+- **ต้องตั้งค่าเองครั้งเดียว ก่อนปุ่มจะใช้ได้จริง** (ยังไม่ตั้ง = กดแล้วขึ้น "ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้"):
+  1. Google Cloud Console → APIs & Services → OAuth consent screen (External · ชื่อแอป SABAii) → Credentials → Create OAuth client ID → **Web application** → Authorized redirect URIs: `https://mojdvfzalfemenpxsoub.supabase.co/auth/v1/callback`
+  2. Supabase → โปรเจกต์ `sabaii` → Authentication → Sign In / Providers → **Google** → เปิด · ใส่ Client ID + Client Secret จากข้อ 1
+  3. Supabase → Authentication → URL Configuration → Site URL `https://sabaii.vercel.app/app/` · Redirect URLs เพิ่ม `https://sabaii.vercel.app/app/` และ `http://localhost:8765/` (ลองในเครื่อง)
+- เทสต์: `node tests/account.e2e.cjs` (Supabase + Google ปลอม · 2 เครื่อง) 13/13 · `node --test tests/*.test.mjs` 78/78 · e2e เดิม 90/90 · สมุด 51/51
 
 **0.11.1 (27 พ.ย. 69):** **หน้าในสมุด → โน้ตของงาน** (หน้าหลัก ดึงลง) — ปุ่มเพิ่มโน้ตมี 4 อันแถวเดียวทุกแบบหน้าโน้ต: รูป · ข้อความ · เสียง · **สมุด** → "เขียนหน้าใหม่" (หน้าใหม่ในสมุดวิชาของงาน หัวข้อ = ชื่องาน ขึ้นสารบัญเอง · งานไม่มีวิชา = โปรเจกต์ "โน้ตทั่วไป") / "เลือกหน้าที่มีอยู่" · ในหน้าเขียน เมนู ⋯ → **ส่งไปโน้ตของงาน** (งานวิชาเดียวกันขึ้นก่อน) · โน้ตชนิดใหม่ `kind: 'page'` (`page_id`) = ลิงก์ ไม่ก๊อป → การ์ดในโน้ตหน้างานเป็นภาพย่อสดของหน้า แตะ = เปิดเขียนต่อ ปิดแล้วอยู่ที่เดิม · ลบหน้า/ลบเล่ม = โน้ตที่ผูกหายตาม · สำรองข้อมูลรวมลิงก์ · ภาพ `mockups/sabaii-notebook-to-task.jpg`
 
@@ -122,7 +130,8 @@ python3 -m http.server 8765
 | หน้างาน: ปฏิทิน + การ์ดวิชา + หน้าวิชา | ✅ | ✅ | ✅ | |
 | หน้าฉัน | ✅ | ✅ | สรุป · ตัวอย่าง · ซ่อนวิชา ✅ · ที่เหลือ ❌ | |
 | ทำงานออฟไลน์ (IndexedDB + service worker) | ✅ | ✅ | ข้อมูลหลังเปิดใหม่ ✅ · service worker ต้องรันกับเซิร์ฟเวอร์ | |
-| งานซ้ำ · แจ้งเตือน · บัญชี · Cloud Sync · AI · OCR | ❌ | ❌ | ❌ | ยังไม่ทำ |
+| บัญชี (Google) · Cloud Sync | ✅ | ✅ | ✅ เซิร์ฟเวอร์ปลอม | ต้องตั้ง Google provider ในแดชบอร์ด Supabase ก่อน · ยังไม่ได้ลองกับ Google จริง |
+| งานซ้ำ · แจ้งเตือน · AI · OCR | ❌ | ❌ | ❌ | ยังไม่ทำ (แจ้งเตือน = ขั้นถัดไป) |
 | ความเร็ว (LCP/INP/CLS) | — | — | ❌ | **ยังไม่ได้วัด** |
 
 ## โครงสร้าง
