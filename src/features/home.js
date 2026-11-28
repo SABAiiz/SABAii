@@ -9,6 +9,7 @@ const DOWL = ['อาทิตย์', 'จันทร์', 'อังคาร
 import { addTask, addNote, editTask, noteEl } from './add.js';
 import { notePane } from './notestyle.js';
 import { initHandsfree, stopHandsfree } from './handsfree.js';
+import { withPhoto } from './account.js';
 
 let sheet, paneHome, paneNote, stage;
 const LOW = 300;
@@ -286,7 +287,7 @@ function renderHome() {
   const input = h('input', { id: 'home-q', type: 'search', placeholder: 'ค้นหางาน...', value: hs.q, 'aria-label': 'ค้นหางาน', autocomplete: 'off', oninput: e => { hs.q = e.target.value; renderHome(); } });
   const empty = !S().tasks.some(t => !t.deleted_at && t.status !== 'done');
   paneHome.replaceChildren(
-    h('div.brandrow', h('span.hdate', (d => `${DOWL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`)(new Date())), h('a.avatar.grad', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1))),
+    h('div.brandrow', h('span.hdate', (d => `${DOWL[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}`)(new Date())), withPhoto(h('a.avatar.grad', { href: '#/me', 'aria-label': 'หน้าฉัน' }, (name || 'ฉ').slice(0, 1)))),
     h('h1.big', name ? [h('span.g', `${name},`), h('br')] : '', 'จดงานอะไรดี?'),
     h('div.tiles',
       tile('speak', 'พูด', 'พูดเอง หรือฟังครู', () => addTask('voice')),

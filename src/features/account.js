@@ -51,7 +51,11 @@ function accountModal() {
 
 /** รูปโปรไฟล์ Google · โหลดไม่ได้ (ออฟไลน์) → ตัวอักษรแรก */
 export function avatarEl(u, cls = 'span.avatar') {
-  const el = h(cls, (u?.name || u?.email || '?').slice(0, 1).toUpperCase());
+  return withPhoto(h(cls, (u?.name || u?.email || '?').slice(0, 1).toUpperCase()), u);
+}
+
+/** ใส่รูปโปรไฟล์ Google ทับตัวอักษรใน el (ถ้ามี) · รูปเสีย → เหลือตัวอักษรเดิม */
+export function withPhoto(el, u = app.cloud?.user()) {
   if (u?.avatar) { const img = h('img', { src: u.avatar, alt: '', referrerpolicy: 'no-referrer' }); img.onerror = () => img.remove(); el.append(img); }
   return el;
 }
