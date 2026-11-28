@@ -1597,7 +1597,7 @@ body.ns-3 .pane-note .tk-b .cta { white-space: nowrap; min-width: 0; }
 
 /* 0.13.2 หน้าเข้าสู่ระบบ (แบบ D + ปุ่มกรมท่าแบบ B) — พื้นเทาอ่อน · กล่องขาวกลางจอ · รูปงาน 3 ใบเหนือกล่อง */
 html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html.gated #page { visibility: hidden; }
-#login { --ui: "Anuphan", "Noto Sans Thai Looped", sans-serif; --ez: cubic-bezier(.2,.8,.2,1);
+#login { --ui: "Inter", "Noto Sans Thai Looped", "Thonburi", "Leelawadee UI", Tahoma, sans-serif; --ez: cubic-bezier(.2,.8,.2,1);
   position: fixed; inset: 0; z-index: 1000; overflow-y: auto; display: flex; flex-direction: column; align-items: center;
   padding: max(26px, env(safe-area-inset-top)) 18px max(22px, var(--safe-b)); background: #F4F5F8; color: var(--ink); font-family: var(--ui); }
 .lg-top { display: flex; align-items: center; gap: 8px; margin-bottom: 92px; font: 700 17px/1 var(--ui); }
