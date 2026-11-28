@@ -1,5 +1,5 @@
 // SABAii: ส่งแจ้งเตือนตอนเย็นก่อนวันส่ง (Web Push)
-//   • pg_cron ทุก 15 นาที → POST พร้อม x-cron-key → push_due() → ส่งให้เครื่องที่ถึงเวลา → push_mark()
+//   • pg_cron ทุก 5 นาที → POST พร้อม x-cron-key → push_due() → ส่งให้เครื่องที่ถึงเวลา → push_mark()
 //   • ปุ่ม "ส่งแจ้งเตือนทดสอบ" ในแอป → POST { test: true } พร้อม token ผู้ใช้ → ส่งไปทุกเครื่องของคนนั้น
 //   กุญแจทั้งหมดอยู่ใน Vault (push_config) · ครั้งแรกสร้างกุญแจ VAPID เอง
 // deploy: verify_jwt = false (ฟังก์ชันตรวจสิทธิ์เอง: cron key หรือ token ผู้ใช้)

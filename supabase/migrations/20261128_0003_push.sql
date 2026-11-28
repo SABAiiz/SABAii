@@ -1,6 +1,6 @@
 -- SABAii หลังบ้าน ขั้น 3 (0.14): แจ้งเตือนตอนเย็นก่อนวันส่ง (Web Push · เด้งแม้ปิดแอป)
 --   push_subs   = เครื่องที่เปิดแจ้งเตือน (1 แถว / 1 เครื่อง) · เวลาเตือน + เขตเวลาของเครื่อง
---   ทุก 15 นาที pg_cron → Edge Function push-reminders → push_due() บอกว่าเครื่องไหนถึงเวลา + งานที่ส่ง/สอบพรุ่งนี้
+--   ทุก 5 นาที pg_cron → Edge Function push-reminders → push_due() บอกว่าเครื่องไหนถึงเวลา + งานที่ส่ง/สอบพรุ่งนี้
 --   กุญแจ: push_cron_key สร้างในฐานข้อมูล · กุญแจ VAPID ฟังก์ชันสร้างเองครั้งแรก — ทั้งหมดอยู่ใน Vault ไม่อยู่ในโค้ด
 
 create extension if not exists pg_cron;
@@ -126,9 +126,9 @@ do $$ begin
   end if;
 end $$;
 
--- ทุก 15 นาที เรียก Edge Function
+-- ทุก 5 นาที เรียก Edge Function (0.15: ผู้ใช้ตั้งเวลาเองได้ทุกนาที → ช้าสุด 5 นาที)
 select cron.unschedule('sabaii-push-reminders') where exists (select 1 from cron.job where jobname = 'sabaii-push-reminders');
-select cron.schedule('sabaii-push-reminders', '*/15 * * * *', $$
+select cron.schedule('sabaii-push-reminders', '*/5 * * * *', $$
   select net.http_post(
     url := 'https://mojdvfzalfemenpxsoub.supabase.co/functions/v1/push-reminders',
     headers := jsonb_build_object('Content-Type', 'application/json',

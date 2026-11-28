@@ -253,3 +253,18 @@ test('วันต่อเนื่อง: นับย้อนจากวั
   assert.equal(streakOf(D('2026-11-24'), '2026-11-26'), 0);
   assert.equal(streakOf(D('2026-12-01', '2026-11-30'), '2026-12-01'), 2); // ข้ามเดือน
 });
+
+test('กระดิ่ง: เรื่องด่วน = เลยกำหนด · สอบภายใน 3 วัน · ส่งวันนี้/พรุ่งนี้ · ข้ามงานเสร็จ/ลบ/ไม่มีวัน', async () => {
+  const { alertsOf } = await import('../src/domain/tasks.js');
+  const td = '2026-11-28';
+  const t = (id, due_date, extra = {}) => ({ id, title: id, due_date, status: 'todo', type: 'homework', deleted_at: null, ...extra });
+  const list = alertsOf([
+    t('later', '2026-12-05'), t('tmr', '2026-11-29', { due_time: '08:00' }), t('now', '2026-11-28'), t('late', '2026-11-26'),
+    t('exam3', '2026-12-01', { type: 'exam' }), t('exam4', '2026-12-02', { type: 'exam' }), t('exam1', '2026-11-29', { type: 'exam' }),
+    t('done', '2026-11-28', { status: 'done' }), t('gone', '2026-11-28', { deleted_at: '2026-11-27T00:00:00Z' }), t('nodate', null),
+  ], td);
+  assert.deepEqual(list.map(a => a.id), ['late', 'exam1', 'exam3', 'now', 'tmr']);
+  assert.deepEqual(list.map(a => a.kind), ['overdue', 'exam', 'exam', 'today', 'tomorrow']);
+  assert.equal(list[0].days, -2);
+  assert.equal(list.find(a => a.id === 'tmr').key, 'tmr:tomorrow:2026-11-29');
+});

@@ -1635,3 +1635,37 @@ html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html
 .nwarn { padding: 12px 14px; border-radius: 12px; background: #FFF4D1; color: #6B4A00; font-size: 14.5px; line-height: 1.5; }
 .nios ol { margin: 10px 0 6px; padding-left: 22px; line-height: 1.7; font-size: 15px; }
 .nw { white-space: nowrap; }
+
+/* 0.15 กระดิ่งหน้าหลัก + แผ่นแจ้งเตือน */
+.hright { display: flex; align-items: center; gap: 10px; }
+.bell { position: relative; width: 38px; height: 38px; border-radius: 50%; background: var(--surface); color: var(--ink); display: grid; place-items: center; flex: none; }
+.bell svg { width: 21px; height: 21px; }
+.bell:active { transform: scale(.94); }
+.bell i { position: absolute; top: -3px; right: -4px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 10px; background: var(--error); color: #fff;
+  font: 700 11px/19px var(--disp, inherit); font-style: normal; text-align: center; box-shadow: 0 0 0 2px #fff; }
+.bl-list { display: flex; flex-direction: column; }
+.bl-row, .bl-set { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 0; text-align: left; color: var(--ink); }
+.bl-row + .bl-row { border-top: 1px solid var(--border); }
+.bl-tag { width: 42px; height: 42px; border-radius: 14px; flex: none; display: grid; place-items: center; font-weight: 700; font-size: 13px;
+  color: var(--c); background: color-mix(in srgb, var(--c) 13%, #fff); }
+.bl-t { flex: 1; min-width: 0; }
+.bl-t b { display: block; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bl-t small { display: block; margin-top: 1px; font-size: 13.5px; color: var(--text-2); }
+.bl-row.new .bl-t b::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 7px; border-radius: 50%; background: var(--error); vertical-align: 3px; }
+.bl-row .chev, .bl-set .chev { color: #A3ACBF; } .bl-row .chev svg, .bl-set .chev svg { width: 18px; height: 18px; }
+.bl-empty { display: grid; justify-items: center; gap: 4px; padding: 18px 8px 22px; text-align: center; }
+.bl-empty > span { width: 48px; height: 48px; border-radius: 50%; background: #E3F6EC; color: #1E8A52; display: grid; place-items: center; margin-bottom: 6px; }
+.bl-empty > span svg { width: 24px; height: 24px; } .bl-empty b { font-size: 17px; } .bl-empty small { color: var(--text-2); font-size: 13.5px; line-height: 1.5; max-width: 280px; }
+.bl-set { margin-top: 8px; padding: 12px 14px; border-radius: 16px; background: var(--surface); }
+.bl-set > span:first-child { width: 36px; height: 36px; border-radius: 12px; background: #fff; display: grid; place-items: center; flex: none; }
+.bl-set > span:first-child svg { width: 19px; height: 19px; }
+.bl-set em { font-style: normal; font-size: 13.5px; color: var(--text-2); white-space: nowrap; }
+/* 0.15 ตั้งเวลาแจ้งเตือนเอง: ตัวเลขใหญ่ + / − */
+.npick { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 4px 0 14px; }
+.np-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--surface); color: var(--ink); font: 600 26px/1 var(--disp, inherit); }
+.np-btn:active { transform: scale(.94); }
+.np-time { position: relative; padding: 2px 10px; border-radius: 14px; cursor: pointer; }
+.np-time b { font: 700 54px/1.1 var(--disp, inherit); letter-spacing: -.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.np-native { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.np-time:focus-within { outline: 2.5px solid var(--blue); outline-offset: 2px; }
+.np-hint { margin: -4px 0 10px; text-align: center; font-size: 12.5px; color: var(--text-2); }

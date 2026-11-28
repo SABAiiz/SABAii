@@ -1,12 +1,14 @@
 // แจ้งเตือนก่อนวันส่ง (0.14) — Web Push · เด้งแม้ปิดแอป
 //   เปิด: ขออนุญาต → pushManager.subscribe (กุญแจสาธารณะจาก push_public_key) → push_subscribe (เวลาเตือน + เขตเวลา)
-//   เซิร์ฟเวอร์ (supabase/functions/push-reminders) เช็กทุก 15 นาที → ถึงเวลาเตือนของเครื่องไหน ส่งงาน/สอบ "พรุ่งนี้" ที่ยังไม่เสร็จ
+//   เซิร์ฟเวอร์ (supabase/functions/push-reminders) เช็กทุก 5 นาที → ถึงเวลาเตือนของเครื่องไหน ส่งงาน/สอบ "พรุ่งนี้" ที่ยังไม่เสร็จ
 //   เปิด/ปิด + เวลา = ของเครื่องนี้ (localStorage) · iPhone ต้องเพิ่มลงหน้าจอโฮมก่อน (iOS 16.4+)
 import { h, put, toast, openModal } from '../ui/kit.js';
 import { app } from './shared.js';
 
 const ON_KEY = 'sabaii-push', TIME_KEY = 'sabaii-push-time';
-export const TIMES = ['17:00', '18:00', '19:00', '20:00', '21:00'];
+export const TIMES = ['18:00', '19:00', '20:00', '21:00']; // ทางลัด · ตั้งเวลาอื่นได้ด้วย +/− หรือแตะตัวเลข
+/** เลื่อนเวลา HH:MM ทีละนาที (วนรอบ 24 ชม.) */
+export const shiftTime = (t, m) => { const [H, M] = t.split(':').map(Number), x = ((H * 60 + M + m) % 1440 + 1440) % 1440; return `${String(Math.floor(x / 60)).padStart(2, '0')}:${String(x % 60).padStart(2, '0')}`; };
 const ls = {
   get: k => { try { return localStorage.getItem(k); } catch { return null; } },
   set: (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
@@ -84,18 +86,30 @@ export async function refreshPush() {
 
 export function notifyModal() {
   const body = h('div');
+  let saveTimer = null;
   const done = () => { paint(); app.refresh?.(); };
   const paint = () => {
     const st = support(), on = notifyOn();
     const err = h('p.ferr', { role: 'alert' });
-    const times = h('div.ntimes', { role: 'radiogroup', 'aria-label': 'เตือนตอน' }, TIMES.map(t => h('button', {
-      type: 'button', role: 'radio', 'aria-checked': String(t === notifyTime()),
-      onclick: async () => {
-        if (t === notifyTime()) return;
-        ls.set(TIME_KEY, t);
-        if (notifyOn()) { try { await enable(t); toast(`เปลี่ยนเป็นเตือนตอน ${t} แล้ว`); } catch (e) { toast(e.message); } }
-        done();
-      } }, t)));
+    // ตั้งเวลา: ตัวเลขใหญ่ + / − ทีละ 15 นาที · แตะตัวเลข = ตัวเลือกเวลาของเครื่อง (นาทีไหนก็ได้) · ทางลัด 4 เวลา
+    //   เปิดแจ้งเตือนอยู่ = บันทึกขึ้นเซิร์ฟเวอร์เอง (รอให้หยุดกดก่อน 0.7 วินาที)
+    const setTime = t => {
+      if (!/^\d\d:\d\d$/.test(t || '') || t === notifyTime()) return;
+      ls.set(TIME_KEY, t); paint();
+      clearTimeout(saveTimer);
+      if (!notifyOn()) { app.refresh?.(); return; }
+      saveTimer = setTimeout(async () => {
+        try { await enable(t); toast(`จะเตือนตอน ${t}`); } catch (e) { toast(e.message); }
+        app.refresh?.();
+      }, 700);
+    };
+    const native = h('input.np-native', { type: 'time', step: 300, value: notifyTime(), 'aria-label': 'ตั้งเวลาแจ้งเตือนเอง', onchange: e => setTime(e.target.value) });
+    const picker = h('div.npick',
+      h('button.np-btn', { type: 'button', id: 'nt-minus', 'aria-label': 'เร็วขึ้น 15 นาที', onclick: () => setTime(shiftTime(notifyTime(), -15)) }, '−'),
+      h('label.np-time', h('b', { id: 'nt-time', 'aria-live': 'polite' }, notifyTime()), native),
+      h('button.np-btn', { type: 'button', id: 'nt-plus', 'aria-label': 'ช้าลง 15 นาที', onclick: () => setTime(shiftTime(notifyTime(), 15)) }, '+'));
+    const times = h('div.ntimes', { role: 'radiogroup', 'aria-label': 'เวลาที่ใช้บ่อย' }, TIMES.map(t => h('button', {
+      type: 'button', role: 'radio', 'aria-checked': String(t === notifyTime()), onclick: () => setTime(t) }, t)));
     const turnOn = h('button.btn.primary.full', { id: 'nt-on', onclick: async () => {
       turnOn.disabled = true; turnOn.textContent = 'รอสักครู่…'; err.textContent = '';
       try { await enable(); toast(`เปิดแจ้งเตือนแล้ว เตือนตอน ${notifyTime()}`); done(); }
@@ -117,7 +131,7 @@ export function notifyModal() {
       h('p.muted', 'วันไหนไม่มีงานพรุ่งนี้ ก็ไม่เตือน'),
       st === 'ios-install' ? iosHelp()
         : st !== 'ok' ? h('p.nwarn', MSG[st])
-        : [h('p.flabel', 'เตือนตอน'), times, err, on ? h('div.nacts', test, off) : turnOn]);
+        : [h('p.flabel', 'เตือนตอนกี่โมง'), picker, times, h('p.np-hint', 'แตะตัวเลขเพื่อเลือกนาทีเอง'), err, on ? h('div.nacts', test, off) : turnOn]);
   };
   openModal({ title: 'แจ้งเตือนก่อนวันส่ง', body });
   paint();

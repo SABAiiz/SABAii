@@ -73,8 +73,13 @@ const shot = async (page, n) => { if (SHOTS) { await wait(350); await page.scree
 
   check('หน้าฉัน: แถว "แจ้งเตือนก่อนวันส่ง" = ปิด · ไม่มีการ์ด "เร็ว ๆ นี้" ของแจ้งเตือนแล้ว', (await rowValue(page)) === 'ปิด' && !(await page.locator('.soon-tile', { hasText: 'การแจ้งเตือน' }).count()));
   await page.locator('.list-btn', { hasText: 'แจ้งเตือนก่อนวันส่ง' }).click(); await wait(400);
-  check('กล่อง: อธิบาย + เลือกเวลา 5 ช่อง (19:00 เลือกไว้) + ปุ่มเปิด', await page.locator('#nt-on').isVisible() && (await page.locator('.ntimes button').count()) === 5
-    && (await page.locator('.ntimes [aria-checked="true"]').textContent()) === '19:00');
+  check('กล่อง: เวลาใหญ่ 19:00 + ปุ่ม −/+ + ทางลัด 4 เวลา + ปุ่มเปิด', await page.locator('#nt-on').isVisible() && (await page.locator('.ntimes button').count()) === 4
+    && (await page.locator('#nt-time').textContent()) === '19:00' && await page.locator('#nt-plus').isVisible() && (await page.locator('.ntimes [aria-checked="true"]').textContent()) === '19:00');
+  await page.click('#nt-plus'); await page.click('#nt-plus'); await page.click('#nt-minus'); await wait(200);
+  check('ยังไม่เปิด: + + − = 19:15 · ไม่ยิงเซิร์ฟเวอร์', (await page.locator('#nt-time').textContent()) === '19:15' && !calls.some(c => c.p === '/rest/v1/rpc/push_subscribe'));
+  await page.locator('.np-native').fill('06:45'); await page.locator('.np-native').dispatchEvent('change'); await wait(200);
+  check('แตะตัวเลข = ตั้งนาทีเองได้ (06:45)', (await page.locator('#nt-time').textContent()) === '06:45');
+  await page.locator('.ntimes button', { hasText: '19:00' }).click(); await wait(200);
   await shot(page, 'nt-1-off');
   await page.click('#nt-on'); await wait(800);
   const sub1 = calls.find(c => c.p === '/rest/v1/rpc/push_subscribe');
@@ -82,9 +87,12 @@ const shot = async (page, n) => { if (SHOTS) { await wait(350); await page.scree
     && sub1 && sub1.body.p_endpoint === 'https://push.example/dev1' && sub1.body.p_p256dh === 'P256' && sub1.body.p_auth === 'AUTH' && sub1.body.p_remind_at === '19:00' && sub1.body.p_tz === 'Asia/Bangkok' && /^Bearer /.test(sub1.auth), JSON.stringify(sub1?.body));
   check('เปิดแล้ว: ปุ่มทดสอบ + ปิด · แถวในหน้าฉัน = "เปิด 19:00"', await page.locator('#nt-test').isVisible() && await page.locator('#nt-off').isVisible() && (await rowValue(page)) === 'เปิด 19:00');
   await shot(page, 'nt-2-on');
-  await page.locator('.ntimes button', { hasText: '20:00' }).click(); await wait(600);
+  await page.locator('.ntimes button', { hasText: '20:00' }).click(); await wait(1200);
   const sub2 = calls.filter(c => c.p === '/rest/v1/rpc/push_subscribe').at(-1);
   check('เปลี่ยนเวลาเป็น 20:00 → ส่งเวลาใหม่ขึ้นเซิร์ฟเวอร์ · แถว = "เปิด 20:00"', sub2 !== sub1 && sub2.body.p_remind_at === '20:00' && (await rowValue(page)) === 'เปิด 20:00');
+  await page.click('#nt-plus'); await page.click('#nt-plus'); await wait(1300);
+  const sub3 = calls.filter(c => c.p === '/rest/v1/rpc/push_subscribe');
+  check('เปิดอยู่ กด + สองครั้งติดกัน → บันทึกครั้งเดียว 20:30 (รอหยุดกด)', sub3.at(-1).body.p_remind_at === '20:30' && sub3.at(-2) === sub2 && (await rowValue(page)) === 'เปิด 20:30');
   await page.click('#nt-test'); await wait(600);
   const t = calls.find(c => c.p === '/functions/v1/push-reminders');
   check('ส่งแจ้งเตือนทดสอบ → เรียก Edge Function พร้อม token ผู้ใช้ { test: true }', t && t.body.test === true && /^Bearer /.test(t.auth));
@@ -92,11 +100,42 @@ const shot = async (page, n) => { if (SHOTS) { await wait(350); await page.scree
   const before = calls.filter(c => c.p === '/rest/v1/rpc/push_subscribe').length;
   await page.keyboard.press('Escape'); await page.reload(); await page.waitForSelector('.mecard'); await wait(1200);
   const again = calls.filter(c => c.p === '/rest/v1/rpc/push_subscribe');
-  check('เปิดแอปใหม่ → ส่งข้อมูลเครื่องซ้ำเงียบ ๆ (เวลา 20:00) · ยังเปิดอยู่', again.length === before + 1 && again.at(-1).body.p_remind_at === '20:00' && (await rowValue(page)) === 'เปิด 20:00');
+  check('เปิดแอปใหม่ → ส่งข้อมูลเครื่องซ้ำเงียบ ๆ (เวลา 20:30) · ยังเปิดอยู่', again.length === before + 1 && again.at(-1).body.p_remind_at === '20:30' && (await rowValue(page)) === 'เปิด 20:30');
   await page.locator('.list-btn', { hasText: 'แจ้งเตือนก่อนวันส่ง' }).click(); await wait(400);
   await page.click('#nt-off'); await wait(600);
   check('ปิด → ลบเครื่องจากเซิร์ฟเวอร์ + ยกเลิกในเบราว์เซอร์ · แถว = ปิด', calls.some(c => c.p === '/rest/v1/rpc/push_unsubscribe' && c.body.p_endpoint === 'https://push.example/dev1')
     && (await page.evaluate(() => window.__unsub)) === 1 && (await rowValue(page)) === 'ปิด');
+
+  // ---- กระดิ่งหน้าหลัก ----
+  await page.goto(BASE + '#/home'); await page.waitForSelector('.tiles'); await wait(400);
+  check('กระดิ่ง: ไม่มีงาน = ไม่มีเลขแดง', await page.locator('.bell').isVisible() && !(await page.locator('.bell i').count()));
+  await page.click('.bell'); await wait(400);
+  check('กระดิ่ง: ไม่มีเรื่องด่วน = บอกตรง ๆ + ลิงก์ตั้งเวลา (เพิ่งปิดแจ้งเตือน = "ปิด")', await page.getByText('ไม่มีเรื่องด่วน').isVisible() && (await page.locator('.bl-set em').textContent()) === 'ปิด');
+  await shot(page, 'bl-0-empty');
+  await page.keyboard.press('Escape'); await wait(300);
+  await page.evaluate(() => { const ymd = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10).replace(/^(.{10}).*/, '$1'); };
+    const loc = n => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+    return window.__sabaii.addTasks([
+      { title: 'สอบย่อยไฟฟ้า', subject_name: 'ฟิสิกส์', type: 'exam', due_date: loc(1), due_time: '10:00' },
+      { title: 'แบบฝึกหัดบทที่ 3', subject_name: 'คณิตศาสตร์', due_date: loc(1), due_time: '08:00' },
+      { title: 'รายงานที่ลืมส่ง', subject_name: 'สังคมศึกษา', due_date: loc(-2) },
+      { title: 'ท่องศัพท์ Unit 5', subject_name: 'ภาษาอังกฤษ', due_date: loc(6) }]); });
+  await wait(500);
+  check('มีเรื่องด่วน 3 เรื่อง (เลยกำหนด + สอบพรุ่งนี้ + ส่งพรุ่งนี้ · งานอีก 6 วันไม่นับ) → เลขแดง 3', (await page.locator('.bell i').textContent()) === '3');
+  await shot(page, 'bl-1-badge');
+  await page.click('.bell'); await wait(400);
+  const rows = await page.locator('.bl-row .bl-t b').allTextContents();
+  check('แผ่นแจ้งเตือน: เรียง เลยกำหนด → สอบ → ส่ง · มีจุดแดง "ใหม่"', rows.length === 3 && /รายงานที่ลืมส่ง/.test(rows[0]) && /สอบย่อยไฟฟ้า/.test(rows[1]) && /แบบฝึกหัด/.test(rows[2]) && (await page.locator('.bl-row.new').count()) === 3, rows.join(' | '));
+  await shot(page, 'bl-2-panel');
+  check('เปิดดูแล้ว → เลขแดงหาย', !(await page.locator('.bell i').count()));
+  await page.locator('.bl-row').nth(1).click(); await wait(900);
+  check('แตะเรื่อง → เปิดโน้ตของงานนั้น', await page.evaluate(() => document.body.classList.contains('note-mode')) && /สอบย่อยไฟฟ้า/.test(await page.locator('#pane-note').textContent()));
+  await page.goto(BASE + '#/home'); await page.waitForSelector('.tiles'); await wait(300);
+  await page.click('.bell'); await wait(400);
+  check('เปิดอีกรอบ: เรื่องเดิมไม่ขึ้นจุด "ใหม่" แล้ว', (await page.locator('.bl-row').count()) === 3 && !(await page.locator('.bl-row.new').count()));
+  await page.click('.bl-set'); await wait(800);
+  check('ตั้งเวลาแจ้งเตือน (จากกระดิ่ง) → เปิดกล่องตั้งเวลา', await page.locator('#nt-time').isVisible());
+  await page.keyboard.press('Escape'); await wait(300);
 
   // iPhone (Safari ไม่ได้เพิ่มลงหน้าจอโฮม)
   const I = await device(browser, { ...devices['iPhone 13'], serviceWorkers: 'block' });

@@ -125,3 +125,22 @@ export function streakOf(doneDays, today) {
   while (doneDays.has(d)) { n++; d = addDaysYMD(d, -1); }
   return n;
 }
+
+/** เรื่องด่วนสำหรับกระดิ่งหน้าหลัก (0.15) — งานที่ยังไม่เสร็จ:
+ *   overdue = เลยกำหนด · exam = สอบภายใน 3 วัน (รวมวันนี้) · today = ส่งวันนี้ · tomorrow = ส่งพรุ่งนี้
+ *   เรียง: เลยกำหนด → สอบใกล้สุด → ส่งวันนี้ → ส่งพรุ่งนี้ · key ใช้จำว่า "เห็นแล้ว" (เลื่อนวันส่ง = เรื่องใหม่) */
+export function alertsOf(tasks, today) {
+  const RANK = { overdue: 0, exam: 1, today: 2, tomorrow: 3 };
+  const out = [];
+  for (const t of tasks) {
+    if (!isLive(t) || t.status === 'done' || !t.due_date) continue;
+    const days = daysBetween(today, t.due_date);
+    let kind = null;
+    if (days < 0) kind = 'overdue';
+    else if (t.type === 'exam') kind = days <= 3 ? 'exam' : null;
+    else if (days === 0) kind = 'today';
+    else if (days === 1) kind = 'tomorrow';
+    if (kind) out.push({ id: t.id, task: t, kind, days, key: `${t.id}:${kind}:${t.due_date}` });
+  }
+  return out.sort((a, b) => RANK[a.kind] - RANK[b.kind] || a.days - b.days || String(a.task.due_time || '99').localeCompare(String(b.task.due_time || '99')));
+}
