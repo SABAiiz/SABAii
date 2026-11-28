@@ -1,4 +1,4 @@
-// 0.12 หน้าเขียนแบบ Canva (จอใหญ่) — ทุกอย่างเป็นชิ้นที่จับได้: แตะเลือก · ลากย้าย + เส้นช่วยจัดแนว · มุมย่อขยาย · ขอบยืด · หมุน
+// 0.14 หน้าเขียนแบบ Canva (จอใหญ่) — ทุกอย่างเป็นชิ้นที่จับได้: แตะเลือก · ลากย้าย + เส้นช่วยจัดแนว · มุมย่อขยาย · ขอบยืด · หมุน
 // รูปทรงใส่ข้อความ · เส้นเชื่อมเกาะรูปทรง (ย้ายรูปแล้วเส้นตาม) · แถบเมนูลอย (สี/พื้น/ชั้น/ทำสำเนา/ลบ) · คัดลอก/วาง · แผงทุกหน้า · ซูมออก/พอดีหน้า
 //   node tests/canva.e2e.cjs [โฟลเดอร์เก็บภาพ]
 const { chromium } = require('playwright');
@@ -11,7 +11,7 @@ const check = (name, ok, extra = '') => { results.push(ok); console.log(`${ok ? 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = require('./fake-login.cjs').autoSignIn(await chromium.launch()); // แอปต้องเข้าสู่ระบบก่อน
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block' });
   await ctx.route('http://sabaii.test/**', r => {
     let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname));

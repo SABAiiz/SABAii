@@ -11,7 +11,8 @@
 <meta name="sabaii-hand" content="src/gesture/hand.js">
 <script>/* เปิดจากไอคอนแอปบนหน้าจอโฮม (ติดตั้งไว้ตั้งแต่รุ่นก่อน) → เข้าแอปเลย ไม่ต้องผ่านหน้าแนะนำ */
 if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) location.replace(document.querySelector('meta[name="sabaii-app"]').content.split('?')[0] + location.hash);</script>
-<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Mali:wght@500;600&display=swap">
@@ -24,7 +25,7 @@ if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) lo
 
 <header class="top" id="top">
   <div class="top-in">
-    <a class="logo" href="#hero" aria-label="SABAii หน้าแรก"><img src="icon.svg" alt="" width="28" height="28"><span>SABA<b>ii</b></span></a>
+    <a class="logo" href="#hero" aria-label="SABAii หน้าแรก"><img src="icon-192.png" alt="" width="28" height="28"><span>SABA<b>ii</b></span></a>
     <nav class="links"><a href="#story">วิธีใช้</a><a href="#notes">หน้าตาโน้ต</a><a href="#why">จุดเด่น</a></nav>
     <a class="btn sm dark app-link" href="index.html">เปิดแอป</a>
   </div>
@@ -252,7 +253,7 @@ if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) lo
 </main>
 
 <!-- ปุ่มลอยล่างจอ (โผล่หลังพ้นฉากแรก) -->
-<div class="dock" aria-hidden="true"><span class="dots"><i style="--c:#7C4DFF"></i><i style="--c:#F08A24"></i><i style="--c:#1769D2"></i><i style="--c:#14A06A"></i></span><span class="dk-t">ไม่ต้องสมัคร เปิดแล้วใช้ได้เลย</span><a class="btn sm dark app-link" href="index.html" tabindex="-1">ลองใช้เลย</a></div>
+<div class="dock" aria-hidden="true"><span class="dots"><i style="--c:#7C4DFF"></i><i style="--c:#F08A24"></i><i style="--c:#1769D2"></i><i style="--c:#14A06A"></i></span><span class="dk-t">เข้าด้วย Google ครั้งเดียว ใช้ได้ทุกเครื่อง</span><a class="btn sm dark app-link" href="index.html" tabindex="-1">ลองใช้เลย</a></div>
 
 <button class="handbtn" type="button" aria-pressed="false" aria-label="ลองโบกมือ (เปิดกล้องหน้า ภาพไม่ออกจากเครื่อง)"><svg viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 00-4 0v5M14 10V4a2 2 0 00-4 0v6M10 10.5V6a2 2 0 00-4 0v8"/><path d="M18 8a2 2 0 114 0v6a8 8 0 01-8 8h-2c-2.8 0-4.5-.9-6-2.4l-3.6-3.6a2 2 0 012.8-2.8L7 15"/></svg><span>โบกมือ</span></button>
 

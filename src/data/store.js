@@ -146,6 +146,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
   /** บันทึกหน้า — ระหว่างเขียนไม่ต้องวาดทั้งแอปใหม่ (notify=false) แจ้งทีเดียวตอนออกจากหน้าเขียน */
   async function savePage(p, notify = true) {
     const v = { ...p, updated_at: iso() };
+    delete v.need_body; // ซิงก์: เขียนหน้านี้ในเครื่องแล้ว = ไม่เอาเนื้อหาจากคลาวด์มาทับ
     await db.put('pages', v);
     const i = state.pages.findIndex(x => x.id === v.id);
     if (i >= 0) state.pages[i] = v; else state.pages.push(v);
@@ -246,8 +247,18 @@ export function createStore(db, { now = () => new Date() } = {}) {
     return { added, skipped };
   }
 
+  /** ระบบซิงก์เขียนลงเครื่องเองแล้ว (ไม่ผ่านที่นี่ จะได้ไม่วนกลับไปเข้าคิวส่ง) — อัปเดตสถานะในหน่วยความจำแล้วแจ้งจอครั้งเดียว */
+  function applyRemote(changes) {
+    for (const { store: name, key, value } of changes) {
+      if (name === 'prefs') { if (value) state.prefs[key] = value.value; else delete state.prefs[key]; continue; }
+      const list = state[name], i = list.findIndex(x => x.id === key);
+      if (value) { if (i >= 0) list[i] = value; else list.push(value); } else if (i >= 0) list.splice(i, 1);
+    }
+    if (changes.length) emit();
+  }
+
   return {
-    state, load, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
+    state, load, applyRemote, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
     addTasks, patchTask, removeTask, restoreTask, purgeTask,
     addAttachment, removeAttachment, linkPage, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
     ensureSubject, updateSubject, deleteSubject,

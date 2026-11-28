@@ -89,6 +89,8 @@ button:disabled{opacity:.6;cursor:wait}
 .sec{margin:28px 0 12px;font-size:22px}
 .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
+html.embed .top{display:none}
+html.embed .wrap{padding-top:16px}
 </style>
 </head>
 <body>
@@ -144,7 +146,10 @@ const qById=id=>Q.find(q=>q.id===id);
 /* ---------- survey ---------- */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const src=(new URLSearchParams(location.search).get('src')||'').slice(0,40)||null;
+const qs=new URLSearchParams(location.search),src=(qs.get('src')||'').slice(0,40)||null;
+const embed=qs.get('embed')==='1'&&window.parent!==window;
+const tell=m=>{if(embed)try{parent.postMessage({type:'sabaii-study',...m},location.origin)}catch(e){}};
+if(embed)document.documentElement.classList.add('embed');
 let a={},i=-1,sending=false,goingBack=false,adv=null;
 const screen=$('screen'),err=$('err'),next=$('next'),back=$('back'),bar=$('bar');
 function save(){try{localStorage.setItem(LS,JSON.stringify({a,i}))}catch(e){}}
@@ -228,19 +233,21 @@ async function submit(){
     const r=await fetch(SB_URL+'/rest/v1/study_survey_responses',{method:'POST',headers:{...H,Prefer:'return=minimal'},body:JSON.stringify(body)});
     if(!r.ok)throw new Error(r.status);
     try{localStorage.removeItem(LS)}catch(e){}
+    tell({done:true});
     i=Q.length;renderDone();
   }catch(e){err.textContent='ส่งไม่สำเร็จ ลองกดอีกครั้ง หรือเช็กอินเทอร์เน็ต คำตอบยังอยู่ ไม่หาย';next.textContent='ส่งคำตอบ'}
   next.disabled=false;sending=false;
 }
-const shareUrl=location.origin+location.pathname+(src?'?src='+encodeURIComponent(src):'');
+const shareUrl=location.origin+location.pathname+(src&&!embed?'?src='+encodeURIComponent(src):'');
 function renderDone(){
   bar.hidden=true;$('prog').style.width='100%';
   screen.innerHTML=`<div class="done"><div class="big"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
   <h2>ขอบคุณมาก</h2><p>คำตอบของคุณช่วยให้เราทำแอปที่ใช้ได้จริง<br>ช่วยส่งต่อให้เพื่อนในห้องหน่อยนะ ยิ่งหลายคนยิ่งแม่น</p>
   <div class="share"><a href="https://line.me/R/share?text=${encodeURIComponent('ช่วยตอบแบบสอบถามสั้น ๆ (3 นาที) เรื่องงานเยอะ ลืมส่ง จดไม่ทัน หน่อยนะ ไม่ต้องใส่ชื่อ\n'+shareUrl)}" target="_blank" rel="noopener">ส่งต่อทาง LINE</a><button type="button" id="copyLink">คัดลอกลิงก์</button></div>
-  <p class="small" style="margin-top:22px"><a href="#" id="again">ตอบอีกครั้ง (สำหรับเพื่อนที่ใช้เครื่องนี้)</a></p></div>`;
+  ${embed?'<p style="margin-top:22px"><button type="button" class="go" id="toApp" style="width:100%">กลับไปที่แอป</button></p>':'<p class="small" style="margin-top:22px"><a href="#" id="again">ตอบอีกครั้ง (สำหรับเพื่อนที่ใช้เครื่องนี้)</a></p>'}</div>`;
   $('copyLink').onclick=()=>copy(shareUrl);
-  $('again').onclick=e=>{e.preventDefault();a={};i=-1;save();render()};
+  if(embed)$('toApp').onclick=()=>tell({close:true});
+  else $('again').onclick=e=>{e.preventDefault();a={};i=-1;save();render()};
 }
 const toast=t=>{const el=$('toast');el.textContent=t;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1800)};
 async function copy(t){try{await navigator.clipboard.writeText(t);toast('คัดลอกแล้ว')}catch(e){toast('คัดลอกไม่ได้')}}

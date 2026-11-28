@@ -2,7 +2,7 @@
 // หน้าหนึ่งกว้าง 1000 หน่วย สูง 1414 (สัดส่วน A4) — จอไหนก็ย่อ/ขยายจากหน่วยนี้ ลายมือไม่เพี้ยน
 // เส้น: { id, t: 'pen'|'hl', c: สี, w: ความหนา (หน่วย), p: [x, y, แรงกด(0–1), x, y, แรงกด, …] }
 // ข้อความ: { id, x, y, w, s: ขนาดตัวอักษร, c, v, r? } · รูป: { id, x, y, w, h, blob, r? }
-// 0.12 ชิ้นงานแบบ Canva — รูปทรง: { id, k: ชนิด, x, y, w, h, r: มุมหมุน (เรเดียน), c: สีเส้น, f: null|'tint'|'solid', sw: ความหนาเส้น, v: ข้อความในรูป, s: ขนาดตัวอักษร }
+// 0.14 ชิ้นงานแบบ Canva — รูปทรง: { id, k: ชนิด, x, y, w, h, r: มุมหมุน (เรเดียน), c: สีเส้น, f: null|'tint'|'solid', sw: ความหนาเส้น, v: ข้อความในรูป, s: ขนาดตัวอักษร }
 // เส้นเชื่อม: { id, a: ปลาย, b: ปลาย, c, w, hd: 0 ไม่มีหัว|1 หัวปลาย|2 สองหัว, st: 'straight'|'elbow'|'curve' } · ปลาย = { x, y, to?: id รูปทรง, side?: 'n'|'e'|'s'|'w' } (ติดรูปทรง = ย้ายรูปแล้วเส้นตาม)
 // ทุกชิ้นมี z (ลำดับชั้น) ได้ — ไม่มี = ชั้นตามชนิด (รูป < รูปทรง < ลายมือ < เส้นเชื่อม < ข้อความ)
 export const PAGE_W = 1000, PAGE_H = 1414;
@@ -18,12 +18,12 @@ export const pid = (p = 'k') => p + Date.now().toString(36) + (seq++).toString(3
 export const blankPage = (book_id, order, paper = 'lined', now = new Date().toISOString()) =>
   ({ id: pid('p'), book_id, order, paper, strokes: [], texts: [], imgs: [], shapes: [], lines: [], created_at: now, updated_at: now });
 
-/* ---------- 0.12 ชิ้นงาน: ทุกอย่างบนหน้าเป็นชิ้นที่จับได้ ---------- */
+/* ---------- 0.14 ชิ้นงาน: ทุกอย่างบนหน้าเป็นชิ้นที่จับได้ ---------- */
 export const KINDS = ['strokes', 'texts', 'imgs', 'shapes', 'lines'];
 export const SHAPE_KINDS = { rect: 'สี่เหลี่ยม', round: 'สี่เหลี่ยมมน', circle: 'วงกลม', triangle: 'สามเหลี่ยม', diamond: 'ข้าวหลามตัด', hexagon: 'หกเหลี่ยม', star: 'ดาว', bubble: 'กล่องคำพูด', barrow: 'ลูกศรหนา' };
 export const LINE_KINDS = { line: 'เส้นตรง', arrow: 'ลูกศร' };
 export const LINE_STYLES = { straight: 'เส้นตรง', elbow: 'หักมุม', curve: 'โค้ง' };
-/** หน้าเก่า (ก่อน 0.12) ไม่มีช่องรูปทรง/เส้นเชื่อม → เติมให้ครบ */
+/** หน้าเก่า (ก่อน 0.14) ไม่มีช่องรูปทรง/เส้นเชื่อม → เติมให้ครบ */
 export const norm = p => p && (p.shapes && p.lines ? p : { ...p, shapes: p.shapes || [], lines: p.lines || [] });
 export const isBlank = p => !p.strokes.length && !p.texts.length && !p.imgs.length && !(p.shapes || []).length && !(p.lines || []).length;
 export const emptySel = () => ({ strokes: [], texts: [], imgs: [], shapes: [], lines: [] });
