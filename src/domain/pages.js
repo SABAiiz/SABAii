@@ -1,7 +1,10 @@
 // สมุดจด (0.10) — เรขาคณิตของหน้ากระดาษ: ฟังก์ชันล้วน ไม่แตะ DOM/ที่เก็บข้อมูล (เทสต์ได้ใน Node)
 // หน้าหนึ่งกว้าง 1000 หน่วย สูง 1414 (สัดส่วน A4) — จอไหนก็ย่อ/ขยายจากหน่วยนี้ ลายมือไม่เพี้ยน
 // เส้น: { id, t: 'pen'|'hl', c: สี, w: ความหนา (หน่วย), p: [x, y, แรงกด(0–1), x, y, แรงกด, …] }
-// ข้อความ: { id, x, y, w, s: ขนาดตัวอักษร, c, v } · รูป: { id, x, y, w, h, blob }
+// ข้อความ: { id, x, y, w, s: ขนาดตัวอักษร, c, v, r? } · รูป: { id, x, y, w, h, blob, r? }
+// 0.12 ชิ้นงานแบบ Canva — รูปทรง: { id, k: ชนิด, x, y, w, h, r: มุมหมุน (เรเดียน), c: สีเส้น, f: null|'tint'|'solid', sw: ความหนาเส้น, v: ข้อความในรูป, s: ขนาดตัวอักษร }
+// เส้นเชื่อม: { id, a: ปลาย, b: ปลาย, c, w, hd: 0 ไม่มีหัว|1 หัวปลาย|2 สองหัว, st: 'straight'|'elbow'|'curve' } · ปลาย = { x, y, to?: id รูปทรง, side?: 'n'|'e'|'s'|'w' } (ติดรูปทรง = ย้ายรูปแล้วเส้นตาม)
+// ทุกชิ้นมี z (ลำดับชั้น) ได้ — ไม่มี = ชั้นตามชนิด (รูป < รูปทรง < ลายมือ < เส้นเชื่อม < ข้อความ)
 export const PAGE_W = 1000, PAGE_H = 1414;
 export const PAPERS = { lined: 'มีเส้น', grid: 'ตาราง', dots: 'จุด', blank: 'ว่าง', cornell: 'คอร์เนลล์', todo: 'เช็กลิสต์', board: 'กระดานดำ' };
 export const DARK_PAPERS = ['board'];
@@ -13,7 +16,171 @@ export const SIZES = { pen: [3, 6, 11], hl: [22, 34, 48], text: [30, 40, 56], er
 let seq = 0;
 export const pid = (p = 'k') => p + Date.now().toString(36) + (seq++).toString(36) + Math.random().toString(36).slice(2, 6);
 export const blankPage = (book_id, order, paper = 'lined', now = new Date().toISOString()) =>
-  ({ id: pid('p'), book_id, order, paper, strokes: [], texts: [], imgs: [], created_at: now, updated_at: now });
+  ({ id: pid('p'), book_id, order, paper, strokes: [], texts: [], imgs: [], shapes: [], lines: [], created_at: now, updated_at: now });
+
+/* ---------- 0.12 ชิ้นงาน: ทุกอย่างบนหน้าเป็นชิ้นที่จับได้ ---------- */
+export const KINDS = ['strokes', 'texts', 'imgs', 'shapes', 'lines'];
+export const SHAPE_KINDS = { rect: 'สี่เหลี่ยม', round: 'สี่เหลี่ยมมน', circle: 'วงกลม', triangle: 'สามเหลี่ยม', diamond: 'ข้าวหลามตัด', hexagon: 'หกเหลี่ยม', star: 'ดาว', bubble: 'กล่องคำพูด', barrow: 'ลูกศรหนา' };
+export const LINE_KINDS = { line: 'เส้นตรง', arrow: 'ลูกศร' };
+export const LINE_STYLES = { straight: 'เส้นตรง', elbow: 'หักมุม', curve: 'โค้ง' };
+/** หน้าเก่า (ก่อน 0.12) ไม่มีช่องรูปทรง/เส้นเชื่อม → เติมให้ครบ */
+export const norm = p => p && (p.shapes && p.lines ? p : { ...p, shapes: p.shapes || [], lines: p.lines || [] });
+export const isBlank = p => !p.strokes.length && !p.texts.length && !p.imgs.length && !(p.shapes || []).length && !(p.lines || []).length;
+export const emptySel = () => ({ strokes: [], texts: [], imgs: [], shapes: [], lines: [] });
+export const selCount = sel => sel ? KINDS.reduce((n, k) => n + (sel[k]?.length || 0), 0) : 0;
+const inSel = (sel, k, id) => !!sel[k]?.includes(id);
+const BASE_Z = { imgs: 0, shapes: 1, strokes: 2, lines: 3, texts: 4 };
+const zOf = (k, o, i) => o.z ?? BASE_Z[k] + i * 1e-6;
+/** ทุกชิ้นเรียงตามชั้น (ล่าง → บน) → [{ k, o }] */
+export function ordered(page) {
+  const out = [];
+  for (const k of KINDS) (page[k] || []).forEach((o, i) => out.push({ k, o, z: zOf(k, o, i) }));
+  return out.sort((a, b) => a.z - b.z);
+}
+/** เอาไว้หน้าสุด / หลังสุด */
+export function restack(page, sel, front = true) {
+  const all = ordered(page);
+  if (!all.length) return page;
+  let z = front ? all[all.length - 1].z : all[0].z;
+  const pick = all.filter(x => inSel(sel, x.k, x.o.id));
+  const map = new Map();
+  for (const x of front ? pick : pick.reverse()) { z += front ? 1 : -1; map.set(x.o.id, z); }
+  const out = { ...page };
+  for (const k of KINDS) if (sel[k]?.length) out[k] = page[k].map(o => map.has(o.id) ? { ...o, z: map.get(o.id) } : o);
+  return out;
+}
+const rotP = (x, y, cx, cy, a) => { if (!a) return [x, y]; const c = Math.cos(a), s = Math.sin(a), dx = x - cx, dy = y - cy; return [cx + dx * c - dy * s, cy + dx * s + dy * c]; };
+export { rotP };
+/** กรอบหมุนได้ของชิ้นแบบกล่อง (รูปทรง/รูป/ข้อความ) → { cx, cy, w, h, r } */
+export const frameOf = (o, hgt = o.h) => ({ cx: o.x + o.w / 2, cy: o.y + hgt / 2, w: o.w, h: hgt, r: o.r || 0 });
+/** กรอบตั้งตรงที่ล้อมกรอบหมุน */
+export function frameBox(f) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+    const [x, y] = rotP(f.cx + sx * f.w / 2, f.cy + sy * f.h / 2, f.cx, f.cy, f.r);
+    x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y);
+  }
+  return { x0, y0, x1, y1 };
+}
+/** ย่อขยายกรอบด้วยมือจับ (hx, hy ∈ −1/0/1 · มุม = สองค่าไม่ศูนย์) · lx, ly = นิ้วในพิกัดของกรอบ (เทียบจุดกลาง ยังไม่หมุน) · keep = คงสัดส่วน */
+export function resizeFrame(f, hx, hy, lx, ly, { keep = false, min = 16 } = {}) {
+  const ax = -hx * f.w / 2, ay = -hy * f.h / 2;
+  let w = hx ? Math.max(min, (lx - ax) * hx) : f.w, h = hy ? Math.max(min, (ly - ay) * hy) : f.h;
+  if (keep && hx && hy) { const k = Math.max(w / f.w, h / f.h); w = f.w * k; h = f.h * k; }
+  const [cx, cy] = rotP(f.cx + (hx ? ax + hx * w / 2 : 0), f.cy + (hy ? ay + hy * h / 2 : 0), f.cx, f.cy, f.r);
+  return { cx, cy, w, h, r: f.r };
+}
+
+/** โครงรูปทรงเป็นจุด (พิกัดในกล่อง 0..w, 0..h ยังไม่หมุน) → [x, y, x, y, …] รูปปิด */
+export function shapeOutline(k, w, h) {
+  const o = [], P = (x, y) => o.push(r1(x), r1(y)), PI = Math.PI;
+  const arc = (cx, cy, rx, ry, a0, a1, n = 6) => { for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; P(cx + rx * Math.cos(a), cy + ry * Math.sin(a)); } };
+  if (k === 'circle') for (let i = 0; i < 48; i++) { const a = i / 48 * PI * 2; P(w / 2 + w / 2 * Math.cos(a), h / 2 + h / 2 * Math.sin(a)); }
+  else if (k === 'round') { const r = Math.min(w, h) * .2; arc(w - r, r, r, r, -PI / 2, 0); arc(w - r, h - r, r, r, 0, PI / 2); arc(r, h - r, r, r, PI / 2, PI); arc(r, r, r, r, PI, PI * 1.5); }
+  else if (k === 'triangle') { P(w / 2, 0); P(w, h); P(0, h); }
+  else if (k === 'diamond') { P(w / 2, 0); P(w, h / 2); P(w / 2, h); P(0, h / 2); }
+  else if (k === 'hexagon') { P(w * .25, 0); P(w * .75, 0); P(w, h / 2); P(w * .75, h); P(w * .25, h); P(0, h / 2); }
+  else if (k === 'star') for (let i = 0; i < 10; i++) { const a = -PI / 2 + i * PI / 5, f = i % 2 ? .4 : 1; P((Math.cos(a) * f / .951 + 1) / 2 * w, (Math.sin(a) * f + 1) / 1.809 * h); }
+  else if (k === 'bubble') { const bh = h * .78, r = Math.min(w * .2, bh * .3); arc(w - r, r, r, r, -PI / 2, 0); arc(w - r, bh - r, r, r, 0, PI / 2); P(w * .42, bh); P(w * .2, h); P(w * .26, bh); arc(r, bh - r, r, r, PI / 2, PI); arc(r, r, r, r, PI, PI * 1.5); }
+  else if (k === 'barrow') { P(0, h * .3); P(w * .62, h * .3); P(w * .62, 0); P(w, h / 2); P(w * .62, h); P(w * .62, h * .7); P(0, h * .7); }
+  else { P(0, 0); P(w, 0); P(w, h); P(0, h); }
+  return o;
+}
+/** ช่องข้อความในรูปทรง (สัดส่วนของกล่อง): กว้าง · จุดกลางแนวตั้ง */
+export const shapeTextArea = k => ({ triangle: [.56, .66], diamond: [.6, .5], star: [.44, .56], bubble: [.8, .39], hexagon: [.7, .5], circle: [.72, .5], barrow: [.56, .5] })[k] || [.84, .5];
+/** จุดอยู่บนรูปทรงไหม */
+export function inShape(o, x, y) {
+  const [lx, ly] = rotP(x, y, o.x + o.w / 2, o.y + o.h / 2, -(o.r || 0));
+  return inPoly(lx - o.x, ly - o.y, shapeOutline(o.k, o.w, o.h));
+}
+
+/* ---------- เส้นเชื่อม ---------- */
+const SIDES = { n: [.5, 0, 0, -1], e: [1, .5, 1, 0], s: [.5, 1, 0, 1], w: [0, .5, -1, 0] };
+/** จุดเกาะบนขอบรูปทรง (หมุนตามรูป) → { x, y, nx, ny } */
+export function anchorOf(o, side) {
+  const [u, v, nx, ny] = SIDES[side] || SIDES.e, cx = o.x + o.w / 2, cy = o.y + o.h / 2, r = o.r || 0;
+  // รูปทรงที่ขอบไม่ถึงกรอบ (สามเหลี่ยม/ดาว/กล่องคำพูด) — ขยับจุดเกาะเข้ามาที่ขอบจริง
+  let lx = u * o.w, ly = v * o.h;
+  if (o.k === 'triangle' && (side === 'e' || side === 'w')) lx = side === 'e' ? o.w * .75 : o.w * .25;
+  if (o.k === 'bubble' && side === 's') ly = o.h * .78;
+  if (o.k === 'bubble' && (side === 'e' || side === 'w')) ly = o.h * .39;
+  if (o.k === 'star' && side === 's') ly = o.h * .87;
+  const [x, y] = rotP(o.x + lx, o.y + ly, cx, cy, r), [ex, ey] = rotP(nx, ny, 0, 0, r);
+  return { x, y, nx: ex, ny: ey };
+}
+/** ปลายเส้น → ตำแหน่งจริง (ติดรูปทรงอยู่ = ตามรูปทรง · รูปทรงหายแล้ว = ที่เก็บไว้) */
+export function endOf(page, e) {
+  const o = e.to && (page.shapes || []).find(s => s.id === e.to);
+  return o ? anchorOf(o, e.side) : { x: e.x, y: e.y, nx: null, ny: null };
+}
+/** หาจุดเกาะใกล้นิ้วที่สุด (ระยะ tol · นิ้วอยู่ในรูปทรง = จุดเกาะที่ใกล้สุดของรูปนั้น) → { to, side, x, y } หรือ null */
+export function snapEnd(page, x, y, tol, skip = null) {
+  let best = null, bd = tol;
+  for (const o of page.shapes || []) {
+    if (o.id === skip) continue;
+    const inside = inShape(o, x, y);
+    for (const side of Object.keys(SIDES)) {
+      const a = anchorOf(o, side), d = Math.hypot(a.x - x, a.y - y);
+      if (d < bd || inside && (!best || best.to !== o.id || d < best.d)) { if (d < bd) bd = d; best = { to: o.id, side, x: a.x, y: a.y, d }; }
+    }
+  }
+  return best;
+}
+/** จุดของเส้นเชื่อม (เส้นโค้งแบ่งเป็นช่วงย่อย) → [x, y, …] */
+export function linePts(page, l) {
+  const A = endOf(page, l.a), B = endOf(page, l.b), dx = B.x - A.x, dy = B.y - A.y;
+  const dirOf = (E, sx, sy) => E.nx != null ? [E.nx, E.ny] : Math.abs(sx) >= Math.abs(sy) ? [Math.sign(sx) || 1, 0] : [0, Math.sign(sy) || 1];
+  if (l.st === 'curve') {
+    const na = dirOf(A, dx, dy), nb = dirOf(B, -dx, -dy), d = Math.max(40, Math.hypot(dx, dy) * .42), out = [];
+    const c1 = [A.x + na[0] * d, A.y + na[1] * d], c2 = [B.x + nb[0] * d, B.y + nb[1] * d];
+    for (let i = 0; i <= 24; i++) {
+      const t = i / 24, m = 1 - t;
+      out.push(r1(m * m * m * A.x + 3 * m * m * t * c1[0] + 3 * m * t * t * c2[0] + t * t * t * B.x), r1(m * m * m * A.y + 3 * m * m * t * c1[1] + 3 * m * t * t * c2[1] + t * t * t * B.y));
+    }
+    return out;
+  }
+  if (l.st === 'elbow') {
+    const hA = A.nx != null ? Math.abs(A.nx) > Math.abs(A.ny) : Math.abs(dx) >= Math.abs(dy);
+    const hB = B.nx != null ? Math.abs(B.nx) > Math.abs(B.ny) : hA;
+    const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+    const mid = hA && hB ? [mx, A.y, mx, B.y] : !hA && !hB ? [A.x, my, B.x, my] : hA ? [B.x, A.y] : [A.x, B.y];
+    return [A.x, A.y, ...mid, B.x, B.y].map(r1);
+  }
+  return [A.x, A.y, B.x, B.y].map(r1);
+}
+const polyBox = (p, pad = 0) => { let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; for (let i = 0; i < p.length; i += 2) { x0 = Math.min(x0, p[i]); y0 = Math.min(y0, p[i + 1]); x1 = Math.max(x1, p[i]); y1 = Math.max(y1, p[i + 1]); } return { x0: x0 - pad, y0: y0 - pad, x1: x1 + pad, y1: y1 + pad }; };
+export const lineBox = (page, l) => polyBox(linePts(page, l), l.w / 2 + (l.hd ? l.w * 2 : 0));
+export function nearLine(page, l, x, y, tol) {
+  const p = linePts(page, l);
+  for (let i = 2; i < p.length; i += 2) if (distSeg(x, y, p[i - 2], p[i - 1], p[i], p[i + 1]) <= tol + l.w / 2) return true;
+  return false;
+}
+/** กรอบตั้งตรงของชิ้นใดก็ได้ */
+export function itemBox(page, k, o, textH = t => t.s * 1.5) {
+  if (k === 'strokes') return strokeBox(o);
+  if (k === 'lines') return lineBox(page, o);
+  return frameBox(frameOf(o, k === 'texts' ? textH(o) : o.h));
+}
+/** ชิ้นบนสุดที่อยู่ใต้นิ้ว → { k, o } หรือ null */
+export function hitItem(page, x, y, tol, textH = t => t.s * 1.5) {
+  const all = ordered(page);
+  for (let i = all.length - 1; i >= 0; i--) {
+    const { k, o } = all[i];
+    if (k === 'strokes') { if (strokesHit([o], x, y, tol).length) return { k, o }; }
+    else if (k === 'lines') { if (nearLine(page, o, x, y, tol)) return { k, o }; }
+    else if (k === 'shapes') { if (inShape(o, x, y) || o.f == null && nearOutline(o, x, y, tol)) return { k, o }; }
+    else {
+      const f = frameOf(o, k === 'texts' ? textH(o) : o.h), [lx, ly] = rotP(x, y, f.cx, f.cy, -f.r), pad = k === 'texts' ? tol : 0;
+      if (Math.abs(lx - f.cx) <= f.w / 2 + pad && Math.abs(ly - f.cy) <= f.h / 2 + pad) return { k, o };
+    }
+  }
+  return null;
+}
+function nearOutline(o, x, y, tol) {
+  const [lx, ly] = rotP(x, y, o.x + o.w / 2, o.y + o.h / 2, -(o.r || 0)), p = shapeOutline(o.k, o.w, o.h), n = p.length;
+  for (let i = 0; i < n; i += 2) if (distSeg(lx - o.x, ly - o.y, p[i], p[i + 1], p[(i + 2) % n], p[(i + 3) % n]) <= tol + (o.sw || 0)) return true;
+  return false;
+}
 
 /** จุดบนเส้น (x, y) ทีละคู่ */
 export function* pts(s) { for (let i = 0; i < s.p.length; i += 3) yield [s.p[i], s.p[i + 1], s.p[i + 2]]; }
@@ -48,10 +215,11 @@ export function inPoly(x, y, poly) {
 
 /** บ่วงเลือก: เส้นที่จุดเกินครึ่งอยู่ในบ่วง · ข้อความ/รูปที่จุดกลางอยู่ในบ่วง */
 export function lassoPick(page, poly) {
-  if (poly.length < 6) return { strokes: [], texts: [], imgs: [] };
+  if (poly.length < 6) return emptySel();
   const strokes = page.strokes.filter(s => { let n = 0, k = 0; for (const [x, y] of pts(s)) { n++; if (inPoly(x, y, poly)) k++; } return n && k / n >= 0.5; }).map(s => s.id);
   const mid = o => inPoly(o.x + (o.w || 0) / 2, o.y + (o.h || o.s || 0) / 2, poly);
-  return { strokes, texts: page.texts.filter(mid).map(t => t.id), imgs: page.imgs.filter(mid).map(i => i.id) };
+  const lmid = l => { const p = linePts(page, l), i = Math.floor(p.length / 4) * 2; return inPoly(p[i], p[i + 1], poly) && inPoly(p[0], p[1], poly) && inPoly(p[p.length - 2], p[p.length - 1], poly); };
+  return { strokes, texts: page.texts.filter(mid).map(t => t.id), imgs: page.imgs.filter(mid).map(i => i.id), shapes: (page.shapes || []).filter(mid).map(o => o.id), lines: (page.lines || []).filter(lmid).map(l => l.id) };
 }
 
 /** กรอบล้อมของเส้น */
@@ -65,36 +233,78 @@ export function strokeBox(s) {
 /** กรอบล้อมของสิ่งที่เลือกทั้งหมด (textH = ความสูงข้อความจริงที่วัดจากหน้าจอ ถ้ามี) */
 export function selBox(page, sel, textH = t => t.s * 1.5) {
   const bs = [];
-  for (const s of page.strokes) if (sel.strokes.includes(s.id)) bs.push(strokeBox(s));
-  for (const t of page.texts) if (sel.texts.includes(t.id)) bs.push({ x0: t.x, y0: t.y, x1: t.x + t.w, y1: t.y + textH(t) });
-  for (const i of page.imgs) if (sel.imgs.includes(i.id)) bs.push({ x0: i.x, y0: i.y, x1: i.x + i.w, y1: i.y + i.h });
+  for (const k of KINDS) for (const o of page[k] || []) if (inSel(sel, k, o.id)) bs.push(itemBox(page, k, o, textH));
   if (!bs.length) return null;
   return bs.reduce((a, b) => ({ x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0), x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1) }));
 }
 
-const r1 = v => Math.round(v * 10) / 10;
-/** ย้าย/ย่อขยายสิ่งที่เลือก: จุด (x, y) → ox + (x − ox)·k + dx — คืนหน้าใหม่ (ไม่แก้ของเดิม เลิกทำได้) */
-export function transformSel(page, sel, { dx = 0, dy = 0, k = 1, ox = 0, oy = 0 }) {
-  const X = x => r1(ox + (x - ox) * k + dx), Y = y => r1(oy + (y - oy) * k + dy);
+function r1(v) { return Math.round(v * 10) / 10; }
+/** ย้าย/ย่อขยาย/หมุนสิ่งที่เลือก: จุด → หมุนรอบ (cx, cy) ด้วย rot → ย่อขยายรอบ (ox, oy) ด้วย k → เลื่อน (dx, dy)
+ *  คืนหน้าใหม่ (ไม่แก้ของเดิม เลิกทำได้) · เส้นเชื่อมที่ติดรูปทรงซึ่งไม่ได้เลือกด้วย = หลุดออกมาเป็นปลายอิสระ */
+export function transformSel(page, sel, { dx = 0, dy = 0, k = 1, ox = 0, oy = 0, rot = 0, cx = 0, cy = 0 }, textH = t => t.s * 1.5) {
+  const M = (x, y) => { [x, y] = rotP(x, y, cx, cy, rot); return [r1(ox + (x - ox) * k + dx), r1(oy + (y - oy) * k + dy)]; };
+  const box = (o, hgt) => { const [nx, ny] = M(o.x + o.w / 2, o.y + hgt / 2), w = o.w * k; return { x: r1(nx - w / 2), y: r1(ny - hgt * k / 2), w: r1(w), ...(rot || o.r ? { r: Math.round(((o.r || 0) + rot) * 1e4) / 1e4 } : {}) }; };
+  const end = e => {
+    if (e.to && inSel(sel, 'shapes', e.to) && (page.shapes || []).some(s => s.id === e.to)) return e;
+    const p = endOf(page, e), [x, y] = M(p.x, p.y);
+    return { x, y };
+  };
   return {
     ...page,
-    strokes: page.strokes.map(s => !sel.strokes.includes(s.id) ? s : { ...s, w: r1(s.w * k), p: s.p.map((v, i) => i % 3 === 0 ? X(v) : i % 3 === 1 ? Y(v) : v) }),
-    texts: page.texts.map(t => !sel.texts.includes(t.id) ? t : { ...t, x: X(t.x), y: Y(t.y), w: r1(t.w * k), s: r1(t.s * k) }),
-    imgs: page.imgs.map(i => !sel.imgs.includes(i.id) ? i : { ...i, x: X(i.x), y: Y(i.y), w: r1(i.w * k), h: r1(i.h * k) }),
+    strokes: page.strokes.map(s => !inSel(sel, 'strokes', s.id) ? s : { ...s, w: r1(s.w * k), p: s.p.flatMap((v, i, a) => i % 3 ? [] : [...M(v, a[i + 1]), a[i + 2]]) }),
+    texts: page.texts.map(t => !inSel(sel, 'texts', t.id) ? t : { ...t, ...box(t, textH(t)), s: r1(t.s * k) }),
+    imgs: page.imgs.map(i => !inSel(sel, 'imgs', i.id) ? i : { ...i, ...box(i, i.h), h: r1(i.h * k) }),
+    shapes: (page.shapes || []).map(o => !inSel(sel, 'shapes', o.id) ? o : { ...o, ...box(o, o.h), h: r1(o.h * k), ...(o.v ? { s: r1(o.s * k) } : {}), sw: r1((o.sw || 0) * Math.sqrt(k)) }),
+    lines: (page.lines || []).map(l => {
+      if (inSel(sel, 'lines', l.id)) return { ...l, a: end(l.a), b: end(l.b), w: r1(l.w * Math.sqrt(k)) };
+      // เส้นที่ไม่ได้เลือกแต่ติดรูปทรงที่ย้ายอยู่ ตามไปเอง (คำนวณตอนวาด) ไม่ต้องแก้
+      return l;
+    }),
   };
 }
+/** เส้นที่เกาะรูปทรงที่กำลังจะหาย → ตรึงปลายไว้ที่ตำแหน่งปัจจุบัน */
+const freeze = (page, gone) => (page.lines || []).map(l => {
+  const f = e => e.to && gone.has(e.to) ? (({ x, y }) => ({ x: r1(x), y: r1(y) }))(endOf(page, e)) : e;
+  const a = f(l.a), b = f(l.b);
+  return a === l.a && b === l.b ? l : { ...l, a, b };
+});
 export function removeSel(page, sel) {
-  return { ...page, strokes: page.strokes.filter(s => !sel.strokes.includes(s.id)), texts: page.texts.filter(t => !sel.texts.includes(t.id)), imgs: page.imgs.filter(i => !sel.imgs.includes(i.id)) };
+  const gone = new Set(sel.shapes || []), lines = freeze(page, gone);
+  return { ...page, strokes: page.strokes.filter(s => !inSel(sel, 'strokes', s.id)), texts: page.texts.filter(t => !inSel(sel, 'texts', t.id)), imgs: page.imgs.filter(i => !inSel(sel, 'imgs', i.id)),
+    shapes: (page.shapes || []).filter(o => !gone.has(o.id)), lines: lines.filter(l => !inSel(sel, 'lines', l.id)) };
 }
-/** ทำสำเนาสิ่งที่เลือก (เลื่อนลงขวานิด) → { page, sel ของสำเนา } */
-export function duplicateSel(page, sel, off = 30) {
-  const m = new Map();
-  const nid = id => { const n = pid(id[0]); m.set(id, n); return n; };
-  const ns = page.strokes.filter(s => sel.strokes.includes(s.id)).map(s => ({ ...s, id: nid(s.id), p: s.p.map((v, i) => i % 3 === 2 ? v : r1(v + off)) }));
-  const nt = page.texts.filter(t => sel.texts.includes(t.id)).map(t => ({ ...t, id: nid(t.id), x: t.x + off, y: t.y + off }));
-  const ni = page.imgs.filter(i => sel.imgs.includes(i.id)).map(i => ({ ...i, id: nid(i.id), x: i.x + off, y: i.y + off }));
-  return { page: { ...page, strokes: [...page.strokes, ...ns], texts: [...page.texts, ...nt], imgs: [...page.imgs, ...ni] },
-    sel: { strokes: ns.map(s => s.id), texts: nt.map(t => t.id), imgs: ni.map(i => i.id) } };
+/** ทำสำเนาสิ่งที่เลือก (เลื่อนลงขวานิด) → { page, sel ของสำเนา } · เส้นที่เกาะรูปทรงที่ก๊อปด้วย = เกาะสำเนา */
+export function duplicateSel(page, sel, off = 30) { return pasteItems(page, copyItems(page, sel), off); }
+/** เก็บชิ้นที่เลือกไว้วาง (คัดลอก) */
+export function copyItems(page, sel) {
+  const out = {};
+  for (const k of KINDS) out[k] = (page[k] || []).filter(o => inSel(sel, k, o.id)).map(o => ({ ...o }));
+  const keep = new Set(out.shapes.map(o => o.id));
+  out.lines = out.lines.map(l => { const f = e => e.to && !keep.has(e.to) ? (({ x, y }) => ({ x, y }))(endOf(page, e)) : e; return { ...l, a: f(l.a), b: f(l.b) }; });
+  return out;
+}
+/** วางชิ้นที่คัดลอกไว้ (id ใหม่ทั้งหมด เลื่อน off) → { page, sel } */
+export function pasteItems(page, items, off = 30) {
+  const m = new Map(), nid = id => { const n = pid(id[0]); m.set(id, n); return n; };
+  const sel = emptySel(), out = { ...norm(page) };
+  const mv = e => e.to ? { ...e, to: m.get(e.to) } : { x: r1(e.x + off), y: r1(e.y + off) };
+  for (const k of ['strokes', 'texts', 'imgs', 'shapes', 'lines']) {
+    const add = (items[k] || []).map(o => {
+      const id = nid(o.id);
+      if (k === 'strokes') return { ...o, id, p: o.p.map((v, i) => i % 3 === 2 ? v : r1(v + off)) };
+      if (k === 'lines') return { ...o, id, a: mv(o.a), b: mv(o.b) };
+      return { ...o, id, x: r1(o.x + off), y: r1(o.y + off) };
+    });
+    sel[k] = add.map(o => o.id);
+    out[k] = [...(out[k] || []), ...add];
+  }
+  return { page: out, sel };
+}
+/** แก้ทุกชิ้นที่เลือกด้วย f(o, k) (เช่นเปลี่ยนสี) */
+export function editSel(page, sel, f) {
+  const out = { ...page };
+  for (const k of KINDS) if (sel[k]?.length) out[k] = page[k].map(o => inSel(sel, k, o.id) ? f(o, k) : o);
+  return out;
 }
 
 /** รูปทรง → จุดของเส้น (วาดด้วยปากกาเหมือนเส้นธรรมดา ลบ/ย้ายได้เหมือนกัน) */
@@ -133,7 +343,7 @@ export function searchPages(q, books, pagesOf) {
   const out = [];
   for (const b of books) {
     if ((b.title || '').toLowerCase().includes(k)) out.push({ book: b, page: null, text: b.title });
-    for (const p of pagesOf(b.id)) for (const t of p.texts || []) if ((t.v || '').toLowerCase().includes(k)) out.push({ book: b, page: p, text: t.v });
+    for (const p of pagesOf(b.id)) for (const t of [...p.texts || [], ...p.shapes || []]) if ((t.v || '').toLowerCase().includes(k)) out.push({ book: b, page: p, text: t.v });
   }
   return out.slice(0, 30);
 }
@@ -191,7 +401,7 @@ export function recognize(p) {
   if (diag < 40 || !L) return null;
   const flat = q => q.flatMap(([x, y]) => [Math.round(x * 10) / 10, Math.round(y * 10) / 10, .5]);
   const dev = pts.reduce((m, [x, y]) => Math.max(m, distSeg(x, y, f[0], f[1], l[0], l[1])), 0);
-  if (d > 40 && (d / L > .92 || dev < Math.max(8, d * .07))) return { kind: 'line', p: flat([f, l]) };
+  if (d > 40 && (d / L > .92 || dev < Math.max(8, d * .07))) return { kind: 'line', p: flat([f, l]), ends: [f, l] };
   if (d > diag * .3) return null; // ไม่ตรงและไม่ปิด
   // วงกลม/วงรี: ทุกจุดห่างจากวงรีในกรอบน้อย
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, rx = Math.max(1, (x1 - x0) / 2), ry = Math.max(1, (y1 - y0) / 2);
@@ -206,13 +416,17 @@ export function recognize(p) {
       if (turnAt(a, b, c) < .5 || Math.hypot(b[0] - a[0], b[1] - a[1]) < diag * .1) { v.splice(i, 1); changed = true; break; }
     }
   }
-  if (err < .13 && v.length > 4 || err < .09) return { kind: 'circle', p: shapePoints('circle', x0, y0, x1, y1) };
-  if (v.length === 3) return { kind: 'triangle', p: flat([...v, v[0]]) };
+  const box = { x0, y0, x1, y1 }, near = (q, x, y) => Math.hypot(q[0] - x, q[1] - y) < diag * .17;
+  const fits = targets => targets.every(([x, y]) => v.some(q => near(q, x, y)));
+  if (err < .13 && v.length > 4 || err < .09) return { kind: 'circle', p: shapePoints('circle', x0, y0, x1, y1), box };
+  if (v.length === 3) return { kind: 'triangle', p: flat([...v, v[0]]), box, upright: fits([[cx, y0], [x0, y1], [x1, y1]]) };
   if (v.length === 4) {
     const straight = v.every((b, i) => { const a = v[(i + 1) % 4], ang = Math.abs(Math.atan2(a[1] - b[1], a[0] - b[0])) % (Math.PI / 2); return Math.min(ang, Math.PI / 2 - ang) < .2; });
-    return straight ? { kind: 'rect', p: shapePoints('rect', x0, y0, x1, y1) } : { kind: 'poly', p: flat([...v, v[0]]) };
+    if (straight) return { kind: 'rect', p: shapePoints('rect', x0, y0, x1, y1), box };
+    if (fits([[cx, y0], [x1, cy], [cx, y1], [x0, cy]])) return { kind: 'diamond', p: flat([[cx, y0], [x1, cy], [cx, y1], [x0, cy], [cx, y0]]), box };
+    return { kind: 'poly', p: flat([...v, v[0]]) };
   }
-  if (err < .2) return { kind: 'circle', p: shapePoints('circle', x0, y0, x1, y1) };
+  if (err < .2) return { kind: 'circle', p: shapePoints('circle', x0, y0, x1, y1), box };
   return null;
 }
 function* pts3(p) { for (let i = 0; i < p.length; i += 3) yield [p[i], p[i + 1]]; }

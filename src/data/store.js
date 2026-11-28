@@ -168,7 +168,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
     const src = state.pages.find(x => x.id === id);
     if (!src) return null;
     const p = await addPage(src.book_id, id);
-    return savePage({ ...p, paper: src.cover ? (state.books.find(b => b.id === src.book_id)?.paper || 'lined') : src.paper, strokes: src.strokes.slice(), texts: src.texts.map(t => ({ ...t })), imgs: src.imgs.map(i => ({ ...i })) }, false);
+    return savePage({ ...p, paper: src.cover ? (state.books.find(b => b.id === src.book_id)?.paper || 'lined') : src.paper, strokes: src.strokes.slice(), texts: src.texts.map(t => ({ ...t })), imgs: src.imgs.map(i => ({ ...i })), shapes: (src.shapes || []).map(o => ({ ...o })), lines: (src.lines || []).map(l => ({ ...l })) }, false);
   }
   async function removePage(id) {
     const p = state.pages.find(x => x.id === id);

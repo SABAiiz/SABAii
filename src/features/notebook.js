@@ -6,7 +6,7 @@ import { h, ic, put, subjIcon, nameOf, NONE } from '../ui/kit.js';
 import { isLive } from '../domain/tasks.js';
 import { app, S, subj, notesOf, visibleSubjects } from './shared.js';
 import { searchNotes as search } from '../domain/notebook.js';
-import { searchPages } from '../domain/pages.js';
+import { searchPages, isBlank } from '../domain/pages.js';
 import { bookDialog, openSketch, si, thumb, subjectBook, projectBooks, bookFace } from './sketch.js';
 import { daysBetween } from '../domain/dates.js';
 import { today } from './shared.js';
@@ -43,7 +43,7 @@ function examSoon(tasks) {
   return n == null ? null : n === 0 ? 'สอบวันนี้' : n === 1 ? 'สอบพรุ่งนี้' : `สอบ ${n} วัน`;
 }
 /** หน้าโน้ตจริงล่าสุด 2 แผ่นซ้อนโผล่มุมการ์ด */
-const peeks = b => !b ? [] : app.store.pagesOf(b.id).filter(p => !p.cover && (p.strokes.length || p.texts.length || p.imgs.length))
+const peeks = b => !b ? [] : app.store.pagesOf(b.id).filter(p => !p.cover && !isBlank(p))
   .sort((a, c) => (c.updated_at || '').localeCompare(a.updated_at || '')).slice(0, 2).reverse()
   .map((p, i, a) => h('span.nb-peek' + (a.length === 2 && i === 0 ? '.back' : ''), thumb(p, 96)));
 
