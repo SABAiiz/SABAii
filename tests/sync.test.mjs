@@ -176,12 +176,15 @@ test('สมุดจด: เล่ม + หน้า (เส้น ข้อค
   const p0 = A.store.pagesOf(b.id)[0];
   const photo = new Blob(['png-bytes'], { type: 'image/png' });
   await A.store.savePage({ ...p0, strokes: [{ id: 's1', t: 'pen', c: '#000', w: 6, p: [1, 2, 0.5, 3, 4, 0.5] }], texts: [{ id: 't1', x: 1, y: 1, w: 100, s: 30, c: '#000', v: 'สมการ' }],
-    imgs: [{ id: 'i1', x: 0, y: 0, w: 10, h: 10, blob: photo }] });
+    imgs: [{ id: 'i1', x: 0, y: 0, w: 10, h: 10, blob: photo }],
+    shapes: [{ id: 'h1', k: 'star', x: 10, y: 10, w: 100, h: 100, r: .5, c: '#000', f: 'tint', sw: 6, v: 'จำ', s: 30 }],
+    lines: [{ id: 'l1', a: { x: 0, y: 0, to: 'h1', side: 'e' }, b: { x: 300, y: 300 }, c: '#000', w: 6, hd: 1, st: 'curve' }] });
   await A.sync.syncNow();
   assert.equal(A.sync.status().state, 'idle', A.sync.status().error);
   const row = srv.rows.get(`u1|page|${p0.id}`);
   assert.equal(row.data.has_body, true);
   assert.equal('strokes' in row.data, false);
+  assert.equal('shapes' in row.data, false); // 0.14: รูปทรง/เส้นเชื่อมไปในไฟล์เนื้อหา ไม่ไปกับแถว
   assert.ok(srv.files.has(`u1/page-${p0.id}.json`) && srv.files.has('u1/i1'));
 
   const B = await device(srv.cloudFor('u1'));
@@ -191,6 +194,8 @@ test('สมุดจด: เล่ม + หน้า (เส้น ข้อค
   assert.equal(got.need_body, undefined);
   assert.equal(got.strokes.length, 1);
   assert.equal(got.texts[0].v, 'สมการ');
+  assert.equal(got.shapes[0].v, 'จำ'); assert.equal(got.shapes[0].r, .5);
+  assert.equal(got.lines[0].a.to, 'h1');
   assert.equal(await got.imgs[0].blob.text(), 'png-bytes');
 
   // B เขียนต่อ → A ได้ของใหม่ · รูปเดิมไม่อัปซ้ำ

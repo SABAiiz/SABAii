@@ -78,7 +78,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await draw([[.14, .68], [.34, .78]]);
   await page.locator('.sk-tool[data-tool="pen"]').click(); await wait(600);
   const n1 = await strokes();
-  check('ปากกา/ไฮไลต์/รูปทรงได้เส้นครบ (บันทึกเองระหว่างเขียน)', n1 === 14, String(n1));
+  const objs = await page.evaluate(() => { const p = window.__sabaii.state.pages[0]; return [p.shapes.length, p.lines.length, p.lines[0]?.hd]; });
+  check('ปากกา/ไฮไลต์ได้เส้นครบ · รูปทรง/ลูกศรเป็นชิ้นงาน (บันทึกเองระหว่างเขียน)', n1 === 11 && objs.join() === '2,1,1', `${n1} · ${objs}`);
   check('ไม่ได้เลือกอะไร = ไม่มีแถบ ลบ/ทำสำเนา', !(await page.locator('.sk-selbar').isVisible()));
   await shot('02-writing');
 
@@ -96,9 +97,9 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await draw([[.08, .66], [.42, .66], [.42, .8], [.08, .8], [.08, .67]]);
   check('บ่วงเลือก: มีกรอบเลือก + แถบ ลบ/ทำสำเนา', await page.locator('.sk-selbox').isVisible() && await page.locator('.sk-selbar').isVisible());
   await shot('03-lasso');
-  const before = await page.evaluate(() => window.__sabaii.state.pages[0].strokes.at(-1).p[0]);
+  const before = await page.evaluate(() => window.__sabaii.state.pages[0].shapes.at(-1).x);
   await draw([[.24, .73], [.5, .73]]); await wait(600);
-  const after = await page.evaluate(() => window.__sabaii.state.pages[0].strokes.at(-1).p[0]);
+  const after = await page.evaluate(() => window.__sabaii.state.pages[0].shapes.at(-1).x);
   check('ลากในกรอบ = ย้ายวงกลม', after - before > 200, `${before} → ${after}`);
   await page.locator('.sk-tool[data-tool="pen"]').click();
 
@@ -203,8 +204,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.mouse.move(...Q(.5 + .25, .5)); await page.mouse.down();
   for (let i = 1; i <= 40; i++) { const a = i / 40 * Math.PI * 2; await page.mouse.move(...Q(.5 + .25 * Math.cos(a) + Math.sin(i * 1.7) * .006, .5 + .16 * Math.sin(a) + Math.cos(i * 2.1) * .004)); }
   await wait(800); await page.mouse.up(); await wait(600);
-  const snapped = (await cur()).strokes.at(-1);
-  check('วาดวงกลมเบี้ยว ๆ แล้วค้างไว้ → วงกลมเป๊ะ', snapped?.sh === 1 && snapped.p.length === 147, snapped ? `sh=${snapped.sh} n=${snapped.p.length / 3}` : 'ไม่มีเส้น');
+  const snapped = (await cur()).shapes?.at(-1);
+  check('วาดวงกลมเบี้ยว ๆ แล้วค้างไว้ → วงกลมเป๊ะ (เป็นรูปทรงที่ปรับได้)', snapped?.k === 'circle' && snapped.w > 100, snapped ? `k=${snapped.k} w=${snapped.w}` : 'ไม่มีรูปทรง');
   await page.mouse.move(...Q(.2, .2)); await page.mouse.down();
   for (let i = 1; i <= 20; i++) await page.mouse.move(...Q(.2 + i * .02, .2 + Math.sin(i) * .01));
   await page.mouse.up(); await wait(600);

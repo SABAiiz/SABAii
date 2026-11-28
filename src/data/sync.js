@@ -10,7 +10,7 @@
 import { DEFAULT_SUBJECTS } from './store.js';
 
 export const KIND = { tasks: 'task', subjects: 'subject', attachments: 'attachment', prefs: 'pref', books: 'book', pages: 'page' };
-const BODY = ['strokes', 'texts', 'imgs'];
+const BODY = ['strokes', 'texts', 'imgs', 'shapes', 'lines'];
 const bodyFile = id => `page-${id}.json`;
 const TABLE = Object.fromEntries(Object.entries(KIND).map(([t, k]) => [k, t]));
 /** ค่าตั้งที่เป็นของเครื่องนี้เท่านั้น ไม่ส่งขึ้นบัญชี */
@@ -62,7 +62,7 @@ export function createSync({ db, cloud, now = () => new Date(), debounceMs = 150
   /** แถวที่ส่งขึ้นคลาวด์: รูปไม่ไปกับแถว (ไปทาง Storage) แค่บอกว่ามีรูป */
   function wire(kind, v) {
     if (kind === 'page') {
-      const { strokes, texts, imgs, need_body, ...head } = v;
+      const { strokes, texts, imgs, shapes, lines, need_body, ...head } = v;
       return { ...head, has_body: true };
     }
     if (kind !== 'attachment') return v;
@@ -108,7 +108,7 @@ export function createSync({ db, cloud, now = () => new Date(), debounceMs = 150
         if (r.kind === 'page') {
           // หัวหน้ามาก่อน · เนื้อหาเดิมในเครื่องยังแสดงไปก่อน จนโหลดของใหม่เสร็จ (fetchBodies)
           const { has_body, ...head } = v;
-          v = { strokes: [], texts: [], imgs: [], ...pick(mineNow, BODY), ...head, need_body: !!has_body };
+          v = { strokes: [], texts: [], imgs: [], shapes: [], lines: [], ...pick(mineNow, BODY), ...head, need_body: !!has_body };
         }
         await db.put(table, v);
         changes.push({ store: table, key: r.kind === 'pref' ? r.id : v.id, value: v });
@@ -192,7 +192,7 @@ export function createSync({ db, cloud, now = () => new Date(), debounceMs = 150
     let added = false;
     for (const i of p.imgs || []) if (i.blob && !done.has(i.id)) { await cloud.upload(i.id, i.blob); done.add(i.id); added = true; }
     if (added) await setMeta(`files:${cloud.user().id}`, [...done]);
-    await cloud.uploadJSON(bodyFile(p.id), { strokes: p.strokes || [], texts: p.texts || [], imgs: (p.imgs || []).map(({ blob, ...i }) => i) });
+    await cloud.uploadJSON(bodyFile(p.id), { strokes: p.strokes || [], texts: p.texts || [], imgs: (p.imgs || []).map(({ blob, ...i }) => i), shapes: p.shapes || [], lines: p.lines || [] });
   }
   /** หน้าที่เครื่องอื่นเขียนไว้ → โหลดเนื้อหา + รูปในหน้า (ล้มก็ลองใหม่รอบหน้า · ผู้ใช้แก้หน้าระหว่างโหลด = ของในเครื่องชนะ) */
   async function fetchBodies() {
@@ -208,7 +208,7 @@ export function createSync({ db, cloud, now = () => new Date(), debounceMs = 150
       }
       const cur = store.state.pages.find(x => x.id === p.id);
       if (!cur?.need_body) continue; // ผู้ใช้เขียนหน้านี้ระหว่างโหลด → ของในเครื่องชนะ
-      const v = { ...cur, strokes: body.strokes || [], texts: body.texts || [], imgs };
+      const v = { ...cur, strokes: body.strokes || [], texts: body.texts || [], imgs, shapes: body.shapes || [], lines: body.lines || [] };
       delete v.need_body;
       await db.put('pages', v);
       store.applyRemote([{ store: 'pages', key: v.id, value: v }]);

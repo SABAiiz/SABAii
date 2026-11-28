@@ -151,3 +151,64 @@ test('ผูกหน้าเข้าโน้ตงาน: ผูกซ้ำ
   await st.deleteBook(b.id);
   assert.equal(st.attachmentsOf(t.id).length, 0);
 });
+
+/* ---------- 0.14 ชิ้นงานแบบ Canva ---------- */
+const box = (id, k, x, y, w, h, extra = {}) => ({ id, k, x, y, w, h, r: 0, c: '#000', f: null, sw: 6, v: '', s: 36, ...extra });
+const canvasPage = () => ({ ...page(), shapes: [box('h1', 'rect', 100, 100, 200, 100), box('h2', 'circle', 600, 600, 200, 200)],
+  lines: [{ id: 'l1', a: { x: 300, y: 150, to: 'h1', side: 'e' }, b: { x: 600, y: 700, to: 'h2', side: 'w' }, c: '#000', w: 6, hd: 1, st: 'straight' }] });
+
+test('0.14 รูปทรง: โครงปิดทุกชนิด · จุดในรูป (หมุนแล้วก็ถูก)', () => {
+  for (const k of Object.keys(G.SHAPE_KINDS)) { const p = G.shapeOutline(k, 200, 100); assert.ok(p.length >= 6 && p.length % 2 === 0, k); assert.ok(Math.max(...p.filter((_, i) => i % 2 === 0)) <= 200.01, k); }
+  const o = box('x', 'rect', 0, 0, 200, 20);
+  assert.equal(G.inShape(o, 180, 10), true);
+  assert.equal(G.inShape({ ...o, r: Math.PI / 2 }, 180, 10), false, 'หมุน 90° แล้วปลายขวาไม่อยู่ตรงนั้นแล้ว');
+  assert.equal(G.inShape({ ...o, r: Math.PI / 2 }, 100, 90), true);
+  assert.equal(G.inShape(box('d', 'diamond', 0, 0, 100, 100), 5, 5), false, 'มุมกรอบของข้าวหลามตัดไม่ใช่ตัวรูป');
+});
+test('0.14 เส้นเชื่อม: ปลายเกาะรูปทรง → ย้ายรูปแล้วเส้นตาม · ลบรูปแล้วปลายค้างที่เดิม', () => {
+  const p = canvasPage();
+  assert.deepEqual(G.linePts(p, p.lines[0]), [300, 150, 600, 700]);
+  const moved = G.transformSel(p, { ...G.emptySel(), shapes: ['h2'] }, { dx: 100, dy: 0 });
+  assert.deepEqual(G.linePts(moved, moved.lines[0]), [300, 150, 700, 700]);
+  assert.equal(moved.lines[0], p.lines[0], 'เส้นที่ไม่ได้เลือกไม่ต้องแก้ข้อมูล');
+  const gone = G.removeSel(p, { ...G.emptySel(), shapes: ['h2'] });
+  assert.equal(gone.lines[0].b.to, undefined); assert.deepEqual([gone.lines[0].b.x, gone.lines[0].b.y], [600, 700]);
+  assert.equal(gone.lines[0].a.to, 'h1');
+  const s = G.snapEnd(p, 598, 702, 20);
+  assert.equal(s.to, 'h2'); assert.equal(s.side, 'w');
+  assert.equal(G.snapEnd(p, 450, 400, 20), null);
+  const el = G.linePts(p, { ...p.lines[0], st: 'elbow' });
+  assert.deepEqual(el, [300, 150, 450, 150, 450, 700, 600, 700], 'หักมุมออกตามด้านที่เกาะ');
+  assert.equal(G.linePts(p, { ...p.lines[0], st: 'curve' }).length, 50);
+});
+test('0.14 เลือก/ชั้น/หมุน/ย่อขยาย/คัดลอก', () => {
+  const p = canvasPage();
+  assert.equal(G.hitItem(p, 150, 120, 5).o.id, 'h1');
+  assert.equal(G.hitItem(p, 450, 425, 8).k, 'lines');
+  assert.equal(G.hitItem(p, 900, 100, 5), null);
+  const front = G.restack(p, { ...G.emptySel(), shapes: ['h1'] }, true);
+  assert.equal(G.ordered(front).at(-1).o.id, 'h1');
+  const back = G.restack(p, { ...G.emptySel(), texts: ['t1'] }, false);
+  assert.equal(G.ordered(back)[0].o.id, 't1');
+  const rot = G.transformSel(p, { ...G.emptySel(), shapes: ['h1'] }, { rot: Math.PI / 2, cx: 200, cy: 150 });
+  assert.equal(rot.shapes[0].r, 1.5708); assert.equal(rot.shapes[0].x, 100);
+  const f = G.resizeFrame({ cx: 200, cy: 150, w: 200, h: 100, r: 0 }, 1, 0, 150, 0);
+  assert.deepEqual([f.cx, f.w, f.h], [225, 250, 100], 'ลากขอบขวา: ขอบซ้ายอยู่ที่เดิม');
+  const c = G.resizeFrame({ cx: 200, cy: 150, w: 200, h: 100, r: 0 }, 1, 1, 200, 50, { keep: true });
+  assert.equal(c.w / c.h, 2);
+  const lasso = G.lassoPick(p, [0, 0, 1000, 0, 1000, 1000, 0, 1000]);
+  assert.deepEqual([lasso.shapes.length, lasso.lines.length], [2, 1]);
+  const { page: pp, sel } = G.pasteItems(p, G.copyItems(p, { ...G.emptySel(), shapes: ['h1', 'h2'], lines: ['l1'] }), 30);
+  assert.equal(pp.shapes.length, 4); assert.equal(pp.lines.length, 2);
+  const nl = pp.lines.find(l => l.id === sel.lines[0]);
+  assert.deepEqual([nl.a.to, nl.b.to], sel.shapes, 'เส้นที่ก๊อปเกาะรูปทรงที่ก๊อปมา');
+  assert.equal(G.isBlank(G.blankPage('b', 0)), true); assert.equal(G.isBlank(p), false);
+  assert.deepEqual(G.norm({ strokes: [] }).shapes, []);
+});
+test('0.14 ค้างปากกา: ข้าวหลามตัด · สามเหลี่ยมตั้ง (ใช้เป็นรูปทรงจริงได้) · กรอบของรูป', () => {
+  const dia = t => { const a = t * 4, i = Math.floor(a) % 4, f = a - Math.floor(a), P = [[300, 100], [500, 300], [300, 500], [100, 300], [300, 100]]; return [P[i][0] + (P[i + 1][0] - P[i][0]) * f, P[i][1] + (P[i + 1][1] - P[i][1]) * f]; };
+  const r = G.recognize(wobble(dia));
+  assert.equal(r?.kind, 'diamond'); assert.ok(Math.abs(r.box.x0 - 100) < 15 && Math.abs(r.box.y1 - 500) < 15);
+  const tri = t => { const a = t * 3, i = Math.floor(a) % 3, f = a - Math.floor(a), P = [[300, 100], [500, 450], [100, 450], [300, 100]]; return [P[i][0] + (P[i + 1][0] - P[i][0]) * f, P[i][1] + (P[i + 1][1] - P[i][1]) * f]; };
+  assert.equal(G.recognize(wobble(tri))?.upright, true);
+});

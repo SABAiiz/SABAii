@@ -29,10 +29,29 @@ const P = {
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', copy: '<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2"/>',
   line: '<path d="M5 19L19 5"/>', arrow: '<path d="M5 19L19 5M10 5h9v9"/>', rect: '<rect x="4" y="6" width="16" height="12" rx="1"/>', circle: '<ellipse cx="12" cy="12" rx="8.5" ry="7"/>',
   clear: '<path d="M4 20h16M6 16l10-10M8 6l10 10" opacity=".9"/>', edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  // 0.14 ชิ้นงานแบบ Canva
+  select: '<path d="M5.5 3.5l12.5 6.3-5.4 1.8 3.7 6.2-2.6 1.5-3.7-6.2-4 4z"/>',
+  round: '<rect x="4" y="6" width="16" height="12" rx="4"/>', triangle: '<path d="M12 4.5l8.5 15h-17z"/>', diamond: '<path d="M12 3l9 9-9 9-9-9z"/>',
+  hexagon: '<path d="M7.5 4h9l4.5 8-4.5 8h-9L3 12z"/>', star: '<path d="M12 3.5l2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 9.8l6-.7z"/>',
+  bubble: '<path d="M5 4h14a2 2 0 012 2v8a2 2 0 01-2 2h-8l-4.5 4v-4H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>', barrow: '<path d="M3 9h10V5l8 7-8 7v-4H3z"/>',
+  front: '<rect x="9" y="9" width="11" height="11" rx="2" fill="currentColor" stroke="none"/><path d="M4 15V6a2 2 0 012-2h9"/>',
+  back: '<rect x="4" y="4" width="11" height="11" rx="2" fill="currentColor" fill-opacity=".35" stroke="none"/><rect x="9" y="9" width="11" height="11" rx="2"/>',
+  fill0: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M5 19L19 5"/>', fill1: '<rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor" fill-opacity=".3"/>',
+  fill2: '<rect x="4" y="4" width="16" height="16" rx="3" fill="currentColor"/>',
+  straight: '<path d="M4 19L20 5"/>', elbow: '<path d="M4 19h8V5h8"/>', curve: '<path d="M4 19C4 9 20 15 20 5"/>',
+  hd0: '<path d="M4 12h16"/>', hd1: '<path d="M4 12h15M14 7l5 5-5 5"/>', hd2: '<path d="M5 12h14M9 7l-5 5 5 5M15 7l5 5-5 5"/>',
+  minus: '<path d="M5 12h14"/>', fit: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
 };
 export const si = n => `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
 const TOOLS = { pen: 'ปากกา', hl: 'ปากกาเน้น', eraser: 'ยางลบ', lasso: 'เลือก/ย้าย', shape: 'รูปทรง', text: 'ข้อความ', img: 'ใส่รูป' };
-const SHAPES = { line: 'เส้นตรง', arrow: 'ลูกศร', rect: 'สี่เหลี่ยม', circle: 'วงกลม' };
+const TOOL_ICON = { lasso: 'select' };
+const SHAPES = { ...G.LINE_KINDS, ...G.SHAPE_KINDS };
+const lineish = k => k in G.LINE_KINDS;
+const FILLS = [[null, 'ไม่มีพื้น', 'fill0'], ['tint', 'พื้นจาง', 'fill1'], ['solid', 'พื้นทึบ', 'fill2']];
+const STYLES = [['straight', 'แบบตรง'], ['elbow', 'แบบหักมุม'], ['curve', 'แบบโค้ง']];
+const HEADS = [[0, 'ไม่มีหัวลูกศร'], [1, 'หัวลูกศรปลายเดียว'], [2, 'หัวลูกศรสองปลาย']];
+const GUIDE = '#E5398D'; // เส้นช่วยจัดแนว
+let clip = null; // คัดลอก/วาง (ข้ามหน้าได้)
 
 /* =================== วาดหน้ากระดาษ (ใช้ทั้งหน้าเขียนและภาพย่อ) =================== */
 const imgs = new Map(); // id → { el, ready, wait:Set }
@@ -215,24 +234,81 @@ export const pageH = p => Math.max(PH, p.h || 0);
 const boxes = new WeakMap(); // กรอบของแต่ละเส้น (ไว้ข้ามเส้นที่อยู่นอกจอ)
 const boxOf = s => { let b = boxes.get(s); if (!b) boxes.set(s, b = G.strokeBox(s)); return b; };
 
-/** วาดหน้าทั้งหน้า — ctx ต้องตั้งสเกลเป็นหน่วยหน้ากระดาษไว้แล้ว · u = หน่วยต่อ 1 px บนจอ · view = ช่วง y ที่เห็น (ข้ามของนอกจอ) */
+/* ---------- 0.14 รูปทรง · เส้นเชื่อม · หมุนได้ทุกชิ้น ---------- */
+const hex6 = c => /^#[0-9a-f]{6}$/i.test(c || '');
+const tintOf = c => hex6(c) ? c + '26' : c;
+const lum = c => { if (!hex6(c)) return 0; const n = parseInt(c.slice(1), 16); return (.299 * (n >> 16) + .587 * (n >> 8 & 255) + .114 * (n & 255)) / 255; };
+/** สีตัวหนังสือในรูปทรง: พื้นทึบเข้ม = ขาว */
+const shapeInk = (o, dark) => o.f === 'solid' ? (lum(o.c) < .62 ? '#FFFFFF' : '#0B1B4D') : dark ? '#FFFFFF' : '#0B1B4D';
+const spin = (ctx, cx, cy, r) => { if (r) { ctx.translate(cx, cy); ctx.rotate(r); ctx.translate(-cx, -cy); } };
+export function drawShape(ctx, o, dark = false, noText = false) {
+  const p = G.shapeOutline(o.k, o.w, o.h);
+  ctx.save();
+  spin(ctx, o.x + o.w / 2, o.y + o.h / 2, o.r);
+  ctx.translate(o.x, o.y);
+  ctx.beginPath(); ctx.moveTo(p[0], p[1]);
+  for (let i = 2; i < p.length; i += 2) ctx.lineTo(p[i], p[i + 1]);
+  ctx.closePath();
+  if (o.f) { ctx.fillStyle = o.f === 'solid' ? o.c : tintOf(o.c); ctx.fill(); }
+  if (o.sw) { ctx.lineWidth = o.sw; ctx.lineJoin = 'round'; ctx.strokeStyle = o.c; ctx.stroke(); }
+  if (o.v && !noText) {
+    const [fw, fy] = G.shapeTextArea(o.k);
+    ctx.font = `600 ${o.s}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = shapeInk(o, dark);
+    const ls = wrapText(ctx, o.v, o.w * fw), lh = o.s * 1.3, y0 = o.h * fy - (ls.length - 1) * lh / 2;
+    ls.forEach((l, i) => ctx.fillText(l, o.w / 2, y0 + i * lh));
+  }
+  ctx.restore();
+}
+export function drawLine(ctx, page, l) {
+  const p = G.linePts(page, l), n = p.length, L = Math.max(18, l.w * 3.2);
+  if (n < 4) return;
+  ctx.save();
+  ctx.strokeStyle = ctx.fillStyle = l.c; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const q = p.slice();
+  const cut = (i, j) => { const dx = q[i] - q[j], dy = q[i + 1] - q[j + 1], d = Math.hypot(dx, dy) || 1, c = Math.min(d * .9, L * .55); q[i] -= dx / d * c; q[i + 1] -= dy / d * c; };
+  if (l.hd) cut(n - 2, n - 4);
+  if (l.hd === 2) cut(0, 2);
+  ctx.lineWidth = l.w; ctx.beginPath(); ctx.moveTo(q[0], q[1]);
+  for (let i = 2; i < n; i += 2) ctx.lineTo(q[i], q[i + 1]);
+  ctx.stroke();
+  const head = (x, y, fx, fy) => {
+    const a = Math.atan2(y - fy, x - fx);
+    ctx.beginPath(); ctx.moveTo(x, y);
+    ctx.lineTo(x - L * Math.cos(a - .42), y - L * Math.sin(a - .42)); ctx.lineTo(x - L * Math.cos(a + .42), y - L * Math.sin(a + .42)); ctx.closePath();
+    ctx.lineWidth = Math.max(2, l.w * .5); ctx.fill(); ctx.stroke();
+  };
+  if (l.hd) head(p[n - 2], p[n - 1], p[n - 4], p[n - 3]);
+  if (l.hd === 2) head(p[0], p[1], p[2], p[3]);
+  ctx.restore();
+}
+function drawImg(ctx, o, onImg) {
+  const el = imgEl(o, onImg);
+  ctx.save(); spin(ctx, o.x + o.w / 2, o.y + o.h / 2, o.r);
+  if (el) ctx.drawImage(el, o.x, o.y, o.w, o.h); else { ctx.fillStyle = '#EEF1F6'; ctx.fillRect(o.x, o.y, o.w, o.h); }
+  ctx.restore();
+}
+function drawText(ctx, t) {
+  ctx.save();
+  ctx.font = `500 ${t.s}px ${FONT}`; ctx.fillStyle = t.c; ctx.textBaseline = 'top'; ctx.textAlign = 'left';
+  const ls = textLines(t);
+  if (t.r) spin(ctx, t.x + t.w / 2, t.y + Math.max(1, ls.length) * t.s * 1.45 / 2, t.r);
+  ls.forEach((l, i) => ctx.fillText(l, t.x, t.y + i * t.s * 1.45 + t.s * .12));
+  ctx.restore();
+}
+
+/** วาดหน้าทั้งหน้า — ctx ต้องตั้งสเกลเป็นหน่วยหน้ากระดาษไว้แล้ว · u = หน่วยต่อ 1 px บนจอ · view = ช่วง y ที่เห็น (ข้ามของนอกจอ)
+ *  ทุกชิ้นวาดตามลำดับชั้น (G.ordered) — เอาไว้หน้าสุด/หลังสุดได้ */
 export function drawPage(ctx, page, u, { hide = null, onImg = null, H = pageH(page), view = null } = {}) {
   paper(ctx, page.cover ? 'blank' : page.paper, u, H);
   if (page.cover) { const info = coverInfo(page); if (info) drawCover(ctx, info, H); }
   const dark = !page.cover && G.DARK_PAPERS.includes(page.paper);
   const off = (y0, y1) => view && (y1 < view[0] || y0 > view[1]);
-  for (const o of page.imgs || []) {
-    if (off(o.y, o.y + o.h)) continue;
-    const el = imgEl(o, onImg);
-    if (el) ctx.drawImage(el, o.x, o.y, o.w, o.h);
-    else { ctx.fillStyle = '#EEF1F6'; ctx.fillRect(o.x, o.y, o.w, o.h); }
-  }
-  for (const s of page.strokes) { if (view) { const b = boxOf(s); if (off(b.y0, b.y1)) continue; } drawStroke(ctx, s, dark); }
-  ctx.textBaseline = 'top';
-  for (const t of page.texts || []) {
-    if (t.id === hide) continue;
-    ctx.font = `500 ${t.s}px ${FONT}`; ctx.fillStyle = t.c;
-    textLines(t).forEach((l, i) => ctx.fillText(l, t.x, t.y + i * t.s * 1.45 + t.s * .12));
+  for (const { k, o } of G.ordered(page)) {
+    if (k === 'strokes') { if (view) { const b = boxOf(o); if (off(b.y0, b.y1)) continue; } drawStroke(ctx, o, dark); }
+    else if (k === 'imgs') { const m = Math.max(o.w, o.h) / 2; if (off(o.y + o.h / 2 - m, o.y + o.h / 2 + m)) continue; drawImg(ctx, o, onImg); }
+    else if (k === 'shapes') drawShape(ctx, o, dark, o.id === hide);
+    else if (k === 'lines') drawLine(ctx, page, o);
+    else if (o.id !== hide) drawText(ctx, o);
   }
 }
 
@@ -267,7 +343,8 @@ export async function openSketch(bookId, pageId = null, fromEl = null, opts = {}
   const idx = Math.max(0, list.findIndex(p => p.id === (pageId || book.last_page)));
   const pr = pref();
   Object.assign(ed, {
-    open: true, closing: false, book, idx, page: list[idx], tool: pr.tool || 'pen', shape: pr.shape || 'line',
+    open: true, closing: false, book, idx, page: G.norm(list[idx]), tool: pr.tool || 'pen', shape: SHAPES[pr.shape] ? pr.shape : 'rect',
+    fill: pr.fill ?? null, lstyle: pr.lstyle || 'straight', sideOpen: pr.side !== false, lpad: 0,
     color: { pen: G.INKS[0], hl: G.HIGHLIGHTS[0], shape: G.INKS[0], text: G.INKS[0], ...pr.color },
     dcolor: { pen: G.CHALKS[0], shape: G.CHALKS[0], text: G.CHALKS[0], ...pr.dcolor }, // สีชอล์กบนกระดานดำ
     z: 1, vx: 0, vy: 0, H: pageH(list[idx]),
@@ -282,19 +359,26 @@ export async function openSketch(bookId, pageId = null, fromEl = null, opts = {}
   if (fromEl && !reduced()) zoomFrom(fromEl.getBoundingClientRect());
   else requestAnimationFrame(() => ed.root?.classList.add('in'));
   if (!pr.tipped) setTimeout(() => ed.open && toast('สองนิ้ว = เลื่อน/ซูม · ปัดสองนิ้ว = เปลี่ยนหน้า · วาดแล้วค้าง = รูปทรงเป๊ะ'), 900);
+  else if (!pr.tipped12) setTimeout(() => ed.open && toast('ใหม่: ทุกอย่างบนหน้าแตะแล้วจับย้าย/หมุน/ย่อขยายได้ · รูปทรงใส่ข้อความได้ · ลูกศรเกาะรูปทรง'), 900);
 }
 onBack(() => { if (!ed.open) return false; closeSketch(true); return true; });
 
 function build() {
   const b = (cls, name, label, on, extra = {}) => h('button.' + cls, { type: 'button', 'aria-label': label, title: label, html: si(name), onclick: on, ...extra });
   ed.base = h('canvas.sk-base'); ed.ink = h('canvas.sk-ink');
-  ed.selbox = h('div.sk-selbox', { hidden: true }, h('i.sk-handle'));
+  // กรอบเลือกแบบ Canva: มุม 4 (ย่อขยายคงสัดส่วน) · ขอบ 4 (ยืด) · ปุ่มหมุนใต้กรอบ — ตัวจับเป็นภาพเฉย ๆ แตะจริงคำนวณจากพิกัด (handlesOf)
+  ed.selbox = h('div.sk-selbox', { hidden: true }, ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'].map(k => h('i.sk-h', { 'data-h': k })), h('i.sk-rot', { html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 12a8 8 0 11-2.6-5.9"/><path d="M20 4v5h-5"/></svg>' }));
+  ed.endA = h('i.sk-end'); ed.endB = h('i.sk-end');
+  ed.ends = h('div.sk-ends', { hidden: true }, ed.endA, ed.endB);
   ed.toc = h('div.sk-toc');
-  ed.layer = h('div.sk-layer', ed.toc, ed.selbox); // ชั้นเดียวกับหน้ากระดาษ (หน่วยหน้า) — สารบัญแตะได้ · กรอบเลือก · ช่องพิมพ์
-  ed.selbar = h('div.sk-selbar', { hidden: true },
-    h('button', { type: 'button', onclick: () => selAction('copy'), html: si('copy') + '<span>ทำสำเนา</span>' }),
-    h('button', { type: 'button', onclick: () => selAction('del'), html: si('trash') + '<span>ลบ</span>' }));
+  ed.layer = h('div.sk-layer', ed.toc, ed.selbox, ed.ends); // ชั้นเดียวกับหน้ากระดาษ (หน่วยหน้า) — สารบัญแตะได้ · กรอบเลือก · ช่องพิมพ์
+  ed.selbar = h('div.sk-selbar', { hidden: true, role: 'toolbar', 'aria-label': 'จัดการสิ่งที่เลือก', onpointerdown: e => e.stopPropagation() });
+  ed.badge = h('div.sk-badge', { hidden: true });
   ed.zoomB = h('button.sk-zoom', { type: 'button', hidden: true, 'aria-label': 'กลับขนาดเดิม', onclick: () => resetZoom() });
+  ed.zpct = h('button.sk-zpct', { type: 'button', 'aria-label': 'กลับ 100%', title: 'กลับ 100%', onclick: () => resetZoom() });
+  ed.zbar = h('div.sk-zbar', { role: 'group', 'aria-label': 'ซูม' },
+    b('sk-zb', 'minus', 'ซูมออก', () => zoomStep(1 / 1.25)), ed.zpct, b('sk-zb', 'plus', 'ซูมเข้า', () => zoomStep(1.25)), b('sk-zb', 'fit', 'พอดีหน้า', fitPage));
+  ed.side = h('aside.sk-side', { hidden: true, 'aria-label': 'ทุกหน้า' });
   ed.sbar = h('i.sk-sbar');
   ed.stage = h('div.sk-stage', ed.base, ed.ink, ed.layer, ed.sbar);
   ed.count = h('b');
@@ -304,13 +388,13 @@ function build() {
   ed.nextB = h('button.sk-pg', { type: 'button', onclick: () => turn(1) });
   ed.opts = h('div.sk-opts', { onmousedown: e => { if (ed.editing && e.target.closest('button')) e.preventDefault(); } }); // แตะสี/ขนาดตอนพิมพ์อยู่ ไม่ให้ช่องพิมพ์หลุด
   ed.tools = h('div.sk-tools', { role: 'toolbar', 'aria-label': 'เครื่องมือ' }, Object.entries(TOOLS).map(([k, l]) =>
-    b('sk-tool', k, l, () => pickTool(k), { 'data-tool': k })));
+    b('sk-tool', TOOL_ICON[k] || k, l, () => pickTool(k), { 'data-tool': k })));
   ed.menu = h('div.sk-menu', { hidden: true });
   ed.root = h('div.sk', { id: 'sk', role: 'dialog', 'aria-label': 'สมุด ' + ed.book.title, style: { '--c': ed.book.color } },
-    ed.stage, ed.selbar, ed.zoomB,
+    ed.stage, ed.side, ed.selbar, ed.badge, ed.zoomB, ed.zbar,
     h('header.sk-top',
       h('button.sk-ib.sk-close', { type: 'button', 'aria-label': 'ดูทุกหน้า', title: 'ดูทุกหน้า', onclick: () => closeSketch(), html: si('pages') }),
-      h('div.sk-pages', ed.prevB, h('button.sk-name', { type: 'button', 'aria-label': 'เลือกหน้า', onclick: toggleStrip }, ed.count, h('i', { html: si('down') })), ed.nextB),
+      h('div.sk-pages', ed.prevB, h('button.sk-name', { type: 'button', 'aria-label': 'เลือกหน้า', onclick: () => wide() ? toggleSide() : toggleStrip() }, ed.count, h('i', { html: si('down') })), ed.nextB),
       h('span.sk-gap'),
       ed.undoB, ed.redoB, b('sk-ib', 'more', 'ตั้งค่าหน้า', toggleMenu)),
     h('div.sk-bottom', ed.strip, ed.opts, ed.tools),
@@ -323,9 +407,19 @@ function build() {
     if (!ed.open || document.querySelector('.confirm')) return;
     if (ed.editing && e.key !== 'Escape') return;
     const mod = e.ctrlKey || e.metaKey;
-    if (e.key === 'Escape') { if (ed.editing) ed.editing.ta.blur(); else if (!ed.menu.hidden) toggleMenu(); else if (!ed.strip.hidden) toggleStrip(); else if (ed.z > 1) resetZoom(); else if (ed.sel) setSel(null); else closeSketch(); e.preventDefault(); }
-    else if (mod && e.key.toLowerCase() === 'z') { e.shiftKey ? redo() : undo(); e.preventDefault(); }
-    else if (mod && e.key.toLowerCase() === 'y') { redo(); e.preventDefault(); }
+    const key = e.key.toLowerCase();
+    if (e.key === 'Escape') { if (ed.editing) ed.editing.ta.blur(); else if (!ed.menu.hidden) toggleMenu(); else if (!ed.strip.hidden) toggleStrip(); else if (ed.sel) setSel(null); else if (Math.abs(ed.z - 1) > .02) resetZoom(); else closeSketch(); e.preventDefault(); }
+    else if (mod && key === 'z') { e.shiftKey ? redo() : undo(); e.preventDefault(); }
+    else if (mod && key === 'y') { redo(); e.preventDefault(); }
+    else if (mod && key === 'c' && ed.sel) { clip = { items: G.copyItems(ed.page, ed.sel), n: 0 }; toast('คัดลอกแล้ว'); e.preventDefault(); }
+    else if (mod && key === 'x' && ed.sel) { clip = { items: G.copyItems(ed.page, ed.sel), n: 0 }; selAction('del'); e.preventDefault(); }
+    else if (mod && key === 'v' && clip) { pasteClip(); e.preventDefault(); }
+    else if (mod && key === 'd' && ed.sel) { selAction('copy'); e.preventDefault(); }
+    else if (mod && key === 'a') { selectAll(); e.preventDefault(); }
+    else if (mod && (e.key === '=' || e.key === '+')) { zoomStep(1.25); e.preventDefault(); }
+    else if (mod && e.key === '-') { zoomStep(1 / 1.25); e.preventDefault(); }
+    else if (mod && e.key === '0') { resetZoom(); e.preventDefault(); }
+    else if (ed.sel && e.key.startsWith('Arrow')) { nudge(e.key, e.shiftKey ? 20 : 2); e.preventDefault(); }
     else if (e.key === 'ArrowRight') turn(1);
     else if (e.key === 'ArrowLeft') turn(-1);
     else if (e.key === 'ArrowDown' || e.key === 'PageDown') scrollBy(e.key === 'ArrowDown' ? 80 : ed.sh * .8);
@@ -343,7 +437,9 @@ function layout() {
   const W = ed.stage.clientWidth, Hs = ed.stage.clientHeight;
   if (W <= 0 || Hs <= 0) return;
   ed.sw = W; ed.sh = Hs;
-  ed.k = Math.min(W, 900) / PW;
+  ed.lpad = sideOn() ? 176 : 0; // จอใหญ่: แผงทุกหน้าทางซ้าย กระดาษอยู่กลางพื้นที่ที่เหลือ
+  ed.k = Math.min(W - ed.lpad - (ed.lpad ? 24 : 0), 900) / PW;
+  paintSide();
   ed.dpr = Math.min(3, devicePixelRatio || 1);
   for (const c of [ed.base, ed.ink]) { c.width = Math.round(W * ed.dpr); c.height = Math.round(Hs * ed.dpr); }
   fitH();
@@ -353,14 +449,17 @@ function layout() {
 }
 /** หน้าต้องยาวอย่างน้อยเต็มจอ */
 function fitH() { ed.H = Math.max(pageH(ed.page), Math.ceil((ed.sh - BOTTOM_ROOM * .3) / ed.k)); }
+const ZMIN = .3, ZMAX = 4;
 function clampView(z, vx, vy) {
-  const s = ed.k * z, pw = PW * s, ph = ed.H * s;
-  vx = pw <= ed.sw ? (ed.sw - pw) / 2 : Math.max(ed.sw - pw, Math.min(0, vx));
-  vy = Math.max(Math.min(0, ed.sh - ph - BOTTOM_ROOM), Math.min(0, vy));
+  const s = ed.k * z, pw = PW * s, ph = ed.H * s, L = ed.lpad || 0, aw = ed.sw - L;
+  vx = pw <= aw ? L + (aw - pw) / 2 : Math.max(ed.sw - pw, Math.min(L, vx));
+  // ซูมออก (ต่ำกว่า 100%) = เห็นทั้งหน้าลอยบนโต๊ะ มีที่ว่างพ้นแถบปุ่มบน/ล่าง
+  const top = z < .999 ? 76 : 0, bot = z < .999 ? 104 : BOTTOM_ROOM;
+  vy = ph + top + bot <= ed.sh ? Math.max(top, (ed.sh - ph) / 2) : Math.max(ed.sh - ph - bot, Math.min(top, vy));
   return [vx, vy];
 }
 function setView(z, vx, vy) {
-  z = Math.max(1, Math.min(4, z));
+  z = Math.max(ZMIN, Math.min(ZMAX, z));
   [vx, vy] = clampView(z, vx, vy);
   const moved = vy !== ed.vy;
   Object.assign(ed, { z, vx, vy });
@@ -368,8 +467,9 @@ function setView(z, vx, vy) {
   ed.layer.style.transform = `translate(${vx}px, ${vy}px) scale(${s})`;
   ed.layer.style.setProperty('--inv', String(1 / s));
   ed.layer.style.height = ed.H + 'px';
-  ed.zoomB.hidden = z <= 1.02;
+  ed.zoomB.hidden = Math.abs(z - 1) <= .02;
   ed.zoomB.innerHTML = si('zoom') + `<span>${Math.round(z * 100)}%</span>`;
+  ed.zpct.textContent = Math.round(z * 100) + '%';
   scrollbar(moved);
   requestRedraw();
   if (ed.sel) showSel();
@@ -397,8 +497,19 @@ function glide(z, vx, vy, ms = 260) {
 }
 function scrollBy(dy) { glide(ed.z, ed.vx, ed.vy - dy, 220); }
 function resetZoom() {
-  const cy = (ed.sh / 2 - ed.vy) / sc(); // คงจุดกลางจอไว้
+  const cy = Math.min(ed.H, Math.max(0, (ed.sh / 2 - ed.vy) / sc())); // คงจุดกลางจอไว้
   glide(1, 0, ed.sh / 2 - cy * ed.k);
+}
+/** ซูมเข้า/ออกทีละขั้น รอบกลางจอ */
+function zoomStep(f) {
+  const z = Math.max(ZMIN, Math.min(ZMAX, ed.z * f)), s = ed.k * z, L = ed.lpad || 0;
+  const ux = ((ed.sw + L) / 2 - ed.vx) / sc(), uy = (ed.sh / 2 - ed.vy) / sc();
+  glide(Math.abs(z - 1) < .04 ? 1 : z, (ed.sw + L) / 2 - ux * s, ed.sh / 2 - uy * s, 200);
+}
+/** พอดีหน้า: เห็นทั้งหน้าในจอ */
+function fitPage() {
+  const z = Math.max(ZMIN, Math.min(1, (ed.sh - 190) / (ed.H * ed.k)));
+  glide(z, 0, 76);
 }
 function requestRedraw() { if (ed.rr) return; ed.rr = requestAnimationFrame(() => { ed.rr = 0; redraw(); }); }
 const setT = ctx => { const s = sc() * ed.dpr; ctx.setTransform(s, 0, 0, s, ed.vx * ed.dpr, ed.vy * ed.dpr); return ctx; };
@@ -408,6 +519,10 @@ function redraw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = DESK; ctx.fillRect(0, 0, ed.base.width, ed.base.height);
   setT(ctx);
+  if (PW * sc() < ed.sw - 2) { // กระดาษไม่เต็มจอ (ซูมออก/จอใหญ่) = เงาใต้กระดาษ
+    ctx.save(); ctx.shadowColor = 'rgba(11,27,77,.18)'; ctx.shadowBlur = 28 * ed.dpr; ctx.shadowOffsetY = 6 * ed.dpr;
+    ctx.fillStyle = '#FFFDF8'; ctx.fillRect(0, 0, PW, ed.H); ctx.restore();
+  }
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, PW, ed.H); ctx.clip();
   drawPage(ctx, ed.page, 1 / sc(), { hide: ed.editing?.id, onImg: requestRedraw, H: ed.H, view: [-ed.vy / sc() - 60, (ed.sh - ed.vy) / sc() + 60] });
   ctx.restore();
@@ -436,13 +551,18 @@ function paintChrome() {
   ed.tools.style.setProperty('--pen', col('pen')); ed.tools.style.setProperty('--hl', ed.color.hl);
   ed.root.classList.toggle('dark-paper', isDark());
   if (!ed.strip.hidden) paintStrip();
+  paintSide();
   paintToc();
   paintOpts();
 }
 function paintOpts() {
   const t = ed.tool, kids = [];
-  if (t === 'shape') kids.push(h('div.sk-seg', Object.entries(SHAPES).map(([k, l]) =>
-    h('button', { type: 'button', 'aria-label': l, title: l, 'aria-pressed': String(ed.shape === k), html: si(k), onclick: () => { ed.shape = k; paintOpts(); } }))));
+  const seg = (list, cur, on, cls = '') => h('div.sk-seg' + cls, list.map(([k, l, ic]) =>
+    h('button', { type: 'button', 'aria-label': l, title: l, 'aria-pressed': String(cur === k), html: si(ic || k), onclick: () => { on(k); paintOpts(); } })));
+  if (t === 'shape') {
+    kids.push(seg(Object.entries(SHAPES), ed.shape, k => { ed.shape = k; setSel(null); }, '.sk-kinds')); // เลือกแบบใหม่ = กำลังจะวาดชิ้นใหม่
+    kids.push(lineish(ed.shape) ? seg(STYLES, ed.lstyle, k => { ed.lstyle = k; }) : seg(FILLS, ed.fill, k => { ed.fill = k; }));
+  }
   if (['pen', 'hl', 'shape', 'text'].includes(t)) {
     const pal = palOf(t), cur = col(t);
     const set = c => { bag(t)[t] = c; if (ed.editing && t === 'text') { ed.editing.t.c = c; ed.editing.ta.style.color = c; ed.editing.ta.focus({ preventScroll: true }); } paintChrome(); };
@@ -457,10 +577,10 @@ function paintOpts() {
       onclick: () => { ed.size[t] = i; if (ed.editing && t === 'text') { ed.editing.t.s = v; placeTA(); ed.editing.ta.focus({ preventScroll: true }); } paintOpts(); } },
       h('i', { style: { '--d': (t === 'text' ? [9, 13, 18] : t === 'eraser' ? [8, 13, 19] : t === 'hl' ? [8, 12, 17] : [4, 7, 11])[i] + 'px', '--sw': t === 'eraser' ? '#fff' : col(t) } })))));
   }
-  if (t === 'lasso') kids.push(h('p.sk-hint', ed.sel ? 'ลากในกรอบเพื่อย้าย · ลากมุมเพื่อย่อขยาย' : 'วนรอบสิ่งที่อยากย้าย หรือแตะที่รูป/ข้อความ'));
+  if (t === 'lasso' && !ed.sel) kids.push(h('p.sk-hint', 'แตะชิ้นไหนก็จับได้ · วนรอบเพื่อเลือกหลายชิ้น')); // เลือกอยู่ = ซ่อนแถบ ไม่บังปุ่มหมุน
   if (t === 'eraser') kids.push(h('p.sk-hint.sm', 'ลากผ่านเส้น = ลบทั้งเส้น'));
   if (t === 'text') kids.push(h('p.sk-hint.sm.tip', 'แตะตรงไหนก็พิมพ์ได้'));
-  if (t === 'shape') kids.push(h('p.sk-hint.tip', 'เคล็ดลับ: ใช้ปากกาวาดแล้วค้างไว้ = รูปทรงเป๊ะ'));
+  if (t === 'shape') kids.push(h('p.sk-hint.tip', lineish(ed.shape) ? 'ลากจากรูปทรงหนึ่งไปอีกรูป = เส้นเกาะ ย้ายแล้วตาม' : 'ลากเพื่อวาด · แตะ = วางขนาดพอดี'));
   put(ed.opts, kids);
   ed.opts.dataset.tool = t;
 }
@@ -479,7 +599,7 @@ function paintToc() {
 }
 
 /* ---------- ประวัติ (เลิกทำ/ทำซ้ำ) แยกตามหน้า ---------- */
-const snap = p => ({ strokes: p.strokes.slice(), texts: p.texts.map(t => ({ ...t })), imgs: p.imgs.map(i => ({ ...i })) });
+const snap = p => ({ strokes: p.strokes.slice(), texts: p.texts.map(t => ({ ...t })), imgs: p.imgs.map(i => ({ ...i })), shapes: (p.shapes || []).map(o => ({ ...o })), lines: (p.lines || []).map(l => ({ ...l })) });
 function remember() {
   let hs = ed.hist.get(ed.page.id);
   if (!hs) ed.hist.set(ed.page.id, hs = { u: [], r: [] });
@@ -506,21 +626,51 @@ async function flush(notify = false) {
 
 /* ---------- นิ้ว/ปากกา/เมาส์ ----------
    นิ้วเดียว/ปากกา/เมาส์ = ใช้เครื่องมือ · สองนิ้ว = เลื่อนขึ้นลง / ถ่างซูม / ปัดซ้ายขวาเปลี่ยนหน้า
-   ถ้าใช้ปากกาสไตลัสอยู่ นิ้วเดียว = เลื่อนแทน (มือแตะจอไม่เป็นเส้น) */
+   ถ้าใช้ปากกาสไตลัสอยู่ นิ้วเดียว = เลื่อนแทน (มือแตะจอไม่เป็นเส้น)
+   0.14: เครื่องมือเลือก = แตะชิ้นไหนก็จับย้ายได้ทันที · มือจับย่อขยาย/หมุน · ย้ายแล้วมีเส้นช่วยจัดแนว (ชิดขอบ/กลางชิ้นอื่น/กลางหน้า) */
+const one = ({ k, o }) => ({ ...G.emptySel(), [k]: [o.id] });
 function bindPointer() {
   const el = ed.stage, ptrs = new Map();
   let g = null; // ท่าที่กำลังทำ
   let two = null, raf = 0;
   const at = e => { const r = el.getBoundingClientRect(), s = sc(); return [(e.clientX - r.left - ed.vx) / s, (e.clientY - r.top - ed.vy) / s, e.pointerType === 'pen' ? (e.pressure || .5) : null, e.timeStamp]; };
   const center = () => { const v = [...ptrs.values()]; return { cx: v.reduce((s, p) => s + p.x, 0) / v.length, cy: v.reduce((s, p) => s + p.y, 0) / v.length, d: v.length > 1 ? Math.hypot(v[0].x - v[1].x, v[0].y - v[1].y) : 0 }; };
-  const cancel = () => { clearTimeout(g?.hold); if (g?.kind === 'ink' || g?.kind === 'shape' || g?.kind === 'loop' || g?.kind === 'erase') clearInk(); if (g?.kind === 'move' && g.base) { ed.page = g.base; redraw(); showSel(); } if (g?.kind === 'erase' && g.saved) changed(); g = null; };
+  const EDITS = ['move', 'size', 'rot', 'end'];
+  const cancel = () => {
+    clearTimeout(g?.hold);
+    if (g && !EDITS.includes(g.kind)) clearInk();
+    if (g && EDITS.includes(g.kind) && g.base) { ed.page = g.base; clearInk(); redraw(); showSel(); }
+    if (g?.kind === 'erase' && g.saved) changed();
+    badge(null); g = null;
+  };
   const live = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; paintLive(); }); };
+  function anchors(ctx, x, y, hot) {
+    const S = sc(), R = 90 / S;
+    for (const o of ed.page.shapes) {
+      const b = G.itemBox(ed.page, 'shapes', o);
+      if (x < b.x0 - R || x > b.x1 + R || y < b.y0 - R || y > b.y1 + R) continue;
+      for (const side of ['n', 'e', 's', 'w']) {
+        const a = G.anchorOf(o, side), on = hot && hot.to === o.id && hot.side === side;
+        ctx.beginPath(); ctx.arc(a.x, a.y, (on ? 8 : 6) / S, 0, 7);
+        ctx.fillStyle = on ? '#0A6CF1' : '#fff'; ctx.fill(); ctx.lineWidth = 2 / S; ctx.strokeStyle = '#0A6CF1'; ctx.stroke();
+      }
+    }
+  }
   function paintLive() {
     if (!g) return;
     const ctx = clearInk();
     const S = sc(), dk = isDark();
-    if (g.kind === 'ink') drawStroke(ctx, g.s, dk);
-    else if (g.kind === 'shape') drawStroke(ctx, { t: 'pen', sh: 1, c: g.c, w: g.w, p: G.shapePoints(ed.shape, g.x0, g.y0, g.x1, g.y1) }, dk);
+    if (g.kind === 'ink') { drawStroke(ctx, g.s, dk); if (g.obj?.type === 'line') anchors(ctx, g.obj.b.x, g.obj.b.y, g.obj.hot); }
+    else if (g.kind === 'newshape') drawShape(ctx, { k: ed.shape, ...dragBox(g), c: col('shape'), f: ed.fill, sw: G.SIZES.pen[ed.size.shape] }, dk);
+    else if (g.kind === 'newline') { drawLine(ctx, ed.page, newLine(g)); anchors(ctx, g.px, g.py, g.hot); }
+    else if (g.kind === 'end') anchors(ctx, g.px, g.py, g.hot);
+    else if (g.kind === 'move' && (g.gx != null || g.gy != null)) {
+      ctx.save(); ctx.strokeStyle = GUIDE; ctx.lineWidth = 1.4 / S; ctx.setLineDash([6 / S, 4 / S]);
+      const top = -ed.vy / S, bot = (ed.sh - ed.vy) / S;
+      if (g.gx != null) { ctx.beginPath(); ctx.moveTo(g.gx, top); ctx.lineTo(g.gx, bot); ctx.stroke(); }
+      if (g.gy != null) { ctx.beginPath(); ctx.moveTo(0, g.gy); ctx.lineTo(PW, g.gy); ctx.stroke(); }
+      ctx.restore();
+    }
     else if (g.kind === 'erase') { ctx.beginPath(); ctx.arc(g.x, g.y, g.r, 0, 7); ctx.fillStyle = dk ? 'rgba(255,255,255,.12)' : 'rgba(11,27,77,.08)'; ctx.fill(); ctx.lineWidth = 1.5 / S; ctx.strokeStyle = dk ? 'rgba(255,255,255,.6)' : 'rgba(11,27,77,.45)'; ctx.stroke(); }
     else if (g.kind === 'loop') { ctx.beginPath(); ctx.moveTo(g.p[0], g.p[1]); for (let i = 2; i < g.p.length; i += 2) ctx.lineTo(g.p[i], g.p[i + 1]); ctx.setLineDash([8 / S, 6 / S]); ctx.lineWidth = 1.8 / S; ctx.strokeStyle = dk ? '#74C0FC' : '#0A6CF1'; ctx.stroke(); ctx.fillStyle = 'rgba(10,108,241,.06)'; ctx.fill(); }
   }
@@ -534,10 +684,10 @@ function bindPointer() {
     const q = center(), dx = q.cx - two.c0x, dy = q.cy - two.c0y, ratio = two.n > 1 && ptrs.size > 1 ? q.d / two.d0 : 1;
     if (!two.mode) {
       if (Math.abs(ratio - 1) > .08) two.mode = 'zoom';
-      else if (Math.hypot(dx, dy) > 10) two.mode = Math.abs(dx) > Math.abs(dy) * 1.2 && ed.z === 1 && two.n > 1 ? 'swipe' : 'pan';
+      else if (Math.hypot(dx, dy) > 10) two.mode = Math.abs(dx) > Math.abs(dy) * 1.2 && ed.z <= 1.001 && two.n > 1 ? 'swipe' : 'pan';
     }
     two.hist.push([performance.now(), q.cx, q.cy]); if (two.hist.length > 6) two.hist.shift();
-    if (two.mode === 'zoom') { const z = Math.max(1, Math.min(4, two.z0 * ratio)), s = ed.k * z; setView(z, q.cx - two.rl - two.ux * s, q.cy - two.rt - two.uy * s); }
+    if (two.mode === 'zoom') { const z = Math.max(ZMIN, Math.min(ZMAX, two.z0 * ratio)), s = ed.k * z; setView(z, q.cx - two.rl - two.ux * s, q.cy - two.rt - two.uy * s); }
     else if (two.mode === 'pan') setView(ed.z, two.vx0 + dx, two.vy0 + dy);
     else if (two.mode === 'swipe') ed.stage.style.setProperty('--drag', Math.max(-70, Math.min(70, dx / 3)) + 'px');
     two.last = q;
@@ -546,7 +696,7 @@ function bindPointer() {
     const t = two; two = null;
     ed.stage.style.removeProperty('--drag');
     if (t.mode === 'swipe') { const dx = (t.last?.cx ?? t.c0x) - t.c0x; if (Math.abs(dx) > 50) turn(dx < 0 ? 1 : -1); return; }
-    if (t.mode === 'zoom' && ed.z < 1.08) { resetZoom(); return; }
+    if (t.mode === 'zoom' && Math.abs(ed.z - 1) < .08) { resetZoom(); return; }
     if (t.mode === 'pan' && t.hist.length > 2 && !reduced()) { // ไหลต่อ
       const [a, b] = [t.hist[0], t.hist[t.hist.length - 1]], dt = Math.max(16, b[0] - a[0]);
       let vx = (b[1] - a[1]) / dt * 16, vy = (b[2] - a[2]) / dt * 16;
@@ -556,7 +706,7 @@ function bindPointer() {
     }
     if (t.mode === 'pen-swipe') return;
     // นิ้วเดียวตอนใช้สไตลัส: ปัดแรง ๆ ซ้ายขวา = เปลี่ยนหน้า
-    if (t.n === 1 && ed.z === 1 && t.last) { const dx = t.last.cx - t.c0x, dy = t.last.cy - t.c0y; if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) turn(dx < 0 ? 1 : -1); }
+    if (t.n === 1 && ed.z <= 1.001 && t.last) { const dx = t.last.cx - t.c0x, dy = t.last.cy - t.c0y; if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) turn(dx < 0 ? 1 : -1); }
   }
 
   el.addEventListener('pointerdown', e => {
@@ -580,8 +730,8 @@ function bindPointer() {
     p.x = e.clientX; p.y = e.clientY;
     if (two) { panMove(); return; }
     if (!g) return;
-    const evs = e.getCoalescedEvents?.() || [e];
-    for (const ev of evs.length ? evs : [e]) move(at(ev));
+    const evs = g.kind === 'ink' ? e.getCoalescedEvents?.() || [e] : [e];
+    for (const ev of evs.length ? evs : [e]) move(at(ev), e);
     live();
   });
   const up = e => {
@@ -589,50 +739,86 @@ function bindPointer() {
     ptrs.delete(e.pointerId);
     if (two) { if (!ptrs.size) panEnd(); return; }
     if (e.type === 'pointercancel') { cancel(); return; }
-    if (g) end(at(e));
+    if (g) end(at(e), e);
   };
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
   // ล้อเมาส์ = เลื่อน · ctrl/ถ่างบนทัชแพด = ซูม
   ed.root.addEventListener('wheel', e => {
-    if (e.target.closest('.sk-strip, .sk-menu')) return;
+    if (e.target.closest('.sk-strip, .sk-menu, .sk-side')) return;
     e.preventDefault();
     cancelAnimationFrame(ed.glideR);
     const r = el.getBoundingClientRect();
     if (e.ctrlKey) {
-      const z = Math.max(1, Math.min(4, ed.z * Math.exp(-e.deltaY * .01))), s = ed.k * z;
+      const z = Math.max(ZMIN, Math.min(ZMAX, ed.z * Math.exp(-e.deltaY * .01))), s = ed.k * z;
       const ux = (e.clientX - r.left - ed.vx) / sc(), uy = (e.clientY - r.top - ed.vy) / sc();
       setView(z, e.clientX - r.left - ux * s, e.clientY - r.top - uy * s);
-      clearTimeout(ed.wheelT); ed.wheelT = setTimeout(() => { if (ed.z < 1.05) resetZoom(); }, 200);
+      clearTimeout(ed.wheelT); ed.wheelT = setTimeout(() => { if (Math.abs(ed.z - 1) < .05 && ed.z !== 1) resetZoom(); }, 200);
     } else setView(ed.z, ed.vx - e.deltaX, ed.vy - e.deltaY);
   }, { passive: false });
 
-  function start([x, y, pr, ts]) {
+  function start([x, y, pr, ts], e) {
     const t = ed.tool;
+    // จับกรอบ/มือจับของสิ่งที่เลือกอยู่ (ทุกเครื่องมือที่ไม่ใช่การเขียน)
+    if (ed.sel && !['pen', 'hl', 'eraser'].includes(t)) { const h = grabSel(x, y, e); if (h) { g = h; return; } }
     if (t === 'pen' || t === 'hl') {
       g = { kind: 'ink', real: pr != null, ts, s: { id: G.pid('s'), t, c: col(t), w: G.SIZES[t][ed.size[t]], p: [x, y, pr ?? .62] } }; live();
       if (t === 'pen') armHold();
-    } else if (t === 'shape') g = { kind: 'shape', x0: x, y0: y, x1: x, y1: y, c: col('shape'), w: G.SIZES.pen[ed.size.shape] };
+    } else if (t === 'shape') {
+      setSel(null);
+      if (lineish(ed.shape)) { const a = G.snapEnd(ed.page, x, y, 26 / sc()); g = { kind: 'newline', x0: x, y0: y, a: a ? { x: a.x, y: a.y, to: a.to, side: a.side } : { x, y }, b: { x, y }, px: x, py: y }; }
+      else g = { kind: 'newshape', x0: x, y0: y, x1: x, y1: y };
+      live();
+    }
     else if (t === 'eraser') { g = { kind: 'erase', x, y, r: G.SIZES.eraser[ed.size.eraser], saved: false }; eraseAt(); live(); }
     else if (t === 'text') g = { kind: 'tap', x, y };
     else if (t === 'lasso') {
-      const b = ed.sel && G.selBox(ed.page, ed.sel, textH), pad = 18 / sc();
-      if (b && Math.hypot(x - b.x1, y - b.y1) < 30 / sc()) g = { kind: 'move', mode: 'scale', x0: x, y0: y, base: ed.page, box: b };
-      else if (b && x > b.x0 - pad && x < b.x1 + pad && y > b.y0 - pad && y < b.y1 + pad) g = { kind: 'move', mode: 'move', x0: x, y0: y, base: ed.page, box: b };
-      else { setSel(null); g = { kind: 'loop', p: [x, y] }; }
+      const hit = G.hitItem(ed.page, x, y, (e.pointerType === 'touch' ? 16 : 10) / sc(), textH);
+      if (hit) {
+        if (e.shiftKey && ed.sel) { const s = { ...ed.sel, [hit.k]: [...(ed.sel[hit.k] || []), hit.o.id] }; setSel(s); }
+        else setSel(one(hit));
+        g = moveG(x, y); g.fresh = true;
+      } else { setSel(null); g = { kind: 'loop', p: [x, y] }; }
     }
   }
-  // ค้างปากกาไว้ครู่หนึ่ง → ลายมือกลายเป็นรูปทรงเป๊ะ (เส้นตรง วงกลม สี่เหลี่ยม สามเหลี่ยม)
+  /** จุดที่แตะโดนกรอบเลือกตรงไหน → ท่าที่จะทำ (ย้าย/ย่อขยาย/หมุน/ลากปลายเส้น) หรือ null */
+  function grabSel(x, y, e) {
+    const f = selFrame(); if (!f) return null;
+    const R = (e.pointerType === 'touch' ? 26 : 16) / sc();
+    if (f.line) {
+      for (const w of ['a', 'b']) { const p = G.endOf(ed.page, f.line[w]); if (Math.hypot(p.x - x, p.y - y) < R) return { kind: 'end', w, id: f.line.id, base: ed.page, px: x, py: y }; }
+      return G.nearLine(ed.page, f.line, x, y, R * .7) ? moveG(x, y) : null;
+    }
+    for (const hd of handlesOf(f)) if (Math.hypot(hd.x - x, hd.y - y) < R)
+      return hd.name === 'rot' ? { kind: 'rot', base: ed.page, f, a0: Math.atan2(y - f.cy, x - f.cx) } : { kind: 'size', base: ed.page, f, hx: hd.hx, hy: hd.hy };
+    const [lx, ly] = G.rotP(x, y, f.cx, f.cy, -f.r), pad = 8 / sc();
+    return Math.abs(lx - f.cx) <= f.w / 2 + pad && Math.abs(ly - f.cy) <= f.h / 2 + pad ? moveG(x, y) : null;
+  }
+  function moveG(x, y) {
+    const box = G.selBox(ed.page, ed.sel, textH);
+    return { kind: 'move', x0: x, y0: y, base: ed.page, box, guides: snapTargets(box), wasOne: G.selCount(ed.sel) === 1 };
+  }
+  // ค้างปากกาไว้ครู่หนึ่ง → ลายมือกลายเป็นรูปทรงเป๊ะ (เส้นตรง วงกลม สี่เหลี่ยม สามเหลี่ยม ข้าวหลามตัด) — กลายเป็นชิ้นงานที่ปรับได้
   function armHold() { clearTimeout(g.hold); g.hold = setTimeout(snapShape, 520); }
   function snapShape() {
     if (g?.kind !== 'ink' || g.s.sh || g.s.t !== 'pen') return;
     const r = G.recognize(g.s.p);
     if (!r) return;
     g.s = { ...g.s, sh: 1, p: r.p };
+    if (r.kind === 'line') {
+      const [[ax, ay], [bx, by]] = r.ends, tol = 30 / sc(), A = G.snapEnd(ed.page, ax, ay, tol), B = G.snapEnd(ed.page, bx, by, tol, A?.to);
+      const E = (s, x, y) => s ? { x: s.x, y: s.y, to: s.to, side: s.side } : { x, y };
+      g.obj = { type: 'line', a: E(A, ax, ay), b: E(B, bx, by), hot: B };
+      g.s.p = [...(A ? [A.x, A.y] : [ax, ay]), .5, ...(B ? [B.x, B.y] : [bx, by]), .5];
+    } else if (['circle', 'rect', 'diamond'].includes(r.kind) || r.kind === 'triangle' && r.upright) {
+      const { x0, y0, x1, y1 } = r.box;
+      g.obj = { type: 'shape', k: r.kind, x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+      g.s.p = r.kind === 'triangle' ? [ (x0 + x1) / 2, y0, .5, x1, y1, .5, x0, y1, .5, (x0 + x1) / 2, y0, .5 ] : g.s.p;
+    }
     navigator.vibrate?.(12);
     ed.stage.classList.remove('snap'); void ed.stage.offsetWidth; ed.stage.classList.add('snap');
     live();
   }
-  function move([x, y, pr, ts]) {
+  function move([x, y, pr, ts], e) {
     if (!g) return;
     if (g.kind === 'ink') {
       if (g.s.sh) return; // กลายเป็นรูปทรงแล้ว
@@ -643,15 +829,50 @@ function bindPointer() {
       p.push(Math.round(x * 10) / 10, Math.round(y * 10) / 10, Math.round(pr * 100) / 100);
       if (dist * sc() > 1.5 && g.s.t === 'pen') armHold();
     }
-    else if (g.kind === 'shape') { g.x1 = x; g.y1 = y; }
+    else if (g.kind === 'newshape') { g.x1 = x; g.y1 = y; g.sq = e.shiftKey; }
+    else if (g.kind === 'newline') {
+      const s = G.snapEnd(ed.page, x, y, 26 / sc(), null);
+      const same = s && s.to === g.a.to && s.side === g.a.side;
+      g.b = s && !same ? { x: s.x, y: s.y, to: s.to, side: s.side } : { x, y }; g.hot = same ? null : s; g.px = x; g.py = y;
+    }
     else if (g.kind === 'erase') { g.x = x; g.y = y; eraseAt(); }
     else if (g.kind === 'loop') g.p.push(x, y);
     else if (g.kind === 'move') {
-      const { box: b } = g;
-      const tf = g.mode === 'move' ? { dx: x - g.x0, dy: y - g.y0 }
-        : { k: Math.max(.15, Math.min(6, Math.max((x - b.x0) / Math.max(10, b.x1 - b.x0), (y - b.y0) / Math.max(10, b.y1 - b.y0)))), ox: b.x0, oy: b.y0 };
-      ed.page = G.transformSel(g.base, ed.sel, tf); g.moved = true;
+      let dx = x - g.x0, dy = y - g.y0;
+      if (!g.moved && Math.hypot(dx, dy) * sc() < 3) return; // แตะเฉย ๆ ไม่ใช่ลาก
+      g.moved = true;
+      [dx, dy, g.gx, g.gy] = snapMove(g, dx, dy, e.altKey);
+      ed.page = G.transformSel(g.base, ed.sel, { dx, dy }, textH);
       redraw(); showSel();
+    }
+    else if (g.kind === 'size') {
+      const f = g.f;
+      if (f.one) {
+        const [lx, ly] = G.rotP(x, y, f.cx, f.cy, -f.r), corner = !!(g.hx && g.hy);
+        ed.page = applyFrame(g.base, f.one, G.resizeFrame(f, g.hx, g.hy, lx - f.cx, ly - f.cy, { keep: corner && !e.shiftKey || f.one.k === 'texts' && corner }), corner);
+      } else { // หลายชิ้น: ย่อขยายเท่ากันทุกด้าน รอบมุมตรงข้าม
+        const ax = f.cx - g.hx * f.w / 2, ay = f.cy - g.hy * f.h / 2, vx = g.hx * f.w, vy = g.hy * f.h;
+        const k = Math.max(.1, Math.min(8, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy || 1)));
+        ed.page = G.transformSel(g.base, ed.sel, { k, ox: ax, oy: ay }, textH);
+      }
+      g.moved = true; redraw(); showSel();
+    }
+    else if (g.kind === 'rot') {
+      const f = g.f, q = Math.PI / 4;
+      let a = Math.atan2(y - f.cy, x - f.cx) - g.a0, tot = f.r + a;
+      const nearQ = Math.round(tot / q) * q;
+      if (Math.abs(tot - nearQ) < .06) { a += nearQ - tot; tot = nearQ; } // ดูดเข้ามุม 0/45/90°
+      ed.page = G.transformSel(g.base, ed.sel, { rot: a, cx: f.cx, cy: f.cy }, textH);
+      g.moved = true; redraw(); showSel();
+      badge(`${((Math.round(tot * 180 / Math.PI) % 360) + 360) % 360}°`, e);
+    }
+    else if (g.kind === 'end') {
+      const l = g.base.lines.find(q => q.id === g.id), other = l[g.w === 'a' ? 'b' : 'a'];
+      let s = G.snapEnd(g.base, x, y, 26 / sc(), null);
+      if (s && s.to === other.to && s.side === other.side) s = null;
+      const ne = s ? { x: s.x, y: s.y, to: s.to, side: s.side } : { x, y };
+      ed.page = { ...g.base, lines: g.base.lines.map(q => q.id === g.id ? { ...q, [g.w]: ne } : q) };
+      g.hot = s; g.px = x; g.py = y; g.moved = true; redraw(); showSel();
     }
   }
   function eraseAt() {
@@ -661,65 +882,235 @@ function bindPointer() {
     ed.page = { ...ed.page, strokes: ed.page.strokes.filter(s => !ids.includes(s.id)) };
     redraw();
   }
-  function end([x, y]) {
+  function end([x, y], e) {
     const cur = g; g = null;
     clearTimeout(cur.hold);
     if (cur.kind === 'ink') {
       remember();
+      clearInk();
+      if (cur.obj?.type === 'shape') return addShape({ ...cur.obj, c: cur.s.c, sw: cur.s.w, f: null }, false);
+      if (cur.obj?.type === 'line') return addLine({ a: cur.obj.a, b: cur.obj.b, c: cur.s.c, w: cur.s.w, hd: 0, st: 'straight' }, false);
       const s = cur.s.sh ? cur.s : { ...cur.s, p: G.thin(cur.s.p, 1.2 / Math.max(.3, sc() * 2)) };
       ed.page = { ...ed.page, strokes: [...ed.page.strokes, s] };
       grow(G.strokeBox(s).y1);
-      clearInk(); changed();
-    } else if (cur.kind === 'shape') {
-      clearInk();
-      if (Math.hypot(cur.x1 - cur.x0, cur.y1 - cur.y0) < 8) return;
-      remember();
-      ed.page = { ...ed.page, strokes: [...ed.page.strokes, { id: G.pid('s'), t: 'pen', sh: 1, c: cur.c, w: cur.w, p: G.shapePoints(ed.shape, cur.x0, cur.y0, cur.x1, cur.y1) }] };
-      grow(Math.max(cur.y0, cur.y1));
       changed();
+    } else if (cur.kind === 'newshape') {
+      clearInk();
+      const tap = Math.hypot(cur.x1 - cur.x0, cur.y1 - cur.y0) * sc() < 6;
+      if (tap) { const hit = G.hitItem(ed.page, cur.x0, cur.y0, 10 / sc(), textH); if (hit) { setSel(one(hit)); return; } }
+      const b = tap ? defaultBox(ed.shape, cur.x0, cur.y0) : dragBox(cur);
+      if (b.w < 6 && b.h < 6) return;
+      remember();
+      addShape({ k: ed.shape, ...b, c: col('shape'), f: ed.fill, sw: G.SIZES.pen[ed.size.shape] }, true);
+    } else if (cur.kind === 'newline') {
+      clearInk();
+      const l = newLine(cur), p = G.linePts(ed.page, l);
+      if (Math.hypot(p[p.length - 2] - p[0], p[p.length - 1] - p[1]) * sc() < 10) { const hit = G.hitItem(ed.page, cur.x0, cur.y0, 10 / sc(), textH); if (hit) setSel(one(hit)); return; }
+      remember();
+      addLine(l, true);
     } else if (cur.kind === 'erase') { clearInk(); if (cur.saved) changed(); }
     else if (cur.kind === 'tap') {
-      const hit = textAt(cur.x, cur.y);
-      if (hit) editText(hit); else newText(cur.x, cur.y);
+      const hit = textAt(cur.x, cur.y), sh = !hit && [...ed.page.shapes].reverse().find(o => G.inShape(o, cur.x, cur.y));
+      if (hit) editText(hit); else if (sh) editShapeText(sh); else newText(cur.x, cur.y);
     } else if (cur.kind === 'loop') {
       clearInk();
       const len = cur.p.length;
       let sel;
-      if (len < 10 || Math.hypot(cur.p[len - 2] - cur.p[0], cur.p[len - 1] - cur.p[1]) < 4 && len < 16) sel = pickAt(x, y);
+      if (len < 10 || Math.hypot(cur.p[len - 2] - cur.p[0], cur.p[len - 1] - cur.p[1]) < 4 && len < 16) { const hit = G.hitItem(ed.page, x, y, 14 / sc(), textH); sel = hit && one(hit); }
       else sel = G.lassoPick(ed.page, cur.p);
-      setSel(sel && (sel.strokes.length || sel.texts.length || sel.imgs.length) ? sel : null);
-    } else if (cur.kind === 'move') {
+      setSel(G.selCount(sel) ? sel : null);
+    } else if (EDITS.includes(cur.kind)) {
+      clearInk(); badge(null);
       if (cur.moved) { const now = ed.page; ed.page = cur.base; remember(); ed.page = now; grow(G.selBox(ed.page, ed.sel, textH)?.y1 || 0); changed(); }
+      else if (cur.kind === 'move') {
+        // แตะเฉย ๆ: แตะชิ้นที่เลือกอยู่ชิ้นเดียวซ้ำ = แก้ข้อความ · แตะชิ้นหนึ่งในกลุ่ม = เลือกชิ้นนั้น
+        const hit = G.hitItem(ed.page, x, y, (e.pointerType === 'touch' ? 16 : 10) / sc(), textH);
+        if (!cur.fresh && cur.wasOne && hit && ed.sel?.[hit.k]?.[0] === hit.o.id && (hit.k === 'texts' || hit.k === 'shapes')) { hit.k === 'texts' ? editText(hit.o) : editShapeText(hit.o); return; }
+        if (!cur.fresh && G.selCount(ed.sel) > 1 && hit) setSel(one(hit));
+      }
       showSel();
     }
   }
 }
-function textAt(x, y) { return [...ed.page.texts].reverse().find(t => x >= t.x - 10 && x <= t.x + t.w + 10 && y >= t.y - 10 && y <= t.y + textH(t) + 10); }
-function pickAt(x, y) {
-  const t = textAt(x, y); if (t) return { strokes: [], texts: [t.id], imgs: [] };
-  const s = G.strokesHit(ed.page.strokes, x, y, 14 / sc()).pop(); if (s) return { strokes: [s], texts: [], imgs: [] };
-  const i = [...ed.page.imgs].reverse().find(o => x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h);
-  return i ? { strokes: [], texts: [], imgs: [i.id] } : null;
+/** กล่องจากการลาก (กด shift = จัตุรัส) */
+function dragBox(c) {
+  let w = Math.abs(c.x1 - c.x0), hh = Math.abs(c.y1 - c.y0);
+  if (c.sq) w = hh = Math.max(w, hh);
+  return { x: c.x1 < c.x0 ? c.x0 - w : c.x0, y: c.y1 < c.y0 ? c.y0 - hh : c.y0, w, h: hh };
+}
+/** แตะเฉย ๆ = วางรูปทรงขนาดพอดีตรงนั้น */
+function defaultBox(k, x, y) {
+  const [w, hh] = { rect: [260, 170], round: [260, 170], bubble: [280, 200], barrow: [260, 150], hexagon: [230, 200] }[k] || [200, 200];
+  return { x: Math.round(Math.max(10, Math.min(PW - w - 10, x - w / 2))), y: Math.round(Math.max(10, y - hh / 2)), w, h: hh };
+}
+const newLine = c => ({ id: 'tmp', a: c.a, b: c.b, c: col('shape'), w: G.SIZES.pen[ed.size.shape], hd: ed.shape === 'arrow' ? 1 : 0, st: ed.lstyle });
+/** เพิ่มรูปทรง (เรียก remember ก่อนแล้ว) — เลือกให้เลยแบบ Canva */
+function addShape(o, select) {
+  const s = Math.round(Math.max(24, Math.min(48, Math.min(o.w, o.h) / 4.5)));
+  const n = { id: G.pid('h'), k: o.k, x: Math.round(o.x), y: Math.round(o.y), w: Math.round(o.w), h: Math.round(o.h), r: 0, c: o.c, f: o.f ?? null, sw: o.sw, v: '', s };
+  ed.page = { ...ed.page, shapes: [...ed.page.shapes, n] };
+  grow(n.y + n.h); changed();
+  if (select) setSel({ ...G.emptySel(), shapes: [n.id] });
+}
+function addLine(l, select) {
+  const n = { ...l, id: G.pid('l') };
+  ed.page = { ...ed.page, lines: [...ed.page.lines, n] };
+  grow(G.lineBox(ed.page, n).y1); changed();
+  if (select) setSel({ ...G.emptySel(), lines: [n.id] });
+}
+function textAt(x, y) { return [...ed.page.texts].reverse().find(t => { const f = G.frameOf(t, textH(t)), [lx, ly] = G.rotP(x, y, f.cx, f.cy, -f.r); return Math.abs(lx - f.cx) <= f.w / 2 + 10 && Math.abs(ly - f.cy) <= f.h / 2 + 10; }); }
+/** ย่อขยายชิ้นเดียวด้วยกรอบใหม่ */
+function applyFrame(page, { k, o }, nf, corner) {
+  const kk = nf.w / o.w, r1 = v => Math.round(v * 10) / 10;
+  let n;
+  if (k === 'texts') {
+    n = { ...o, w: r1(nf.w), s: corner ? r1(o.s * kk) : o.s, x: r1(nf.cx - nf.w / 2) };
+    n.y = corner || o.r ? r1(nf.cy - textH(n) / 2) : o.y;
+  } else {
+    n = { ...o, x: r1(nf.cx - nf.w / 2), y: r1(nf.cy - nf.h / 2), w: r1(nf.w), h: r1(nf.h) };
+    if (k === 'shapes' && corner) n.s = r1(o.s * kk);
+  }
+  return { ...page, [k]: page[k].map(x => x.id === o.id ? n : x) };
 }
 
-/* ---------- การเลือก ---------- */
-function setSel(sel) { ed.sel = sel; showSel(); if (ed.tool === 'lasso') paintOpts(); }
-function showSel() {
-  const b = ed.sel && G.selBox(ed.page, ed.sel, textH);
-  ed.selbox.hidden = ed.selbar.hidden = !b;
-  if (!b) return;
-  const pad = 8 / sc(), s = sc();
-  Object.assign(ed.selbox.style, { left: b.x0 - pad + 'px', top: b.y0 - pad + 'px', width: b.x1 - b.x0 + pad * 2 + 'px', height: b.y1 - b.y0 + pad * 2 + 'px' });
-  const sx = ed.vx + ((b.x0 + b.x1) / 2) * s, top = ed.vy + b.y0 * s - 62;
-  ed.selbar.style.left = Math.max(8, Math.min(ed.sw - 200, sx - 100)) + 'px';
-  ed.selbar.style.top = Math.max(64, Math.min(ed.sh - 190, top < 64 ? ed.vy + b.y1 * s + 18 : top)) + 'px';
+/* ---------- เส้นช่วยจัดแนว: ขอบ/กลางของชิ้นอื่นที่อยู่ใกล้ ๆ + กลางหน้า ---------- */
+function snapTargets(box) {
+  const xs = [PW / 2], ys = [];
+  if (!box) return { xs, ys };
+  const top = -ed.vy / sc() - 200, bot = (ed.sh - ed.vy) / sc() + 200;
+  for (const { k, o } of G.ordered(ed.page)) {
+    if (ed.sel[k]?.includes(o.id) || k === 'strokes' && o.t === 'hl') continue;
+    const b = G.itemBox(ed.page, k, o, textH);
+    if (b.y1 < top || b.y0 > bot) continue;
+    xs.push(b.x0, (b.x0 + b.x1) / 2, b.x1); ys.push(b.y0, (b.y0 + b.y1) / 2, b.y1);
+  }
+  return { xs, ys };
 }
-function selAction(kind) {
+function snapMove(g, dx, dy, off) {
+  const b = g.box;
+  if (!b || off) return [dx, dy, null, null];
+  const th = 7 / sc();
+  const best = (vals, tg) => { let m = null; for (const v of vals) for (const t of tg) { const d = t - v; if (Math.abs(d) < th && (!m || Math.abs(d) < Math.abs(m.d))) m = { d, t }; } return m; };
+  const sx = best([b.x0 + dx, (b.x0 + b.x1) / 2 + dx, b.x1 + dx], g.guides.xs), sy = best([b.y0 + dy, (b.y0 + b.y1) / 2 + dy, b.y1 + dy], g.guides.ys);
+  return [dx + (sx?.d || 0), dy + (sy?.d || 0), sx?.t ?? null, sy?.t ?? null];
+}
+function badge(text, e) {
+  if (!ed.badge) return;
+  ed.badge.hidden = !text;
+  if (!text) return;
+  ed.badge.textContent = text;
+  const r = ed.root.getBoundingClientRect();
+  Object.assign(ed.badge.style, { left: e.clientX - r.left + 18 + 'px', top: e.clientY - r.top - 44 + 'px' });
+}
+
+/* ---------- การเลือก (แบบ Canva: กรอบหมุนตามชิ้น · แถบเมนูลอยเหนือกรอบ) ---------- */
+function setSel(sel) {
+  ed.sel = G.selCount(sel) ? sel : null; ed.palOpen = false; ed.selbarFor = null;
+  showSel(); if (ed.tool === 'lasso') paintOpts();
+}
+function selectAll() {
+  if (ed.editing) return;
+  const sel = {}; for (const k of G.KINDS) sel[k] = (ed.page[k] || []).map(o => o.id);
+  ed.tool = 'lasso'; paintChrome(); setSel(sel);
+}
+/** กรอบของสิ่งที่เลือก: ชิ้นเดียวแบบกล่อง = หมุนตามชิ้น · เส้นเชื่อมชิ้นเดียว = จุดปลาย · อื่น ๆ = กรอบตั้งตรงล้อมทั้งหมด */
+function selFrame() {
+  const sel = ed.sel; if (!sel) return null;
+  if (G.selCount(sel) === 1) {
+    for (const k of ['shapes', 'imgs', 'texts']) if (sel[k]?.length) { const o = ed.page[k].find(x => x.id === sel[k][0]); if (o) return { ...G.frameOf(o, k === 'texts' ? textH(o) : o.h), one: { k, o } }; }
+    if (sel.lines?.length) { const l = ed.page.lines.find(x => x.id === sel.lines[0]); if (l) return { line: l }; }
+  }
+  const b = G.selBox(ed.page, sel, textH); if (!b) return null;
+  return { cx: (b.x0 + b.x1) / 2, cy: (b.y0 + b.y1) / 2, w: b.x1 - b.x0, h: b.y1 - b.y0, r: 0, one: null };
+}
+const HANDLES = { nw: [-1, -1], n: [0, -1], ne: [1, -1], e: [1, 0], se: [1, 1], s: [0, 1], sw: [-1, 1], w: [-1, 0] };
+const sidesOf = f => !f.one ? [] : f.one.k === 'texts' ? ['e', 'w'] : ['n', 'e', 's', 'w'];
+function handlesOf(f) {
+  const pad = 8 / sc(), sides = sidesOf(f), out = [];
+  for (const [name, [hx, hy]] of Object.entries(HANDLES)) {
+    if (!(hx && hy) && !sides.includes(name)) continue;
+    const [x, y] = G.rotP(f.cx + hx * (f.w / 2 + pad), f.cy + hy * (f.h / 2 + pad), f.cx, f.cy, f.r);
+    out.push({ name, hx, hy, x, y });
+  }
+  const [x, y] = G.rotP(f.cx, f.cy + f.h / 2 + pad + 40 / sc(), f.cx, f.cy, f.r);
+  out.push({ name: 'rot', x, y });
+  return out;
+}
+function showSel() {
+  const f = selFrame();
+  ed.selbox.hidden = !f || !!f.line; ed.ends.hidden = !f?.line; ed.selbar.hidden = !f;
+  if (!f) return;
+  const s = sc();
+  if (f.line) {
+    for (const [el, w] of [[ed.endA, 'a'], [ed.endB, 'b']]) { const p = G.endOf(ed.page, f.line[w]); Object.assign(el.style, { left: p.x + 'px', top: p.y + 'px' }); el.classList.toggle('on', !!f.line[w].to); }
+  } else {
+    const pad = 8 / s;
+    Object.assign(ed.selbox.style, { left: f.cx - f.w / 2 - pad + 'px', top: f.cy - f.h / 2 - pad + 'px', width: f.w + pad * 2 + 'px', height: f.h + pad * 2 + 'px', transform: f.r ? `rotate(${f.r}rad)` : '' });
+    ed.selbox.dataset.kind = f.one ? f.one.k : 'multi';
+  }
+  if (ed.selbarFor !== ed.sel) paintSelbar();
+  // แถบเมนูลอยเหนือกรอบ (ชิดขอบบนจอเกิน = ลงไปใต้กรอบ พ้นปุ่มหมุน)
+  const b = G.selBox(ed.page, ed.sel, textH);
+  const bw = ed.selbar.offsetWidth || 240, bh = ed.selbar.offsetHeight || 48;
+  const sx = ed.vx + ((b.x0 + b.x1) / 2) * s, above = ed.vy + b.y0 * s - bh - 16;
+  ed.selbar.style.left = Math.max(8, Math.min(ed.sw - bw - 8, sx - bw / 2)) + 'px';
+  ed.selbar.style.top = Math.max(60, Math.min(ed.sh - bh - 130, above < 60 ? ed.vy + b.y1 * s + (f.line ? 20 : 64) : above)) + 'px';
+}
+/** แถบเมนูลอย: สี · พื้น (รูปทรง) · แบบเส้น/หัวลูกศร (เส้นเชื่อม) · ข้อความ · ทำสำเนา · หน้าสุด/หลังสุด · ลบ */
+function paintSelbar() {
+  const sel = ed.sel, only = k => G.KINDS.every(x => x === k || !sel[x]?.length);
+  ed.selbarFor = sel;
+  const first = G.ordered(ed.page).find(({ k, o }) => sel[k]?.includes(o.id))?.o;
+  const bt = (ic, label, on, extra = {}) => h('button', { type: 'button', 'aria-label': label, title: label, html: si(ic), onclick: on, ...extra });
+  const items = [];
+  const imgsOnly = only('imgs');
+  if (!imgsOnly) items.push(h('button.sk-swb', { type: 'button', 'aria-label': 'สี', title: 'สี', 'aria-expanded': String(!!ed.palOpen), style: { '--sw': first?.c || '#0B1B4D' }, onclick: () => { ed.palOpen = !ed.palOpen; paintSelbar(); showSel(); } }, h('i')));
+  if (only('shapes')) {
+    const cur = FILLS.findIndex(([v]) => v === (first?.f ?? null)), nx = FILLS[(cur + 1) % FILLS.length];
+    items.push(bt(FILLS[cur]?.[2] || 'fill0', 'พื้น: ' + (FILLS[cur]?.[1] || 'ไม่มีพื้น') + ' (แตะเพื่อเปลี่ยน)', () => selAction('fill', nx[0])));
+  }
+  if (only('lines')) {
+    const cs = STYLES.findIndex(([v]) => v === (first?.st || 'straight')), ch = HEADS.findIndex(([v]) => v === (first?.hd || 0));
+    items.push(bt(STYLES[cs][0], 'เส้น' + STYLES[cs][1] + ' (แตะเพื่อเปลี่ยน)', () => selAction('style', STYLES[(cs + 1) % 3][0])));
+    items.push(bt('hd' + HEADS[ch][0], HEADS[ch][1] + ' (แตะเพื่อเปลี่ยน)', () => selAction('head', HEADS[(ch + 1) % 3][0])));
+  }
+  if (G.selCount(sel) === 1 && (sel.shapes?.length || sel.texts?.length)) items.push(bt('text', 'แก้ข้อความ', () => { const o = first; setSel(null); sel.shapes?.length ? editShapeText(o) : editText(o); }));
+  items.push(h('i.sk-sep'));
+  items.push(bt('copy', 'ทำสำเนา', () => selAction('copy')), bt('front', 'เอาไว้หน้าสุด', () => selAction('front')), bt('back', 'เอาไว้หลังสุด', () => selAction('back')), bt('trash', 'ลบ', () => selAction('del'), { className: 'del' }));
+  const kids = [h('div.sk-selrow', items)];
+  if (ed.palOpen) {
+    const hl = only('strokes') && ed.page.strokes.filter(x => sel.strokes.includes(x.id)).every(x => x.t === 'hl');
+    const pal = hl ? G.HIGHLIGHTS : palOf('pen'), cur = first?.c;
+    kids.push(h('div.sk-selpal', pal.map(c => h('button', { type: 'button', 'aria-label': 'สี ' + c, 'aria-pressed': String(cur === c), style: { '--sw': c }, onclick: () => selAction('color', c) })),
+      h('label.sk-own' + (pal.includes(cur) ? '' : '.on'), { title: 'เลือกสีเอง', style: pal.includes(cur) ? null : { '--sw': cur } }, h('input', { type: 'color', value: hex6(cur) ? cur : '#0B1B4D', 'aria-label': 'เลือกสีเอง', onchange: e => selAction('color', e.target.value) }))));
+  }
+  put(ed.selbar, kids);
+}
+function selAction(kind, arg) {
   if (!ed.sel) return;
   remember();
+  const keepPal = kind === 'color';
   if (kind === 'del') { ed.page = G.removeSel(ed.page, ed.sel); setSel(null); }
-  else { const r = G.duplicateSel(ed.page, ed.sel); ed.page = r.page; setSel(r.sel); }
+  else if (kind === 'copy') { const r = G.duplicateSel(ed.page, ed.sel); ed.page = r.page; setSel(r.sel); }
+  else if (kind === 'front' || kind === 'back') ed.page = G.restack(ed.page, ed.sel, kind === 'front');
+  else if (kind === 'color') ed.page = G.editSel(ed.page, ed.sel, o => ({ ...o, c: arg }));
+  else if (kind === 'fill') { ed.page = G.editSel(ed.page, ed.sel, (o, k) => k === 'shapes' ? { ...o, f: arg } : o); ed.fill = arg; }
+  else if (kind === 'style') { ed.page = G.editSel(ed.page, ed.sel, (o, k) => k === 'lines' ? { ...o, st: arg } : o); ed.lstyle = arg; }
+  else if (kind === 'head') ed.page = G.editSel(ed.page, ed.sel, (o, k) => k === 'lines' ? { ...o, hd: arg } : o);
+  ed.selbarFor = null; ed.palOpen = keepPal && ed.palOpen;
   changed(); showSel();
+}
+function nudge(key, d) {
+  const [dx, dy] = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, -d], ArrowDown: [0, d] }[key];
+  remember(); ed.page = G.transformSel(ed.page, ed.sel, { dx, dy }, textH); changed(); showSel();
+}
+function pasteClip() {
+  if (ed.editing) commitText();
+  clip.n++;
+  remember();
+  const r = G.pasteItems(ed.page, clip.items, 30 * clip.n);
+  ed.page = r.page; ed.tool = 'lasso';
+  changed(); setSel(r.sel);
 }
 
 /* ---------- ข้อความ ---------- */
@@ -730,8 +1121,21 @@ function newText(x, y) {
   editText(t, true);
 }
 function editText(t, isNew = false) {
+  if (ed.editing) commitText();
+  setSel(null);
   const ta = h('textarea.sk-ta', { value: t.v, 'aria-label': 'พิมพ์ข้อความ', rows: 1, spellcheck: false });
   ed.editing = { id: t.id, t: { ...t }, isNew, ta };
+  bindTA(ta);
+}
+/** ข้อความในรูปทรง (แตะรูปทรงที่เลือกอยู่ซ้ำ · เครื่องมือข้อความแตะในรูป · ปุ่ม "แก้ข้อความ") */
+function editShapeText(o) {
+  if (ed.editing) commitText();
+  setSel(null);
+  const ta = h('textarea.sk-ta.in-shape', { value: o.v || '', 'aria-label': 'พิมพ์ข้อความในรูปทรง', rows: 1, spellcheck: false });
+  ed.editing = { id: o.id, shape: true, t: { ...o }, ta };
+  bindTA(ta);
+}
+function bindTA(ta) {
   ta.addEventListener('input', () => { fitTA(); keepTAInView(); });
   ta.addEventListener('blur', () => setTimeout(() => { if (ed.editing?.ta === ta) commitText(); }, 0));
   ed.layer.append(ta);
@@ -739,15 +1143,29 @@ function editText(t, isNew = false) {
   requestAnimationFrame(() => { ta.focus({ preventScroll: true }); ta.setSelectionRange(ta.value.length, ta.value.length); });
 }
 function placeTA() {
-  const { ta, t } = ed.editing;
-  Object.assign(ta.style, { left: t.x + 'px', top: t.y + 'px', width: t.w + 'px', fontSize: t.s + 'px', color: t.c });
+  const { ta, t, shape } = ed.editing;
+  if (shape) {
+    const [fw] = G.shapeTextArea(t.k);
+    Object.assign(ta.style, { left: t.x + t.w * (1 - fw) / 2 + 'px', width: t.w * fw + 'px', fontSize: t.s + 'px', color: shapeInk(t, isDark()) });
+  } else Object.assign(ta.style, { left: t.x + 'px', top: t.y + 'px', width: t.w + 'px', fontSize: t.s + 'px', color: t.c });
   fitTA();
 }
-function fitTA() { const ta = ed.editing?.ta; if (!ta) return; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+function fitTA() {
+  const e = ed.editing, ta = e?.ta; if (!ta) return;
+  ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px';
+  const t = e.t;
+  if (e.shape) { // กลางรูปทรงเสมอ หมุนตามรูป
+    const [fw, fy] = G.shapeTextArea(t.k), left = t.x + t.w * (1 - fw) / 2, top = t.y + t.h * fy - ta.offsetHeight / 2;
+    ta.style.top = top + 'px';
+    ta.style.transformOrigin = `${t.x + t.w / 2 - left}px ${t.y + t.h / 2 - top}px`;
+    ta.style.transform = t.r ? `rotate(${t.r}rad)` : '';
+  } else { ta.style.transformOrigin = '50% 50%'; ta.style.transform = t.r ? `rotate(${t.r}rad)` : ''; }
+}
 /** คีย์บอร์ดมือถือขึ้นมาบังช่องพิมพ์ → เลื่อนหน้าให้เห็น */
 function keepTAInView() {
   const e = ed.editing; if (!e) return;
-  const bottom = ed.vy + (e.t.y + e.ta.offsetHeight) * sc(), top = ed.vy + e.t.y * sc();
+  const y0 = parseFloat(e.ta.style.top) || e.t.y;
+  const bottom = ed.vy + (y0 + e.ta.offsetHeight) * sc(), top = ed.vy + y0 * sc();
   const room = ed.sh - 130;
   if (bottom > room) glide(ed.z, ed.vx, ed.vy - (bottom - room), 180);
   else if (top < 70) glide(ed.z, ed.vx, ed.vy + (70 - top), 180);
@@ -758,6 +1176,14 @@ function commitText() {
   ed.editing = null;
   e.ta.remove();
   const v = e.ta.value.replace(/\s+$/, '');
+  if (e.shape) {
+    const old = ed.page.shapes.find(x => x.id === e.id);
+    if (!old || (old.v || '') === v) { redraw(); return; }
+    remember();
+    ed.page = { ...ed.page, shapes: ed.page.shapes.map(x => x.id === e.id ? { ...x, v } : x) };
+    changed();
+    return;
+  }
   const t = { ...e.t, v };
   const old = ed.page.texts.find(x => x.id === t.id);
   if (!v && !old) { redraw(); return; }
@@ -784,8 +1210,8 @@ async function insertImage() {
   remember();
   ed.page = { ...ed.page, imgs: [...ed.page.imgs, o] };
   grow(o.y + o.h);
-  ed.tool = 'lasso'; changed(); setSel({ strokes: [], texts: [], imgs: [o.id] });
-  toast('ลากเพื่อย้าย · ลากมุมเพื่อย่อขยาย');
+  ed.tool = 'lasso'; changed(); setSel({ ...G.emptySel(), imgs: [o.id] });
+  toast('ลากเพื่อย้าย · จับมุมย่อขยาย · จับ ⟳ หมุน');
 }
 
 /* ---------- แถบภาพย่อทุกหน้า (แตะ "x / y") ---------- */
@@ -802,6 +1228,33 @@ function paintStrip() {
     onclick: () => { toggleStrip(); turnTo(i); } }, thumb(p.id === ed.page.id ? ed.page : p, 120), h('span', String(i + 1)))),
     h('button.sk-film.add', { type: 'button', 'aria-label': 'เพิ่มหน้าใหม่', onclick: async () => { toggleStrip(); await flush(); const p = await app.store.addPage(ed.book.id); turnTo(pagesNow().findIndex(x => x.id === p.id)); }, html: '<i>' + si('plus') + '</i><span>ใหม่</span>' }));
   requestAnimationFrame(() => ed.strip.querySelector('.on')?.scrollIntoView({ inline: 'center', block: 'nearest' }));
+}
+
+/* ---------- จอใหญ่: แผงทุกหน้าทางซ้าย (แบบ Canva) — แตะหน้า = ไปหน้านั้น · ภาพย่อหน้าปัจจุบันอัปเดตตามที่เขียน ---------- */
+const wide = () => matchMedia('(min-width: 1100px)').matches;
+const sideOn = () => !!ed.open && ed.sideOpen && wide();
+function toggleSide() {
+  if (ed.editing) commitText();
+  ed.sideOpen = !ed.sideOpen; ed.sideKey = null;
+  layout();
+}
+async function addPageEnd() { await flush(); const p = await app.store.addPage(ed.book.id); turnTo(pagesNow().findIndex(x => x.id === p.id)); }
+function paintSide() {
+  if (!ed.side) return;
+  const on = sideOn();
+  ed.side.hidden = !on; ed.root.classList.toggle('side-on', on);
+  if (!on) { ed.sideKey = null; return; }
+  const list = pagesNow(), key = list.map(p => p.id).join() + '|' + ed.idx;
+  if (key !== ed.sideKey) {
+    ed.sideKey = key;
+    put(ed.side, h('p.sk-side-h', `${list.length} หน้า`), h('div.sk-side-list', list.map((p, i) => h('button.sk-sp' + (i === ed.idx ? '.on' : ''), { type: 'button', 'data-id': p.id, 'aria-label': `หน้า ${i + 1}`, 'aria-current': i === ed.idx ? 'page' : null, onclick: () => turnTo(i) },
+      thumb(p.id === ed.page.id ? ed.page : p, 240), h('b', String(i + 1)))),
+      h('button.sk-sp-add', { type: 'button', onclick: addPageEnd, html: si('plus') + '<span>เพิ่มหน้า</span>' })));
+    requestAnimationFrame(() => ed.side?.querySelector('.sk-sp.on')?.scrollIntoView({ block: 'nearest' }));
+  } else {
+    clearTimeout(ed.sideT);
+    ed.sideT = setTimeout(() => { const c = ed.side?.querySelector(`.sk-sp[data-id="${ed.page.id}"] canvas`); if (c) c.replaceWith(thumb(ed.page, 240)); }, 500);
+  }
 }
 
 /* ---------- เมนูหน้า: กระดาษ · เพิ่ม/ลบ/ล้างหน้า ---------- */
@@ -841,8 +1294,8 @@ function setPaper(k) {
   ed.menu.hidden = true; changed();
 }
 function clearPage() {
-  if (!ed.page.strokes.length && !ed.page.texts.length && !ed.page.imgs.length) return;
-  remember(); ed.page = { ...ed.page, strokes: [], texts: [], imgs: [] }; setSel(null); changed();
+  if (G.isBlank(ed.page)) return;
+  remember(); ed.page = { ...ed.page, strokes: [], texts: [], imgs: [], shapes: [], lines: [] }; setSel(null); changed();
   toast('ล้างหน้าแล้ว', { label: 'เลิกทำ', run: undo });
 }
 async function dupPage() { await flush(); const p = await app.store.duplicatePage(ed.page.id); if (p) { await turnTo(pagesNow().findIndex(x => x.id === p.id)); toast('ทำสำเนาหน้าแล้ว'); } }
@@ -852,10 +1305,10 @@ async function delPage() {
   const ok = await confirmBox({ title: n > 1 ? `ลบหน้า ${ed.idx + 1}?` : 'ล้างหน้าเดียวของสมุด?', body: 'ลบแล้วกู้คืนไม่ได้', ok: 'ลบ', danger: true });
   if (!ok || !ed.open) return;
   clearTimeout(ed.saveT);
-  if (n === 1) { ed.page = { ...ed.page, strokes: [], texts: [], imgs: [] }; ed.hist.delete(ed.page.id); await flush(); redraw(); paintChrome(); return; }
+  if (n === 1) { ed.page = { ...ed.page, strokes: [], texts: [], imgs: [], shapes: [], lines: [] }; ed.hist.delete(ed.page.id); await flush(); redraw(); paintChrome(); return; }
   await app.store.removePage(ed.page.id);
   ed.hist.delete(ed.page.id);
-  const list = pagesNow(); ed.idx = Math.min(ed.idx, list.length - 1); ed.page = list[ed.idx];
+  const list = pagesNow(); ed.idx = Math.min(ed.idx, list.length - 1); ed.page = G.norm(list[ed.idx]);
   fitH(); setView(1, 0, 0);
   setSel(null); redraw(); paintChrome();
 }
@@ -883,7 +1336,7 @@ async function turnTo(i, fresh = false) {
   const flipper = h('canvas.sk-flip', { width: ed.base.width, height: ed.base.height });
   const fx = flipper.getContext('2d');
   if (dir > 0) fx.drawImage(ed.base, 0, 0);
-  ed.idx = i; ed.page = next; fitH();
+  ed.idx = i; ed.page = G.norm(next); fitH();
   Object.assign(ed, { z: 1, vx: 0, vy: 0 }); setView(1, 0, 0); redraw();
   if (dir < 0) { fx.drawImage(ed.base, 0, 0); } // หน้าก่อนหน้าพลิกกลับเข้ามา
   const shade = h('i.sk-shade');
@@ -928,7 +1381,7 @@ export async function closeSketch(fromPop = false) {
   setSel(null);
   cancelAnimationFrame(ed.flingR); cancelAnimationFrame(ed.glideR);
   try { await flush(false); } catch {}
-  app.store.setPref('sketch', { tool: ed.tool, shape: ed.shape, color: ed.color, dcolor: ed.dcolor, size: ed.size, tipped: true }, false).catch(() => {});
+  app.store.setPref('sketch', { tool: ed.tool, shape: ed.shape, fill: ed.fill, lstyle: ed.lstyle, side: ed.sideOpen, color: ed.color, dcolor: ed.dcolor, size: ed.size, tipped: true, tipped12: true }, false).catch(() => {});
   await app.store.updateBook(ed.book.id, { last_page: ed.page.id }).catch(() => {}); // แจ้งทั้งแอป → หน้า "ทุกหน้า" วาดภาพย่อใหม่
   if (!fromPop) dropBack('sketch');
   const root = ed.root, pageId = ed.page.id;
@@ -1098,7 +1551,7 @@ async function bookForTask(t) {
 export async function writeForTask(t) {
   const b = await bookForTask(t);
   const list = app.store.pagesOf(b.id), last = list[list.length - 1];
-  const empty = last && !last.cover && !last.strokes.length && !last.texts.length && !last.imgs.length;
+  const empty = last && !last.cover && G.isBlank(last);
   const p = empty ? last : await app.store.addPage(b.id);
   const page = await app.store.savePage({ ...p, texts: [{ id: G.pid('t'), x: 140, y: 150, w: 760, s: 52, c: '#0B1B4D', v: t.title }] }, false);
   await app.store.updateBook(b.id, { last_page: page.id });
