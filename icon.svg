@@ -1,1 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#0B1B4D"/><path d="M150 330c26 26 63 40 106 40 58 0 96-27 96-69 0-90-182-55-182-134 0-38 34-58 78-58 33 0 62 11 83 30" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"/><circle cx="378" cy="378" r="36" fill="#0A6CF1"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<linearGradient id="m" x1="300" y1="0" x2="530" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#16275E"/><stop offset=".8" stop-color="#16275E"/><stop offset="1" stop-color="#0D1E52"/></linearGradient>
+</defs>
+<rect width="512" height="512" rx="112" fill="#fff"/>
+<g transform="translate(256 256) scale(.74) translate(-486 -561)" stroke-linecap="round" stroke-linejoin="round">
+ <!-- bottom book: back cover -->
+ <path d="M296 700 L500 790 Q512 795 524 789 L560 768 L520 752 L300 690 Z" fill="#0A57DC"/>
+ <!-- bottom book pages -->
+ <path d="M300 640 L520 690 L585 648 C612 640 632 655 625 680 C617 705 570 728 510 760 L300 700 Z" fill="#fff"/>
+ <path d="M300 640 L300 700 L510 778 L510 700 Z" fill="#fff"/>
+ <g stroke="#DADDE3" stroke-width="4" fill="none"><path d="M318 668 L500 735"/><path d="M318 685 L500 752"/><path d="M330 652 L505 715"/></g>
+ <!-- bottom book top cover (left strip) -->
+ <path d="M288 634 Q284 624 296 618 L340 598 Q350 594 360 598 L585 660 L522 690 Q512 695 500 690 Z" fill="#0A57DC"/>
+ <path d="M288 634 L288 708 Q290 716 298 718 L300 645 Z" fill="#0A57DC"/>
+ <!-- right spine -->
+ <path d="M520 570 L598 538 C668 548 700 600 688 650 C678 700 610 745 520 792 L508 765 C580 728 625 700 630 665 C635 630 615 605 575 598 L520 620 Z" fill="#0F5FE6"/>
+ <!-- middle band (navy) -->
+ <path d="M340 520 L522 570 L522 622 L330 570 Z" fill="url(#m)"/>
+ <!-- left spine -->
+ <path d="M330 398 C284 420 270 475 288 525 C298 552 315 566 340 571 L352 522 C320 510 312 470 330 440 C337 428 348 420 360 416 Z" fill="#16275E"/>
+ <!-- top pages -->
+ <path d="M358 416 L518 466 L666 400 L666 455 L522 570 L352 522 C318 510 312 466 330 440 C337 428 348 420 358 416 Z" fill="#fff"/>
+ <g stroke="#DADDE3" stroke-width="4" fill="none"><path d="M362 455 L495 494"/><path d="M352 478 L495 518"/><path d="M528 482 L655 424"/></g>
+ <path d="M520 528 L666 458 L668 470 L524 540 Z" fill="#16275E"/>
+ <!-- top cover -->
+ <path d="M322 402 L470 330 Q490 320 512 326 L655 378 Q672 386 656 394 L528 462 Q514 469 498 465 Z" fill="#16275E"/>
+ <!-- bookmark -->
+ <path d="M338 700 L338 762 L352 750 L366 764 L366 710 Z" fill="#0A57DC"/>
+</g></svg>
