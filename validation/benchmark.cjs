@@ -209,6 +209,10 @@ async function startup(context, page, host, mode) {
     await waitReady(page);
     await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
     if (mode === 'offline') {
+      // Both variants get one online load under the active service worker before disconnecting.
+      // The baseline adds some runtime modules to the cache on first controlled access.
+      await page.reload({ waitUntil: 'load' });
+      await waitReady(page);
       // Close access to the origin even if Chromium reports an online interface.
       await context.setOffline(true);
       host.setDisconnected(true);
@@ -366,15 +370,18 @@ async function main() {
   const samplesFile = path.join(artifacts, 'benchmark-samples.jsonl');
   fs.writeFileSync(samplesFile, '');
   const hosts = [], rows = [];
-  const offlineOnly = process.env.SABAII_OFFLINE_ONLY === 'true';
-  const startupModes = offlineOnly ? ['offline'] : MODES;
-  const featureNames = offlineOnly ? [] : Object.keys(FEATURES);
+  const scope = process.env.SABAII_VALIDATION_SCOPE || 'all';
+  const featureName = scope.replace(/^navigation-/, '');
+  const navigationScope = scope.startsWith('navigation-') && Object.hasOwn(FEATURES, featureName);
+  assert.ok(scope === 'all' || scope === 'startup' || navigationScope, 'Unknown benchmark scope: ' + scope);
+  const startupModes = scope === 'all' || scope === 'startup' ? MODES : [];
+  const featureNames = scope === 'all' ? Object.keys(FEATURES) : navigationScope ? [featureName] : [];
   const report = {
     rounds: ROUNDS, node: process.version, os: os.platform() + ' ' + os.release(), cpu: os.cpus()[0]?.model,
     viewport: VISIBLE, throttle: SLOW, startupObservationMsAfterReadyAndLoad: 1250,
     large: { tasks: 2000, attachments: 6000, imageAttachments: 25 },
-    complete: true, fatal: null, firstOpenReview: [], offlineOnly,
-    offlineMethod: 'Chromium offline context and disconnected origin; cached service worker required',
+    complete: true, fatal: null, firstOpenReview: [], scope,
+    offlineMethod: 'Online reload under the service worker, then Chromium offline context and disconnected origin',
   };
   let browser;
   try {

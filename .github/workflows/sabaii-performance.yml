@@ -13,11 +13,17 @@ concurrency:
 
 jobs:
   compare:
+    name: Validation / ${{ matrix.scope }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [regression, startup, navigation-tasks, navigation-notebook, navigation-me, navigation-subject, navigation-book]
     env:
       CI: "true"
       TZ: Asia/Bangkok
+      SABAII_VALIDATION_SCOPE: ${{ matrix.scope }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -34,7 +40,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: sabaii-performance-${{ github.run_id }}-${{ github.run_attempt }}
+          name: sabaii-performance-${{ matrix.scope }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/sabaii-performance-artifacts
           if-no-files-found: warn
           retention-days: 30

@@ -7,10 +7,11 @@ artifacts_dir="${VALIDATION_ARTIFACTS:-"$repo_root/validation-artifacts"}"
 mkdir -p "$artifacts_dir"
 artifacts_dir="$(cd "$artifacts_dir" && pwd)"
 work_dir="$(mktemp -d "${RUNNER_TEMP:-/tmp}/sabaii-validation.XXXXXX")"
-base_commit=bed0d53487cabd0c944c02afbecb3b162d557d7e
+base_commit=d6450219503b8c97877b726d23f845f0d39f1baf
 candidate_commit="$(git -C "$repo_root" rev-parse HEAD)"
 status="$artifacts_dir/checks.tsv"
 failures=0
+scope="${SABAII_VALIDATION_SCOPE:-all}"
 
 run_check() {
   local name="$1" code
@@ -70,11 +71,13 @@ install_browser() {
 printf 'check\texit_code\n' > "$status"
 run_check prepare-snapshots prepare_snapshots
 run_check environment record_environment || :
-for variant in before after; do
-  run_check "$variant-node" node_suite "$work_dir/$variant" || :
-done
-if run_check local-benchmark node "$validation_dir/bench-local.mjs" "$work_dir/before" "$work_dir/after"; then
-  cp "$artifacts_dir/local-benchmark.log" "$artifacts_dir/local-benchmark.json"
+if [[ "$scope" == all || "$scope" == regression ]]; then
+  for variant in before after; do
+    run_check "$variant-node" node_suite "$work_dir/$variant" || :
+  done
+  if run_check local-benchmark node "$validation_dir/bench-local.mjs" "$work_dir/before" "$work_dir/after"; then
+    cp "$artifacts_dir/local-benchmark.log" "$artifacts_dir/local-benchmark.json"
+  fi
 fi
 build_ok=1
 for variant in before after; do
@@ -85,18 +88,20 @@ done
 
 if run_check install-chromium install_browser; then
   export NODE_PATH="$work_dir/deps/node_modules"
-  if [[ "${SABAII_OFFLINE_ONLY:-false}" != 'true' ]]; then
+  if [[ "$scope" == all || "$scope" == regression ]]; then
     for variant in before after; do
-      for suite in e2e account.e2e sketch.e2e canva.e2e shell.e2e shell-ride.e2e; do
+      for suite in e2e account.e2e sketch.e2e canva.e2e shell.e2e shell-ride.e2e notify.e2e; do
         run_check "$variant-$suite" timeout 180s node "$work_dir/$variant/tests/$suite.cjs" || :
       done
     done
   fi
-  if [[ "$build_ok" == 1 ]]; then
-    run_check browser-benchmark timeout 35m node "$validation_dir/benchmark.cjs" \
-      "$work_dir/before/dist/app" "$work_dir/after/dist/app" "$artifacts_dir" || :
-  else
-    printf 'browser-benchmark\tskipped (snapshot build failed)\n' >> "$status"
+  if [[ "$scope" != regression ]]; then
+    if [[ "$build_ok" == 1 ]]; then
+      run_check browser-benchmark timeout 25m node "$validation_dir/benchmark.cjs" \
+        "$work_dir/before/dist/app" "$work_dir/after/dist/app" "$artifacts_dir" || :
+    else
+      printf 'browser-benchmark\tskipped (snapshot build failed)\n' >> "$status"
+    fi
   fi
 else
   printf 'e2e and browser-benchmark\tskipped (Chromium install failed)\n' >> "$status"

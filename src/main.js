@@ -6,12 +6,13 @@ import { createCloud } from './data/cloud.js';
 import { createProfileSync } from './data/profile.js';
 import { createSync } from './data/sync.js';
 import { showLogin } from './features/login.js';
+import { refreshPush } from './features/notify.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.14.1';
+globalThis.SABAII_VERSION = '0.16.0';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', book: 'สมุดจด' };
 const PAGES = {
   tasks: [() => import('./features/tasks.js'), 'tasksView'],
@@ -130,6 +131,7 @@ async function boot() {
   }).catch(() => toast('เตรียมบัญชีไม่สำเร็จ กรุณาเปิดแอปใหม่'));
   else requestAnimationFrame(() => setTimeout(syncIfIn, 0));
   profile.start();
+  refreshPush(); // เปิดแจ้งเตือนไว้ = บอกเซิร์ฟเวอร์ซ้ำว่าเครื่องนี้ยังรับอยู่ (endpoint อาจเปลี่ยน)
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }

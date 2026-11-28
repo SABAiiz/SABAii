@@ -179,6 +179,14 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       return (await r.json())[0] || null;
     },
     /** เปิดแอป = ยังใช้อยู่ (เซิร์ฟเวอร์เขียนจริงอย่างมาก 1 ครั้ง / 10 นาที) · ล้มก็ไม่เป็นไร */
+    /** เรียกฟังก์ชันในฐานข้อมูล (rpc) ในนามผู้ใช้ */
+    async rpc(name, body = {}) {
+      const r = await api(`/rest/v1/rpc/${name}`, { method: 'POST', body });
+      const t = await r.text?.();
+      try { return t ? JSON.parse(t) : null; } catch { return t; }
+    },
+    /** เรียก Edge Function ในนามผู้ใช้ */
+    async fn(name, body = {}) { return (await api(`/functions/v1/${name}`, { method: 'POST', body })).json(); },
     async touch() { try { await api('/rest/v1/rpc/touch_last_seen', { method: 'POST', body: {} }); } catch {} },
     /** ประวัติบัญชีล่าสุด (สมัคร · เข้าสู่ระบบ · ผูกวิธีเข้าใหม่) */
     async accountEvents(limit = 20) {
