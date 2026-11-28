@@ -33,7 +33,12 @@ const SESSION = {
 };
 
 async function serve(root) {
+  let disconnected = false;
   const server = http.createServer(async (req, res) => {
+    if (disconnected) {
+      req.socket.destroy();
+      return;
+    }
     try {
       const url = new URL(req.url, 'http://127.0.0.1');
       if (url.pathname === '/__fixture') {
@@ -66,7 +71,10 @@ async function serve(root) {
     server.once('error', reject);
     server.listen(0, '127.0.0.1', resolve);
   });
-  return { server, origin: 'http://127.0.0.1:' + server.address().port };
+  return {
+    server, origin: 'http://127.0.0.1:' + server.address().port,
+    setDisconnected(value) { disconnected = value; },
+  };
 }
 
 // This code runs in every document, before app modules or service workers for the page.
@@ -194,13 +202,17 @@ async function waitReady(page) {
   await page.waitForFunction(() => window.sabaiiMetrics?.readyMs > 0);
 }
 
-async function startup(context, page, origin, mode) {
-  const url = origin + '/app/#/home';
+async function startup(context, page, host, mode) {
+  const url = host.origin + '/app/#/home';
   if (['warm', 'offline', 'large'].includes(mode)) {
     await page.goto(url);
     await waitReady(page);
     await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
-    if (mode === 'offline') await context.setOffline(true);
+    if (mode === 'offline') {
+      // Close access to the origin even if Chromium reports an online interface.
+      await context.setOffline(true);
+      host.setDisconnected(true);
+    }
     await page.reload({ waitUntil: 'domcontentloaded' });
   } else {
     if (mode === 'slow') await throttle(context, page);
@@ -222,7 +234,6 @@ async function startup(context, page, origin, mode) {
     };
   });
   if (mode === 'offline') {
-    assert.equal(metrics.online, false);
     assert.equal(metrics.cachedWorker, true);
     await page.locator('#nav a[data-r="notebook"]').tap();
     await page.locator(FEATURES.notebook.ready).waitFor();
@@ -290,10 +301,11 @@ async function runTrial(browser, host, type, condition, variant, round) {
     await seed(page, host.origin, { large: !feature && condition === 'large', feature });
     row.metrics = feature
       ? await firstOpen(context, page, host.origin, condition)
-      : await startup(context, page, host.origin, condition);
+      : await startup(context, page, host, condition);
   } catch (error) {
     row.errors.push({ kind: 'trial', text: error.stack || error.message });
   } finally {
+    host.setDisconnected(false);
     if (context) {
       try { await context.close(); }
       catch (error) { row.errors.push({ kind: 'trial', text: 'Context close: ' + error.message }); }
@@ -354,11 +366,15 @@ async function main() {
   const samplesFile = path.join(artifacts, 'benchmark-samples.jsonl');
   fs.writeFileSync(samplesFile, '');
   const hosts = [], rows = [];
+  const offlineOnly = process.env.SABAII_OFFLINE_ONLY === 'true';
+  const startupModes = offlineOnly ? ['offline'] : MODES;
+  const featureNames = offlineOnly ? [] : Object.keys(FEATURES);
   const report = {
     rounds: ROUNDS, node: process.version, os: os.platform() + ' ' + os.release(), cpu: os.cpus()[0]?.model,
     viewport: VISIBLE, throttle: SLOW, startupObservationMsAfterReadyAndLoad: 1250,
     large: { tasks: 2000, attachments: 6000, imageAttachments: 25 },
-    complete: true, fatal: null, firstOpenReview: [],
+    complete: true, fatal: null, firstOpenReview: [], offlineOnly,
+    offlineMethod: 'Chromium offline context and disconnected origin; cached service worker required',
   };
   let browser;
   try {
@@ -371,7 +387,7 @@ async function main() {
       args: ['--host-resolver-rules=MAP fonts.googleapis.com ~NOTFOUND, MAP fonts.gstatic.com ~NOTFOUND'],
     });
     report.chromium = browser.version();
-    for (const [type, conditions] of [['startup', MODES], ['feature', Object.keys(FEATURES)]]) {
+    for (const [type, conditions] of [['startup', startupModes], ['feature', featureNames]]) {
       for (const condition of conditions) {
         for (let round = 1; round <= ROUNDS; round++) {
           // Alternate ordering without running competing browser contexts in parallel.
@@ -394,8 +410,8 @@ async function main() {
       report.complete = false;
     });
     await Promise.all(hosts.map(({ server }) => new Promise(resolve => server.close(resolve))));
-    report.startup = compare(report, rows, 'startup', MODES, START_METRICS);
-    report.firstOpen = compare(report, rows, 'feature', Object.keys(FEATURES), ['readyMs']);
+    report.startup = compare(report, rows, 'startup', startupModes, START_METRICS);
+    report.firstOpen = compare(report, rows, 'feature', featureNames, ['readyMs']);
     for (const [feature, group] of Object.entries(report.firstOpen)) {
       const before = group.before.metrics.readyMs, after = group.after.metrics.readyMs;
       if (before.count !== ROUNDS || after.count !== ROUNDS) continue;

@@ -6,7 +6,6 @@ name: SABAii performance validation
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: sabaii-performance-validation
@@ -14,12 +13,12 @@ concurrency:
 
 jobs:
   compare:
-    if: github.event.head_commit.message != 'Read saved performance benchmark diagnostics'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     env:
       CI: "true"
       TZ: Asia/Bangkok
+      SABAII_OFFLINE_ONLY: ${{ github.event.head_commit.message == 'Validate offline startup with an isolated origin' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -40,49 +39,3 @@ jobs:
           path: ${{ runner.temp }}/sabaii-performance-artifacts
           if-no-files-found: warn
           retention-days: 30
-
-  read_saved_run:
-    if: github.event.head_commit.message == 'Read saved performance benchmark diagnostics'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Retrieve Chromium results from run 46142211838
-        uses: actions/download-artifact@v5
-        with:
-          name: sabaii-performance-46142211838-1
-          path: saved
-          github-token: ${{ github.token }}
-          run-id: 46142211838
-      - name: Print verified measurements and error counts
-        run: |
-          cat saved/checks.tsv
-          for suite in saved/before-*.e2e.log saved/after-*.e2e.log saved/{before,after}-e2e.log; do
-            if [ -f "$suite" ]; then
-              echo "$suite"
-              tail -n 2 "$suite"
-            fi
-          done
-          python3 - <<'PY'
-          import collections, json, pathlib
-          root = pathlib.Path('saved')
-          report = json.loads((root/'benchmark-summary.json').read_text())
-          print('BENCHMARK_SUMMARY ' + json.dumps(report, ensure_ascii=False))
-          result = json.loads((root/'local-benchmark.json').read_text())
-          print('LOCAL_BENCHMARK ' + json.dumps(result, ensure_ascii=False))
-          errors = json.loads((root/'benchmark-errors.json').read_text())
-          normalized = collections.Counter()
-          examples = {}
-          for trial in errors['trials']:
-              for error in trial['errors']:
-                  kind = error['kind']
-                  first_line = (error.get('text') or str(error.get('status') or '')).split('\n')[0]
-                  key = (trial['type'], trial['condition'], trial['variant'], kind, first_line)
-                  normalized[key] += 1
-                  if kind in ('pageerror','trial','http') and key not in examples:
-                      examples[key] = error.get('text') or error.get('url')
-          print('BENCHMARK_ERRORS ' + json.dumps({
-              'fatal': errors['fatal'],
-              'groups': [{'group': key, 'count': count, 'example': examples.get(key)}
-                  for key, count in normalized.items()]
-          }, ensure_ascii=False))
-          PY

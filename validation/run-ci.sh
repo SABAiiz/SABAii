@@ -85,11 +85,13 @@ done
 
 if run_check install-chromium install_browser; then
   export NODE_PATH="$work_dir/deps/node_modules"
-  for variant in before after; do
-    for suite in e2e account.e2e sketch.e2e canva.e2e shell.e2e shell-ride.e2e; do
-      run_check "$variant-$suite" timeout 180s node "$work_dir/$variant/tests/$suite.cjs" || :
+  if [[ "${SABAII_OFFLINE_ONLY:-false}" != 'true' ]]; then
+    for variant in before after; do
+      for suite in e2e account.e2e sketch.e2e canva.e2e shell.e2e shell-ride.e2e; do
+        run_check "$variant-$suite" timeout 180s node "$work_dir/$variant/tests/$suite.cjs" || :
+      done
     done
-  done
+  fi
   if [[ "$build_ok" == 1 ]]; then
     run_check browser-benchmark timeout 35m node "$validation_dir/benchmark.cjs" \
       "$work_dir/before/dist/app" "$work_dir/after/dist/app" "$artifacts_dir" || :
@@ -98,6 +100,23 @@ if run_check install-chromium install_browser; then
   fi
 else
   printf 'e2e and browser-benchmark\tskipped (Chromium install failed)\n' >> "$status"
+fi
+
+cat "$status"
+if [[ -f "$artifacts_dir/benchmark-summary.json" ]]; then
+  printf 'BENCHMARK_SUMMARY '
+  node -p 'JSON.stringify(require(process.argv[1]))' "$artifacts_dir/benchmark-summary.json"
+fi
+if [[ -f "$artifacts_dir/benchmark-errors.json" ]]; then
+  node -e '
+    const errors = require(process.argv[1]);
+    const failed = errors.trials.filter(row => !row.ok);
+    console.log("BENCHMARK_FAILURES " + JSON.stringify({
+      fatal: errors.fatal,
+      failed: failed.length,
+      examples: failed.slice(0, 4)
+    }));
+  ' "$artifacts_dir/benchmark-errors.json"
 fi
 
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
