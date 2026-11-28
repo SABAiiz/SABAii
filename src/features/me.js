@@ -8,6 +8,7 @@ import { app, S, subj, today } from './shared.js';
 import { MODES, listenMode } from './listen.js';
 import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
 import { openOnboarding } from './onboard.js';
+import { openAccount, syncLabel, avatarEl } from './account.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
@@ -62,6 +63,8 @@ export function meView(root) {
         h('button.stat', { onclick: () => { location.hash = '#/tasks'; } }, h('b', String(sum.soon)), h('small', 'ใกล้ส่ง')),
         h('button.stat.r', { onclick: () => (exam ? app.openNotes(exam.id) : (location.hash = '#/tasks')) },
           h('b', exam ? String(Math.max(0, daysBetween(td, exam.due_date))) : '—'), h('small', exam ? `วันถึงสอบ${examSubj.id ? ' ' + examSubj.name.replace(/^ภาษา/, '') : ''}` : 'ยังไม่มีสอบ')))),
+    h('h2.msec', 'บัญชี'),
+    h('div.mlist', accountRow(row)),
     h('h2.msec', 'ตั้งค่า'),
     h('div.mlist',
       row('layout', 'blue', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, { extra: h('img.mthumb', { src: stylePreview(noteStyle()), alt: '' }) }),
@@ -76,7 +79,7 @@ export function meView(root) {
     h('div.mlist',
       row('save', 'teal', 'สำรองข้อมูล', 'ไฟล์ JSON', exportData),
       row('restore', 'teal', 'กู้คืนจากไฟล์สำรอง', null, restoreModal),
-      row('lock', 'slate', 'ข้อมูลและความเป็นส่วนตัว', s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal)),
+      row('lock', 'slate', 'ข้อมูลและความเป็นส่วนตัว', app.cloud?.user() ? 'เครื่อง + บัญชี' : s.dbKind === 'indexeddb' ? 'เก็บในเครื่อง' : 'ชั่วคราว', privacyModal)),
     // แบบสอบถาม "เสียงนักเรียน" (/study/) — เปิดเต็มจอในแอป ตอบเสร็จการ์ดเปลี่ยนเป็นขอบคุณ
     h('h2.msec', 'ช่วยเราหน่อย'),
     h('button.studycard' + (s.prefs.study_done ? '.done' : ''), { onclick: s.prefs.study_done ? shareStudy : openStudy },
@@ -90,8 +93,17 @@ export function meView(root) {
       soon('link', 'Google Classroom', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว')),
       soon('users', 'ห้องเรียน', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้')),
       soon('bell', 'การแจ้งเตือน', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') }))),
-    h('button.mfoot', { onclick: aboutModal, 'aria-label': 'เกี่ยวกับ SABAii.com' }, h('span', h('b', 'SABAii.com'), ` · รุ่น ${globalThis.SABAII_VERSION || ''}`), h('small', { html: ic('lock') + 'งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น' })),
+    h('button.mfoot', { onclick: aboutModal, 'aria-label': 'เกี่ยวกับ SABAii.com' }, h('span', h('b', 'SABAii.com'), ` · รุ่น ${globalThis.SABAII_VERSION || ''}`), h('small', { html: ic('lock') + (app.cloud?.user() ? 'งานอยู่ในเครื่องนี้ + บัญชีของคุณ' : 'งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น') })),
   );
+}
+
+/** แถวบัญชี: ยังไม่เข้า = ปุ่มชวนเข้าสู่ระบบด้วย Google · เข้าแล้ว = รูป + อีเมล + สถานะซิงก์ */
+function accountRow(row) {
+  const u = app.cloud?.user();
+  if (!u) return row('cloud', 'blue', 'เข้าสู่ระบบด้วย Google', null, openAccount, { sub: 'งานและสมุดไม่หายเมื่อเปลี่ยนเครื่อง' });
+  const st = h('span.lv', { id: 'me-sync' }, syncLabel());
+  return h('button.list-btn', { onclick: openAccount },
+    avatarEl(u, 'span.mi.accpic'), h('span.lk', u.name || 'บัญชีและซิงก์', h('small', u.email)), st, h('span.chev', { html: ic('right') }));
 }
 
 /* ---------- แบบสอบถาม "เสียงนักเรียน" แบบเต็มจอ (iframe ของ /study/ — ต้องออนไลน์) ---------- */
@@ -135,7 +147,7 @@ function shareStudy() {
 function aboutModal() {
   openModal({ title: 'เกี่ยวกับ SABAii.com', body: h('div',
     h('p', 'แอปจัดการงานเรียน: เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง'),
-    h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง ยังไม่มีบัญชี การซิงก์ การอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) });
+    h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง · เข้าสู่ระบบด้วย Google และซิงก์ได้แล้ว · ยังไม่มีการอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) });
 }
 function stylePicker() {
   const cur = noteStyle();
@@ -179,8 +191,13 @@ function restoreModal() {
 }
 function privacyModal() {
   openModal({ title: 'ข้อมูลและความเป็นส่วนตัว', body: h('div',
-    h('p', 'งาน วิชา รูป และโน้ตทั้งหมดเก็บอยู่ในเบราว์เซอร์ของเครื่องนี้เท่านั้น ยังไม่มีการส่งขึ้นเซิร์ฟเวอร์'),
-    h('p.muted', 'ถ้าล้างข้อมูลเบราว์เซอร์หรือลบแอป ข้อมูลจะหาย — สำรองเป็นไฟล์ไว้ก่อน'),
+    ...(app.cloud?.user() ? [
+      h('p', `งาน วิชา รูป โน้ต และสมุดเก็บในเครื่องนี้ และซิงก์ขึ้นบัญชี ${app.cloud.user().email} (เซิร์ฟเวอร์ในสิงคโปร์ · เห็นได้เฉพาะเจ้าของบัญชี)`),
+      h('p.muted', 'ปุ่มด้านล่างล้างเฉพาะเครื่องนี้ งานในบัญชียังอยู่ · ลบบัญชีถาวรได้ที่แถวบัญชีด้านบนของหน้าฉัน'),
+    ] : [
+      h('p', 'งาน วิชา รูป โน้ต และสมุดทั้งหมดเก็บอยู่ในเบราว์เซอร์ของเครื่องนี้เท่านั้น ยังไม่มีการส่งขึ้นเซิร์ฟเวอร์ (จนกว่าจะเข้าสู่ระบบ)'),
+      h('p.muted', 'ถ้าล้างข้อมูลเบราว์เซอร์หรือลบแอป ข้อมูลจะหาย — เข้าสู่ระบบด้วย Google หรือสำรองเป็นไฟล์ไว้ก่อน'),
+    ]),
     h('button.btn.danger.full', { onclick: async () => {
       if (!await confirmBox({ title: 'ลบข้อมูลทั้งหมด?', body: 'งาน วิชา รูป และโน้ตในเครื่องนี้จะหายถาวร แนะนำให้สำรองข้อมูลก่อน', ok: 'ลบทั้งหมด', danger: true })) return;
       indexedDB.deleteDatabase('sabaii'); location.reload();
