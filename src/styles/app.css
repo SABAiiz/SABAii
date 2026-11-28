@@ -1577,44 +1577,33 @@ body.ns-3 .pane-note .tk-b .cta { white-space: nowrap; min-width: 0; }
 .btn span svg { width: 18px; height: 18px; vertical-align: -3px; }
 .list-btn.dangertext .lk { color: var(--error); }
 
-/* 0.13.1 หน้าเข้าสู่ระบบ = หน้าแรกของสมุด: กระดาษมีเส้น · เส้นกั้นหน้าแดง · ลายมือเป็นเช็กลิสต์ · ปุ่ม Google คือข้อสุดท้าย */
+/* 0.13.2 หน้าเข้าสู่ระบบ (แบบ D + ปุ่มกรมท่าแบบ B) — พื้นเทาอ่อน · กล่องขาวกลางจอ · รูปงาน 3 ใบเหนือกล่อง */
 html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html.gated #page { visibility: hidden; }
-#login { --rule: 44px; --m: 64px; --paper: #FFFFFF; --line: #D8E5F6; --margin: #F2A7B0; --pen: #0A6CF1; --desk: #E8EEF6;
-  --ui: "Anuphan", "Noto Sans Thai Looped", sans-serif;
+#login { --ui: "Anuphan", "Noto Sans Thai Looped", sans-serif; --ez: cubic-bezier(.2,.8,.2,1);
   position: fixed; inset: 0; z-index: 1000; overflow-y: auto; display: flex; flex-direction: column; align-items: center;
-  padding: max(28px, env(safe-area-inset-top)) 16px max(24px, var(--safe-b)); background: var(--desk); color: var(--ink); font-family: var(--ui); }
-.lg-paper { position: relative; width: 100%; max-width: 440px; margin: auto 0; border-radius: 4px 16px 16px 4px;
-  background: linear-gradient(90deg, transparent calc(var(--m) - 12px), var(--margin) calc(var(--m) - 12px) calc(var(--m) - 10.5px), transparent calc(var(--m) - 10.5px)), var(--paper);
-  box-shadow: 0 1px 1px rgba(11,27,77,.08), 0 18px 40px -22px rgba(11,27,77,.35); }
-/* หน้าสมุดที่ซ้อนอยู่ข้างล่าง 2 แผ่น */
-.lg-paper::before, .lg-paper::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: #F7F9FD; box-shadow: 0 1px 2px rgba(11,27,77,.08); }
-.lg-paper::before { transform: translate(4px, 5px); } .lg-paper::after { transform: translate(8px, 10px); background: #EFF3FA; }
-.lg-head { display: flex; align-items: center; gap: 8px; padding: 22px 24px 20px var(--m); font: 700 17px/1 var(--ui); letter-spacing: .01em; }
-.lg-head img { border-radius: 7px; }
-.lg-lines { padding: 0 18px 0 var(--m);
-  background: repeating-linear-gradient(to bottom, transparent 0 calc(var(--rule) - 1px), var(--line) calc(var(--rule) - 1px) var(--rule)); }
-.lg-lines h1 { margin: 0; font-family: var(--hand); font-weight: 700; font-size: min(27px, 7vw); line-height: var(--rule); color: var(--ink); padding-top: 4px; white-space: nowrap; }
-.lg-list { list-style: none; margin: 0; padding: 0; }
-.lg-list li { position: relative; display: flex; align-items: flex-end; height: var(--rule); padding-bottom: 7px; font-family: var(--hand); font-weight: 500; font-size: min(18px, 4.9vw); line-height: 1.2; color: #24345F; white-space: nowrap; }
-.lg-box { position: absolute; left: calc(var(--m) * -1 + 14px); bottom: 7px; width: 26px; height: 26px; }
-.lg-box svg { width: 100%; height: 100%; overflow: visible; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.lg-box .bx { stroke: #8C99B6; stroke-width: 1.6; }
-.lg-box .tk { stroke: var(--pen); stroke-width: 2.8; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; }
-.lg-box.on .tk { animation: lg-ink .42s cubic-bezier(.5,0,.2,1) calc(.45s + var(--i) * .38s) forwards; }
-@keyframes lg-ink { from { opacity: 1; } to { opacity: 1; stroke-dashoffset: 0; } }
-/* ข้อสุดท้าย: ปุ่ม Google สูง 2 บรรทัด · กดแล้วปากกาติ๊กช่อง */
-.lg-list .lg-go { height: calc(var(--rule) * 2); align-items: center; padding: 0; }
-.lg-go .lg-box { bottom: auto; top: 50%; margin-top: -13px; }
-.lg-go.done .tk { transition: stroke-dashoffset .34s cubic-bezier(.5,0,.2,1); stroke-dashoffset: 0; opacity: 1; }
-.lg-btn { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 54px; padding: 0 22px 0 16px; border: 1.5px solid var(--ink); border-radius: 14px;
-  background: var(--paper); color: var(--ink); font: 600 16px var(--ui); white-space: nowrap; cursor: pointer; box-shadow: 0 3px 0 var(--ink); transition: transform .12s, box-shadow .12s, background .12s; }
-.lg-btn:hover { background: #F5F8FE; }
-.lg-btn:active, .lg-btn:disabled { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
-.lg-btn:disabled { cursor: default; }
-.lg-btn:focus-visible { outline: 2.5px solid var(--pen); outline-offset: 3px; }
-.lg-ic, .lg-ic svg { width: 22px; height: 22px; display: block; flex: none; }
-.lg-err { margin: 0; min-height: var(--rule); padding-top: 10px; color: var(--error); font: 500 15px/1.4 var(--ui); } .lg-err:empty { display: none; }
-.lg-foot { margin: 0; padding: 20px 18px 22px var(--m); color: var(--text-2); font-size: 12.5px; line-height: 1.65; }
-.lg-back { margin-top: 26px; color: var(--text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
-@media (max-width: 360px) { #login { --m: 50px; padding-inline: 12px; } .lg-box { left: calc(var(--m) * -1 + 10px); } .lg-btn { padding: 0 12px; gap: 10px; font-size: 15px; } }
-@media (prefers-reduced-motion: reduce) { .lg-box.on .tk { animation: none; stroke-dashoffset: 0; opacity: 1; } .lg-go.done .tk { transition: none; } }
+  padding: max(26px, env(safe-area-inset-top)) 18px max(22px, var(--safe-b)); background: #F4F5F8; color: var(--ink); font-family: var(--ui); }
+.lg-top { display: flex; align-items: center; gap: 8px; margin-bottom: 92px; font: 700 17px/1 var(--ui); }
+.lg-top img { border-radius: 7px; }
+.lg-card { width: 100%; max-width: 400px; margin: auto 0; padding: 30px 22px 22px; background: #fff; border-radius: 22px; text-align: center;
+  box-shadow: 0 1px 2px rgba(11,27,77,.05), 0 18px 40px -24px rgba(11,27,77,.3); }
+/* รูปงาน 3 ใบโผล่เหนือกล่อง — ตอนเปิดคลี่ออกจากกองเดียว (การเคลื่อนไหวเดียวของหน้า) */
+.lg-stack { display: flex; justify-content: center; margin: -66px 0 20px; }
+.lg-stack img { width: 66px; height: 66px; object-fit: cover; border-radius: 18px; border: 4px solid #fff; background: var(--surface);
+  box-shadow: 0 10px 18px -10px rgba(11,27,77,.55); animation: lg-fan .8s var(--ez) both; animation-delay: calc(.08s + var(--i) * 60ms); }
+.lg-stack img:nth-child(1) { --t: 14px; --r: -9deg; rotate: var(--r); margin-right: -14px; }
+.lg-stack img:nth-child(2) { --t: 0px; --r: 0deg; z-index: 1; translate: 0 -8px; }
+.lg-stack img:nth-child(3) { --t: -14px; --r: 9deg; rotate: var(--r); margin-left: -14px; }
+@keyframes lg-fan { from { opacity: 0; transform: translateX(var(--t)) translateY(14px) scale(.86); rotate: 0deg; } }
+.lg-card h1 { margin: 0; font: 700 26px/1.25 var(--ui); letter-spacing: -.01em; }
+.lg-sub { margin: 8px 0 22px; color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+.lg-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 54px; padding: 0 20px; border: 0; border-radius: 999px;
+  background: var(--ink); color: #fff; font: 600 16px var(--ui); white-space: nowrap; cursor: pointer; box-shadow: 0 10px 22px -12px rgba(11,27,77,.7); transition: background .15s, transform .12s; }
+.lg-btn:hover { background: #16296A; } .lg-btn:active { transform: scale(.985); } .lg-btn:disabled { opacity: .75; cursor: default; }
+.lg-btn:focus-visible { outline: 2.5px solid var(--blue); outline-offset: 3px; }
+.lg-ic { display: grid; place-items: center; width: 30px; height: 30px; margin-left: -10px; border-radius: 50%; background: #fff; flex: none; }
+.lg-ic svg { width: 18px; height: 18px; display: block; }
+.lg-err { margin: 12px 0 0; color: var(--error); font-size: 14px; line-height: 1.45; } .lg-err:empty { display: none; }
+.lg-foot { margin: 14px 0 0; color: #8A94A8; font-size: 12.5px; line-height: 1.6; }
+.lg-back, .lg-space { margin-top: 32px; }
+.lg-back { color: var(--text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .lg-stack img { animation: none; } }
