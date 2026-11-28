@@ -20,12 +20,15 @@ export const DEFAULT_SUBJECTS = [
 export function createStore(db, { now = () => new Date() } = {}) {
   const state = { tasks: [], subjects: [], attachments: [], prefs: {}, books: [], pages: [], dbKind: db.kind };
   const listeners = new Set();
+  let attachmentIndex;
   const iso = () => now().toISOString();
   const emit = () => listeners.forEach(fn => fn(state));
 
   async function load() {
-    [state.tasks, state.subjects, state.attachments, state.books, state.pages] = await Promise.all(['tasks', 'subjects', 'attachments', 'books', 'pages'].map(n => db.all(n)));
-    state.prefs = Object.fromEntries((await db.all('prefs')).map(p => [p.key, p.value]));
+    const [tasks, subjects, attachments, books, pages, prefs] =
+      await Promise.all(['tasks', 'subjects', 'attachments', 'books', 'pages', 'prefs'].map(n => db.all(n)));
+    Object.assign(state, { tasks, subjects, attachments, books, pages, prefs: Object.fromEntries(prefs.map(p => [p.key, p.value])) });
+    attachmentIndex = null;
     if (!state.prefs.seeded) {
       for (const [i, [name, aliases]] of DEFAULT_SUBJECTS.entries()) {
         await putSubject({ id: newId('s'), name, aliases, color: SUBJECT_COLORS[i % SUBJECT_COLORS.length], order: i, hidden: false, created_at: iso() }, false);
@@ -88,17 +91,40 @@ export function createStore(db, { now = () => new Date() } = {}) {
   const removeTask = id => patchTask(id, { deleted_at: iso() });
   const restoreTask = id => patchTask(id, { deleted_at: null });
   async function purgeTask(id, notify = true) {
-    for (const a of state.attachments.filter(a => a.task_id === id)) await removeAttachment(a.id, false);
+    for (const a of attachmentsOf(id)) await removeAttachment(a.id, false);
     await db.del('tasks', id);
     state.tasks = state.tasks.filter(t => t.id !== id);
     if (notify) emit();
   }
 
-  async function addAttachment(task_id, { kind, blob = null, text = '', mime_type = '', size = 0, page_id = null }) {
+  async function putAttachment(value) {
+    try { await db.put('attachments', value); }
+    catch (error) {
+      if (!value.thumbnail || error?.name !== 'QuotaExceededError') throw error;
+      delete value.thumbnail;
+      await db.put('attachments', value);
+    }
+    state.attachments.push(value);
+    attachmentIndex = null;
+  }
+
+  function attachmentsOf(id) {
+    if (!attachmentIndex) {
+      attachmentIndex = new Map();
+      for (const attachment of state.attachments) {
+        const list = attachmentIndex.get(attachment.task_id);
+        if (list) list.push(attachment);
+        else attachmentIndex.set(attachment.task_id, [attachment]);
+      }
+    }
+    return attachmentIndex.get(id)?.slice() || [];
+  }
+
+  async function addAttachment(task_id, { kind, blob = null, thumbnail = null, text = '', mime_type = '', size = 0, page_id = null }) {
     const a = { id: newId('a'), task_id, kind, blob, text, mime_type, size, created_at: iso() };
+    if (kind === 'image' && thumbnail) a.thumbnail = thumbnail;
     if (page_id) a.page_id = page_id; // kind 'page' = หน้าในสมุดที่ผูกกับงาน (ภาพย่อสด ๆ ไม่ได้ก๊อปมา)
-    await db.put('attachments', a);
-    state.attachments.push(a);
+    await putAttachment(a);
     emit();
     return a;
   }
@@ -114,6 +140,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
   async function removeAttachment(id, notify = true) {
     await db.del('attachments', id);
     state.attachments = state.attachments.filter(a => a.id !== id);
+    attachmentIndex = null;
     if (notify) emit();
   }
 
@@ -216,7 +243,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
       const t = makeTask({ title, subject_id: sid(subj), type, due_date, due_time, source: 'sample' }, iso());
       if (type === 'exam') t.place = '412';
       await putTask(t, false);
-      if (note) { const a = { id: newId('a'), task_id: t.id, kind: 'text', blob: null, text: note, mime_type: '', size: 0, created_at: iso() }; await db.put('attachments', a); state.attachments.push(a); }
+      if (note) await putAttachment({ id: newId('a'), task_id: t.id, kind: 'text', blob: null, text: note, mime_type: '', size: 0, created_at: iso() });
       saved.push(t);
     }
     emit();
@@ -240,7 +267,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
       if (!t?.id || !t.title || state.tasks.some(x => x.id === t.id)) { skipped++; continue; }
       await putTask(t, false); added++;
     }
-    for (const n of data.notes || []) if (n?.id && n.task_id && !state.attachments.some(a => a.id === n.id)) { await db.put('attachments', n); state.attachments.push(n); }
+    for (const n of data.notes || []) if (n?.id && n.task_id && !state.attachments.some(a => a.id === n.id)) await putAttachment(n);
     for (const b of data.books || []) if (b?.id && !state.books.some(x => x.id === b.id)) await putBook(b, false);
     for (const p of data.pages || []) if (p?.id && p.book_id && Array.isArray(p.strokes) && !state.pages.some(x => x.id === p.id)) { const v = { texts: [], imgs: [], ...p }; await db.put('pages', v); state.pages.push(v); }
     emit();
@@ -253,6 +280,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
       if (name === 'prefs') { if (value) state.prefs[key] = value.value; else delete state.prefs[key]; continue; }
       const list = state[name], i = list.findIndex(x => x.id === key);
       if (value) { if (i >= 0) list[i] = value; else list.push(value); } else if (i >= 0) list.splice(i, 1);
+      if (name === 'attachments') attachmentIndex = null;
     }
     if (changes.length) emit();
   }
@@ -260,7 +288,7 @@ export function createStore(db, { now = () => new Date() } = {}) {
   return {
     state, load, applyRemote, subscribe: fn => (listeners.add(fn), () => listeners.delete(fn)),
     addTasks, patchTask, removeTask, restoreTask, purgeTask,
-    addAttachment, removeAttachment, linkPage, attachmentsOf: id => state.attachments.filter(a => a.task_id === id),
+    addAttachment, removeAttachment, linkPage, attachmentsOf,
     ensureSubject, updateSubject, deleteSubject,
     addBook, updateBook, deleteBook, pagesOf, savePage, addPage, duplicatePage, removePage, setPref, exportJSON, restoreBackup, addSamples, removeSamples,
     subjectsById: () => Object.fromEntries(state.subjects.map(s => [s.id, s])),

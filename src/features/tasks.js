@@ -63,7 +63,7 @@ export function tasksView(root) {
   const open = x => x.status === 'done' ? editTask(x.id) : app.openNotes(x.id);
   const timeline = h('section' + (tv.sel ? '.daylist' : '.tl'), { 'aria-label': 'งานเรียงตามวัน' },
     tv.sel ? h('h3', `${relDay(tv.sel, t)} · ${items.length ? items.length + ' งาน' : 'ว่าง'}`) : '',
-    [...groups].map(([k, list]) => [tv.sel ? '' : h('p.tl-day', dayHead(k)), list.map(x => {
+    [...groups].map(([k, list], groupIndex) => [tv.sel ? '' : h('p.tl-day', dayHead(k)), list.map((x, i) => {
       const s = subj(x.subject_id), img = notesOf(x.id).find(n => n.kind === 'image' && n.blob);
       if (x.type === 'exam' && x.status !== 'done' && x.due_date) {
         const n = Math.max(0, daysBetween(t, x.due_date));
@@ -71,7 +71,8 @@ export function tasksView(root) {
           h('span.tx', h('b', x.title), h('small', [nameOf(s), x.due_time, x.location].filter(Boolean).join(' · ') || 'สอบ')));
       }
       return h('button.ti' + (x.status === 'done' ? '.done' : ''), { onclick: () => open(x) },
-        img ? h('span.th', { style: { backgroundImage: `url("${urlOf(img)}")` } }) : h('span.th.sub', { style: { '--c': s.color || '#69778F' }, html: subjIcon(s) }),
+        img ? h('img.th', { src: urlOf(img, true), alt: '', width: 48, height: 48, decoding: 'async', loading: groupIndex === 0 && i < 3 ? 'eager' : 'lazy' })
+          : h('span.th.sub', { style: { '--c': s.color || '#69778F' }, html: subjIcon(s) }),
         h('span.tx', h('b', x.title), h('small', x.status === 'done' ? 'เสร็จแล้ว' : [nameOf(s) ? nameOf(s) + ' · ' : '', ...dueLine(x)])));
     })]));
 

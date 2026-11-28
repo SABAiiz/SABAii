@@ -43,6 +43,7 @@ function loadSW() {
   const win = { url: 'https://sabaii.test/app/#/home', navigate: async u => { win.url = u; }, focus: async () => { focused.push(win.url); } };
   let windows = [];
   const self = {
+    location: new URL('https://sabaii.test/app/sw.js'),
     addEventListener: (t, fn) => { on[t] = fn; },
     registration: { scope: 'https://sabaii.test/app/', showNotification: async (title, o) => { shown.push({ title, ...o }); } },
     clients: { matchAll: async () => windows, openWindow: async u => { opened.push(u); }, claim: async () => {} },

@@ -5,25 +5,27 @@ import { createStore } from './data/store.js';
 import { createCloud } from './data/cloud.js';
 import { createProfileSync } from './data/profile.js';
 import { createSync } from './data/sync.js';
-import { afterSignIn } from './features/account.js';
 import { showLogin } from './features/login.js';
 import { refreshPush } from './features/notify.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
-import { tasksView, subjectView } from './features/tasks.js';
-import { notebookView } from './features/notebook.js';
-import { bookView } from './features/sketch.js';
-import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
 globalThis.SABAII_VERSION = '0.16.0';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', book: 'สมุดจด' };
+const PAGES = {
+  tasks: [() => import('./features/tasks.js'), 'tasksView'],
+  subject: [() => import('./features/tasks.js'), 'subjectView'],
+  notebook: [() => import('./features/notebook.js'), 'notebookView'],
+  book: [() => import('./features/sketch.js'), 'bookView'],
+  me: [() => import('./features/me.js'), 'meView'],
+};
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
 export function route() {
   const [name, arg] = location.hash.replace(/^#\/?/, '').split('/');
-  return name in TITLES ? { name, arg } : { name: 'home' };
+  return Object.hasOwn(TITLES, name) ? { name, arg } : { name: 'home' };
 }
 
 async function boot() {
@@ -38,7 +40,11 @@ async function boot() {
   // เข้าด้วยอีเมล (กรอกรหัสในหน้าเข้าสู่ระบบ แล้วเปิดแอปใหม่) = เหมือนเพิ่งกลับจาก Google
   try { if (sessionStorage.getItem('sabaii-just-in')) { sessionStorage.removeItem('sabaii-just-in'); signedIn = !!cloud.user(); } } catch {}
   // ต้องเข้าสู่ระบบก่อนทุกครั้ง: ยังไม่เข้า → หน้าเข้าสู่ระบบอย่างเดียว ไม่เปิดแอป
-  if (!cloud.user()) { showLogin(cloud, { error: signInErr }); return; }
+  if (!cloud.user()) {
+    showLogin(cloud, { error: signInErr });
+    document.documentElement.classList.remove('booting');
+    return;
+  }
   // หลุดจากระบบกลางทาง (token ใช้ไม่ได้แล้ว / ลบบัญชี) → หน้าเข้าสู่ระบบทับแอป ข้อมูลในเครื่องยังอยู่
   cloud.onChange(u => { if (!u && !app.leaving) showLogin(cloud, { again: true }); });
   try {
@@ -48,9 +54,14 @@ async function boot() {
     sync.attach(store);
     await store.load();
   }
-  catch (e) { document.body.append(h('div.fatal', h('b', 'เปิดข้อมูลในเครื่องไม่ได้'), h('p', String(e.message || e)))); return; }
+  catch (e) {
+    $('#pane-home').replaceChildren();
+    document.documentElement.classList.remove('booting');
+    document.body.append(h('div.fatal', h('b', 'เปิดข้อมูลในเครื่องไม่ได้'), h('p', String(e.message || e))));
+    return;
+  }
   app.store = store; app.cloud = cloud; app.sync = sync;
-  applyTheme();
+  document.documentElement.dataset.theme = 'light';
   if (store.state.dbKind !== 'indexeddb') document.body.append(h('div.storage-warn', 'เบราว์เซอร์นี้เก็บข้อมูลถาวรไม่ได้ (โหมดส่วนตัว?) — งานจะหายเมื่อปิดหน้า'));
 
   const page = $('#page'), nav = $('#nav');
@@ -69,15 +80,25 @@ async function boot() {
   navDrag(nav);
 
   let last = null;
+  const views = new Map(), loading = new Set();
   function renderPage() {
     const r = route(), key = r.name + '/' + (r.arg || '');
     const y = key === last ? page.scrollTop : 0;
     page.hidden = r.name === 'home';
-    if (r.name === 'tasks') tasksView(page);
-    else if (r.name === 'notebook') notebookView(page);
-    else if (r.name === 'me') meView(page);
-    else if (r.name === 'subject') subjectView(page, r.arg);
-    else if (r.name === 'book') bookView(page, r.arg);
+    const entry = PAGES[r.name];
+    if (views.has(r.name)) views.get(r.name)(page, r.arg);
+    else if (entry && !loading.has(r.name)) {
+      loading.add(r.name);
+      page.replaceChildren(h('div.phead', h('h1', TITLES[r.name])), h('p.muted', { role: 'status' }, 'กำลังเปิด…'));
+      entry[0]().then(module => {
+        views.set(r.name, module[entry[1]]);
+        if (route().name === r.name) renderPage();
+      }, () => {
+        if (route().name === r.name) page.replaceChildren(h('p.empty-note', 'เปิดหน้านี้ไม่ได้ ลองเปิดใหม่อีกครั้ง'));
+      }).finally(() => loading.delete(r.name));
+    } else if (entry && key !== last) {
+      page.replaceChildren(h('div.phead', h('h1', TITLES[r.name])), h('p.muted', { role: 'status' }, 'กำลังเปิด…'));
+    }
     if (key !== last) { navAway = false; document.title = `${TITLES[r.name]} · SABAii.com`; }
     page.scrollTop = y;
     last = key;
@@ -92,6 +113,7 @@ async function boot() {
   addEventListener('hashchange', renderPage);
   sync.onStatus(() => { if (route().name === 'me') renderPage(); });
   app.refresh();
+  document.documentElement.classList.remove('booting');
   // ครั้งแรก: แบบสอบถามก่อนเข้าแอป · กดมาจากหน้าแนะนำ (?from=landing) ข้ามหน้าต้อนรับไปข้อ 1 เลย
   const fromLanding = new URLSearchParams(location.search).get('from') === 'landing';
   if (location.search) history.replaceState(history.state, '', location.pathname + location.hash);
@@ -104,7 +126,10 @@ async function boot() {
   addEventListener('online', syncIfIn);
   document.addEventListener('visibilitychange', syncIfIn);
   setInterval(syncIfIn, 60_000);
-  if (signedIn) afterSignIn(cloud.user()); else syncIfIn();
+  if (signedIn) import('./features/account.js').then(({ afterSignIn }) => {
+    if (cloud.user()) return afterSignIn(cloud.user());
+  }).catch(() => toast('เตรียมบัญชีไม่สำเร็จ กรุณาเปิดแอปใหม่'));
+  else requestAnimationFrame(() => setTimeout(syncIfIn, 0));
   profile.start();
   refreshPush(); // เปิดแจ้งเตือนไว้ = บอกเซิร์ฟเวอร์ซ้ำว่าเครื่องนี้ยังรับอยู่ (endpoint อาจเปลี่ยน)
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น

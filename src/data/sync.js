@@ -66,7 +66,7 @@ export function createSync({ db, cloud, now = () => new Date(), debounceMs = 150
       return { ...head, has_body: true };
     }
     if (kind !== 'attachment') return v;
-    const { blob, ...rest } = v;
+    const { blob, thumbnail, ...rest } = v;
     return { ...rest, has_blob: !!blob || !!v.has_blob };
   }
 
@@ -103,7 +103,9 @@ export function createSync({ db, cloud, now = () => new Date(), debounceMs = 150
         if (mineNow && stable(wire(r.kind, mineNow)) === stable(v)) continue; // แถวที่เครื่องนี้เพิ่งส่งขึ้นไปเอง
         if (r.kind === 'attachment') {
           const mine = localValue('attachment', r.id);
-          v = { ...v, blob: mine?.blob || null }; // รูปที่มีอยู่แล้วในเครื่องไม่ต้องโหลดใหม่
+          v = { ...v, blob: mine?.blob || null };
+          delete v.thumbnail; // ภาพย่อมีเฉพาะในเครื่อง
+          if (mine?.thumbnail) v.thumbnail = mine.thumbnail;
         }
         if (r.kind === 'page') {
           // หัวหน้ามาก่อน · เนื้อหาเดิมในเครื่องยังแสดงไปก่อน จนโหลดของใหม่เสร็จ (fetchBodies)

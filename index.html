@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="th">
+<html lang="th" class="booting">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -31,7 +31,17 @@
   <!-- แผ่นล่าง 3 ระดับ = หน้าแรก -->
   <section id="sheet" aria-label="หน้าแรก">
     <div class="grab" tabindex="0" role="button" aria-label="ย่อ/ขยายแผ่นงาน (ดึงลงเพื่อดูโน้ตหน้างาน)"><i></i><small class="hint">ดึงลงเพื่อดูโน้ตหน้างาน</small></div>
-    <div class="pane pane-home" id="pane-home"><p class="muted center" style="padding:40px 0">กำลังเปิด SABAii…</p></div>
+    <div class="pane pane-home" id="pane-home">
+      <span class="boot-status" role="status">กำลังเปิด SABAii…</span>
+      <div class="boot-home" aria-hidden="true">
+        <div class="brandrow"><i class="boot-bar"></i><i class="avatar"></i></div>
+        <div class="big boot-heading"></div>
+        <div class="tiles"><i class="tile"></i><i class="tile"></i><i class="tile"></i><i class="tile"></i></div>
+        <div class="search"></div>
+        <div class="sec"><i class="boot-bar"></i></div>
+        <div class="trow"><i class="boot-bar"></i></div>
+      </div>
+    </div>
     <div class="pane pane-note" id="pane-note"></div>
   </section>
   <main id="page" hidden></main>

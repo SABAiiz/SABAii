@@ -1,0 +1,46 @@
+name: SABAii performance validation
+
+"on":
+  push:
+    branches: [perf/instant-validation]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sabaii-performance-validation
+  cancel-in-progress: false
+
+jobs:
+  compare:
+    name: Validation / ${{ matrix.scope }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [regression, startup, navigation-tasks, navigation-notebook, navigation-me, navigation-subject, navigation-book]
+    env:
+      CI: "true"
+      TZ: Asia/Bangkok
+      SABAII_VALIDATION_SCOPE: ${{ matrix.scope }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+      - name: Run Chromium suites and paired benchmarks
+        env:
+          VALIDATION_ARTIFACTS: ${{ runner.temp }}/sabaii-performance-artifacts
+        run: bash validation/run-ci.sh
+      - name: Save available validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: sabaii-performance-${{ matrix.scope }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/sabaii-performance-artifacts
+          if-no-files-found: warn
+          retention-days: 30

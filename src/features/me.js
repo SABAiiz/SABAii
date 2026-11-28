@@ -12,7 +12,6 @@ import { openAccount, syncLabel, avatarEl, withPhoto, signOut } from './account.
 import { notifyModal, notifyLabel } from './notify.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
-export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
 
 // สีไอคอนแต่ละแถว (พื้นอ่อน + ไอคอนเข้ม) — ชุดเดียวกับปุ่มสติกเกอร์ในหน้าโน้ต
 const TINT = { blue: ['#E7F0FE', '#0A6CF1'], pink: ['#FCE8F1', '#C2255C'], green: ['#E3F6EC', '#1E8A52'], yellow: ['#FFF4D1', '#B07800'],
@@ -68,7 +67,7 @@ export function meView(root) {
     h('div.mlist', accountRow(row)),
     h('h2.msec', 'ตั้งค่า'),
     h('div.mlist',
-      row('layout', 'blue', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, { extra: h('img.mthumb', { src: stylePreview(noteStyle()), alt: '' }) }),
+      row('layout', 'blue', 'หน้าโน้ตงาน', styleName(noteStyle()), stylePicker, { extra: h('img.mthumb', { src: stylePreview(noteStyle()), alt: '', width: 26, height: 44, loading: 'lazy', decoding: 'async' }) }),
       // โหมดปุ่มพูด: สลับในแถวเลย ไม่ต้องเปิดกล่อง
       h('div.list-btn.mrow-seg', { role: 'group', 'aria-label': 'ปุ่มพูด เริ่มที่' },
         h('span.mi', { style: { '--mb': TINT.pink[0], '--mc': TINT.pink[1] }, html: ic('mic') }), h('span.lk', 'ปุ่มพูด เริ่มที่'),
@@ -158,7 +157,7 @@ function stylePicker() {
     h('p.muted', 'ทุกแบบใช้งานเหมือนกัน ต่างกันที่หน้าตา · ดูได้ตอนดึงหน้าแรกลง'),
     h('div.stylegrid', NOTE_STYLES.map(st => h('button.stylepick', { 'aria-pressed': String(st.id === cur), onclick: async () => {
       await app.store.setPref('note_style', st.id); closeModal(); toast(`เปลี่ยนเป็นแบบ "${st.name}" แล้ว`);
-    } }, h('img', { src: stylePreview(st.id), alt: '', loading: 'lazy' }), h('b', st.name))))) });
+    } }, h('img', { src: stylePreview(st.id), alt: '', width: 440, height: 951, loading: st.id <= 3 ? 'eager' : 'lazy', decoding: 'async' }), h('b', st.name))))) });
 }
 function notYet(name, what) {
   openModal({ title: name, body: h('div', h('p', what), h('p.muted', 'ยังไม่เปิดในรุ่นนี้ — ต้องมีบัญชีและเซิร์ฟเวอร์ก่อน ตอนนี้งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น')) });
