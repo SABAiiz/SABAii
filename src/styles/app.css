@@ -985,6 +985,7 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 .list-btn .mi svg { width: 18px; height: 18px; }
 .list-btn .lv { font-family: var(--disp); }
 .mlist .list-btn:active { background: linear-gradient(90deg, transparent, #F5F7FB 12%, #F5F7FB 88%, transparent); }
+#page .mout { margin-top: 24px; }
 .mthumb { width: 26px; height: 44px; border-radius: 6px; object-fit: cover; box-shadow: 0 0 0 1px rgba(11,27,77,.1), 0 4px 8px -4px rgba(11,27,77,.35); }
 .mrow-seg { cursor: default; }
 .mrow-seg .lk { min-width: 0; }

@@ -39,7 +39,7 @@ async function boot() {
   // ต้องเข้าสู่ระบบก่อนทุกครั้ง: ยังไม่เข้า → หน้าเข้าสู่ระบบอย่างเดียว ไม่เปิดแอป
   if (!cloud.user()) { showLogin(cloud, { error: signInErr }); return; }
   // หลุดจากระบบกลางทาง (token ใช้ไม่ได้แล้ว / ลบบัญชี) → หน้าเข้าสู่ระบบทับแอป ข้อมูลในเครื่องยังอยู่
-  cloud.onChange(u => { if (!u) showLogin(cloud, { again: true }); });
+  cloud.onChange(u => { if (!u && !app.leaving) showLogin(cloud, { again: true }); });
   try {
     const db = await openBestDB();
     sync = createSync({ db, cloud });
