@@ -1,5 +1,5 @@
 // คุยกับหลังบ้าน (Supabase โปรเจกต์ "sabaii") ด้วย fetch ล้วน — ไม่มีไลบรารี ไม่มีขั้นตอน build
-// บัญชี: โปรไฟล์ในตาราง profiles (สร้างเองตอนสมัคร) · เข้าสู่ระบบด้วย Google / Facebook / Apple (OAuth + PKCE) หรืออีเมล (รหัส 6 หลักทางอีเมล) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
+// บัญชี: โปรไฟล์ในตาราง profiles (สร้างเองตอนสมัคร) · เข้าสู่ระบบด้วย Google / Facebook / Apple (OAuth + PKCE) หรืออีเมล (รหัสทางอีเมล 6–8 หลัก) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
 export const SUPABASE_URL = 'https://mojdvfzalfemenpxsoub.supabase.co';
 export const SUPABASE_KEY = 'sb_publishable_fEGsNd2FTZw-7mLK90Nlhg_rmulCvqC'; // คีย์สาธารณะ (ใส่ในแอปได้) — สิทธิ์จริงคุมด้วย RLS
 const AUTH_KEY = 'sabaii-auth', PKCE_KEY = 'sabaii-pkce';
@@ -108,12 +108,12 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       return `${url}/auth/v1/authorize?${q}`;
     },
     googleUrl(returnTo) { return this.oauthUrl('google', returnTo); },
-    /** อีเมล: ขอรหัส 6 หลัก (บัญชีใหม่สร้างให้เอง) → ผู้ใช้กรอกรหัสที่ได้ทางอีเมล — ไม่ต้องออกจากแอป ไม่ต้องตั้งรหัสผ่าน */
+    /** อีเมล: ขอรหัส (6–8 หลักตามที่ตั้งใน Supabase · บัญชีใหม่สร้างให้เอง) → ผู้ใช้กรอกรหัสที่ได้ทางอีเมล — ไม่ต้องออกจากแอป ไม่ต้องตั้งรหัสผ่าน */
     async sendEmailCode(email) {
       await raw('/auth/v1/otp', { method: 'POST', body: { email: String(email).trim(), create_user: true } });
     },
     async verifyEmailCode(email, code) {
-      const r = await raw('/auth/v1/verify', { method: 'POST', body: { type: 'email', email: String(email).trim(), token: String(code).replace(/\D/g, '') } });
+      const r = await raw('/auth/v1/verify', { method: 'POST', body: { type: 'email', email: String(email).trim(), token: String(code).replace(/\D/g, '').slice(0, 8) } });
       save(fromAuth(await r.json()));
     },
     /** ขั้น 2: ผู้ให้บริการส่งกลับมาที่แอปพร้อม ?code=… → แลกเป็นการเข้าสู่ระบบ · คืน true ถ้าเป็นลิงก์กลับจากการเข้าสู่ระบบ

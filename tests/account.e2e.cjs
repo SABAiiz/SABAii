@@ -38,9 +38,9 @@ async function supa(route) {
     if (challenge !== want) return json(400, { error_code: 'bad_code_verifier' });
     return json(200, { access_token: 'AT', refresh_token: 'RT', expires_in: 3600, user: { id: UID, email: EMAIL, user_metadata: { full_name: NAME } } });
   }
-  // อีเมล: ขอรหัส → กรอกรหัส (รหัสที่ถูกคือ 123456)
+  // อีเมล: ขอรหัส → กรอกรหัส (รหัสที่ถูกคือ 12345678 — Supabase ตั้ง 8 หลัก · แอปรับ 6–8)
   if (p === '/auth/v1/otp') return body.email && body.create_user ? json(200, {}) : json(400, { error_code: 'validation_failed' });
-  if (p === '/auth/v1/verify') return body.type === 'email' && body.token === '123456'
+  if (p === '/auth/v1/verify') return body.type === 'email' && body.token === '12345678'
     ? json(200, { access_token: 'AT', refresh_token: 'RT', expires_in: 3600, user: { id: UID, email: body.email, user_metadata: {} } })
     : json(403, { error_code: 'otp_expired', msg: 'Token has expired or is invalid' });
   if (p.startsWith('/storage/v1/object/')) {
@@ -169,7 +169,7 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   await B.page.waitForLoadState('load'); await B.page.waitForSelector('#login', { timeout: 8000 }).catch(() => {});
   check('ออกจากระบบ → เครื่องถูกล้าง · กลับมาหน้าเข้าสู่ระบบ', await gated(B.page) && await B.page.evaluate(() => !localStorage.getItem('sabaii-auth') && !window.__sabaii));
 
-  // ----- เครื่อง C: เข้าด้วยอีเมล (รหัส 6 หลัก) -----
+  // ----- เครื่อง C: เข้าด้วยอีเมล (รหัส 8 หลัก) -----
   const C = await newDevice(browser);
   await C.page.goto(BASE); await C.page.waitForSelector('#login');
   check('หน้าเข้าสู่ระบบมีครบ 4 ทาง: Google · Facebook · Apple · อีเมล', (await Promise.all(['#acc-google', '#acc-facebook', '#acc-apple', '#acc-email'].map(s => C.page.locator(s).isVisible()))).every(Boolean));
@@ -180,11 +180,13 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   check('อีเมลผิดรูปแบบ → บอกให้แก้ ไม่ยิงไปเซิร์ฟเวอร์', /ใส่อีเมลให้ถูก/.test(await C.page.locator('.lg-err').textContent()) && !calls.includes('POST /auth/v1/otp'));
   await C.page.fill('#acc-email-in', 'mind@school.ac.th'); await C.page.click('#acc-send');
   await C.page.waitForSelector('#acc-code-in', { state: 'visible' });
+  check('ช่องรหัสไม่ตัดที่ 6 (เก็บ 7 หลักได้) · ตัวอักษรไม่เข้า', await C.page.locator('#acc-code-in').evaluate(e => { e.value = '12ab34567'; e.dispatchEvent(new Event('input')); return e.value === '1234567'; }));
+  await C.page.fill('#acc-code-in', '');
   check('ส่งรหัสแล้ว → ช่องกรอกรหัส + บอกอีเมลที่ส่งไป', /mind@school\.ac\.th/.test(await C.page.locator('.lg-note').textContent()));
   await shot(C.page, 'acc-5-code');
-  await C.page.fill('#acc-code-in', '000000'); await wait(500);
+  await C.page.fill('#acc-code-in', '00000000'); await wait(500);
   check('รหัสผิด → ข้อความไทย · ยังไม่เข้า', /รหัสหมดอายุหรือไม่ถูกต้อง/.test(await C.page.locator('.lg-err').textContent()) && await gated(C.page));
-  await Promise.all([C.page.waitForEvent('load'), C.page.fill('#acc-code-in', '123456')]);
+  await Promise.all([C.page.waitForEvent('load'), C.page.fill('#acc-code-in', '12345678')]);
   await C.page.waitForSelector('#onboard, #nav'); await wait(500);
   check('รหัสถูก → เปิดแอป (แบบสอบถามครั้งแรก) · จำบัญชีไว้', !(await C.page.locator('#login').count()) && await C.page.evaluate(() => JSON.parse(localStorage.getItem('sabaii-auth')).user.email === 'mind@school.ac.th'));
 

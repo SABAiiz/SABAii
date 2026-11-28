@@ -1,7 +1,8 @@
 // หน้าเข้าสู่ระบบ (0.13.2) — ต้องเข้าสู่ระบบทุกครั้งก่อนเข้าแอป
 //   เจ้าของเลือกแบบ D + ปุ่มกรมท่าแบบ B จาก mockups/sabaii-login-variants.jpg:
 //   พื้นเทาอ่อน · โลโก้บน · กล่องขาวกลางจอ · รูปงานจริง 3 ใบโผล่เหนือกล่อง (คลี่ออกตอนเปิด) · ปุ่ม Google สีกรมท่า
-//   0.14.1: เพิ่ม Facebook · Apple · อีเมล (รหัส 6 หลัก) ใต้ปุ่ม Google
+//   0.14.1: เพิ่ม Facebook · Apple · อีเมล (รหัสทางอีเมล) ใต้ปุ่ม Google
+//   0.15.1: รหัสอีเมลรับ 6–8 หลัก (Supabase ตั้งความยาวได้ — ค่าตอนนี้ 8) · ครบ 8 ส่งเอง · 6–7 กดยืนยัน
 //   หน้าแนะนำ → "ลองใช้เลย" → หน้านี้ → Google/Facebook/Apple/อีเมล → แบบสอบถาม (ครั้งแรก) → แอป
 //   หลุดจากระบบกลางทาง → หน้านี้ (แบบ "อีกครั้ง") ทับแอป ข้อมูลในเครื่องยังอยู่
 import { h } from '../ui/kit.js';
@@ -18,7 +19,7 @@ const MAIL_LOGO = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" strok
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** เปิดหน้าเข้าสู่ระบบเต็มจอ · error = ข้อความจากรอบก่อน (กดยกเลิก ฯลฯ) · again = เคยเข้าแล้วแต่หลุด
-    4 ทาง (แบบหน้าเข้าสู่ระบบของ fastwork): Google (ปุ่มหลักสีกรมท่า) · Facebook · Apple · อีเมล (รหัส 6 หลักทางอีเมล ไม่ต้องตั้งรหัสผ่าน) */
+    4 ทาง (แบบหน้าเข้าสู่ระบบของ fastwork): Google (ปุ่มหลักสีกรมท่า) · Facebook · Apple · อีเมล (รหัสทางอีเมล ไม่ต้องตั้งรหัสผ่าน) */
 export function showLogin(cloud, { error = '', again = false } = {}) {
   if (document.getElementById('login')) return;
   document.documentElement.classList.add('gated');
@@ -54,10 +55,10 @@ export function showLogin(cloud, { error = '', again = false } = {}) {
   // กดย้อนกลับจากหน้าผู้ให้บริการ (หน้าเก่าจากแคชของเบราว์เซอร์) → ปุ่มต้องกดได้อีก
   addEventListener('pageshow', reset);
 
-  // ----- อีเมล: กรอกอีเมล → ส่งรหัส → กรอกรหัส 6 หลัก (อยู่ในหน้านี้ ไม่ต้องออกจากแอป) -----
+  // ----- อีเมล: กรอกอีเมล → ส่งรหัส → กรอกรหัส (อยู่ในหน้านี้ ไม่ต้องออกจากแอป) -----
   const choose = h('div.lg-choose', [...oauthBtns, mailBtn]);
   const emailIn = h('input.lg-in', { id: 'acc-email-in', type: 'email', inputmode: 'email', autocomplete: 'email', placeholder: 'อีเมลของคุณ', 'aria-label': 'อีเมล', required: true });
-  const codeIn = h('input.lg-in.code', { id: 'acc-code-in', type: 'text', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 6, placeholder: 'รหัส 6 หลัก', 'aria-label': 'รหัส 6 หลักจากอีเมล' });
+  const codeIn = h('input.lg-in.code', { id: 'acc-code-in', type: 'text', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 8, placeholder: 'รหัสจากอีเมล', 'aria-label': 'รหัสจากอีเมล' });
   const sendBtn = h('button.lg-btn', { id: 'acc-send', type: 'submit' }, h('span.lg-lbl', 'ส่งรหัสไปที่อีเมล'));
   const okBtn = h('button.lg-btn', { id: 'acc-verify', type: 'submit' }, h('span.lg-lbl', 'ยืนยัน'));
   const sentTo = h('p.lg-note');
@@ -86,7 +87,7 @@ export function showLogin(cloud, { error = '', again = false } = {}) {
     if (!online()) return false;
     try { await cloud.sendEmailCode(email); }
     catch (e) { say(e.message); return false; }
-    sentTo.replaceChildren('ส่งรหัสไปที่ ', h('b', email), ' แล้ว', h('br'), 'เปิดอีเมลแล้วกรอกรหัส 6 หลัก (ดูในจดหมายขยะด้วย)');
+    sentTo.replaceChildren('ส่งรหัสไปที่ ', h('b', email), ' แล้ว', h('br'), 'เปิดอีเมลแล้วกรอกรหัสที่ได้ (ดูในจดหมายขยะด้วย)');
     return true;
   };
   stepEmail.onsubmit = async e => {
@@ -101,10 +102,10 @@ export function showLogin(cloud, { error = '', again = false } = {}) {
     if (await send()) say('ส่งรหัสใหม่แล้ว');
     setTimeout(() => { resend.disabled = false; }, 30_000); // กันกดรัว (Supabase จำกัดจำนวนอีเมลต่อชั่วโมง)
   };
-  codeIn.oninput = () => { codeIn.value = codeIn.value.replace(/\D/g, '').slice(0, 6); if (codeIn.value.length === 6) stepCode.requestSubmit(); };
+  codeIn.oninput = () => { codeIn.value = codeIn.value.replace(/\D/g, '').slice(0, 8); if (codeIn.value.length === 8) stepCode.requestSubmit(); };
   stepCode.onsubmit = async e => {
     e.preventDefault(); say('');
-    if (codeIn.value.length !== 6) { say('รหัสมี 6 หลัก'); codeIn.focus(); return; }
+    if (codeIn.value.length < 6) { say('ใส่รหัสที่ได้จากอีเมลให้ครบ'); codeIn.focus(); return; }
     if (!online()) return;
     busyBtn(okBtn, true, 'กำลังตรวจรหัส…');
     try {
