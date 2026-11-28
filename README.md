@@ -130,7 +130,7 @@ python3 -m http.server 8765
 ## โครงสร้าง
 
 ```
-  index.html  manifest.webmanifest  sw.js  icon.svg  assets/note-styles/ (ภาพตัวอย่างหน้าโน้ต 6 แบบ)
+  index.html  manifest.webmanifest  sw.js  icon-192.png icon-512.png apple-touch-icon.png favicon.png  assets/note-styles/ (ภาพตัวอย่างหน้าโน้ต 6 แบบ)
   landing.html  src/landing/ (หน้าแนะนำ: landing.css · landing.js)  assets/landing/
   src/
     main.js            เปิดแอป · เส้นทาง (#/home #/tasks #/notebook #/me #/subject/<id>) · เมนูล่าง
