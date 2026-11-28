@@ -932,7 +932,7 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 /* หน้าฉัน (ยกระดับ 26 พ.ย.) — หัววงรุ้ง + ชื่อไล่สีชุดเดียวกับหน้าแรก · ไฟต่อเนื่อง · การ์ดกรมท่า · ไอคอนสีพาสเทล · เร็ว ๆ นี้เป็นการ์ดเล็ก */
 .mehero { display: flex; align-items: center; gap: 16px; padding-top: 8px; }
 .mavatar { position: relative; flex: none; width: 76px; height: 76px; border-radius: 50%; padding: 3px; background: conic-gradient(from 210deg, #0A6CF1, #7C4DFF, #E0457B, #F08A24, #0A6CF1); box-shadow: 0 12px 24px -12px rgba(124,77,255,.6); }
-.mavatar > span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; border: 3px solid #fff; background: linear-gradient(140deg, #EEF3FF, #FBEFF6); font: 700 30px/1 var(--disp); color: var(--ink); }
+.mavatar > span { position: relative; overflow: hidden; display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; border: 3px solid #fff; background: linear-gradient(140deg, #EEF3FF, #FBEFF6); font: 700 30px/1 var(--disp); color: var(--ink); }
 .mavatar > i { position: absolute; right: -2px; bottom: -2px; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; border: 2.5px solid #fff; }
 .mavatar > i svg { width: 12px; height: 12px; }
 .mavatar:active { transform: scale(.96); }
@@ -1585,7 +1585,7 @@ body.ns-3 .pane-note .tk-b .cta { white-space: nowrap; min-width: 0; }
 .accuser { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
 .accuser b { display: block; word-break: break-all; } .accuser small { display: block; color: var(--text-2); font-size: 13px; word-break: break-all; }
 .avatar { position: relative; overflow: hidden; }
-.avatar img, .accpic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.avatar img, .accpic img, .mavatar > span > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .mi.accpic { position: relative; overflow: hidden; border-radius: 50%; background: var(--blue-light); color: var(--blue); font-weight: 700; display: grid; place-items: center; }
 .accsync { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; font-weight: 600; }
 .accsync small { flex-basis: 100%; color: var(--text-2); font-weight: 500; font-size: 13px; }
@@ -1597,7 +1597,7 @@ body.ns-3 .pane-note .tk-b .cta { white-space: nowrap; min-width: 0; }
 
 /* 0.13.2 หน้าเข้าสู่ระบบ (แบบ D + ปุ่มกรมท่าแบบ B) — พื้นเทาอ่อน · กล่องขาวกลางจอ · รูปงาน 3 ใบเหนือกล่อง */
 html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html.gated #page { visibility: hidden; }
-#login { --ui: "Anuphan", "Noto Sans Thai Looped", sans-serif; --ez: cubic-bezier(.2,.8,.2,1);
+#login { --ui: "Inter", "Noto Sans Thai Looped", "Thonburi", "Leelawadee UI", Tahoma, sans-serif; --ez: cubic-bezier(.2,.8,.2,1);
   position: fixed; inset: 0; z-index: 1000; overflow-y: auto; display: flex; flex-direction: column; align-items: center;
   padding: max(26px, env(safe-area-inset-top)) 18px max(22px, var(--safe-b)); background: #F4F5F8; color: var(--ink); font-family: var(--ui); }
 .lg-top { display: flex; align-items: center; gap: 8px; margin-bottom: 92px; font: 700 17px/1 var(--ui); }
@@ -1625,6 +1625,23 @@ html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html
 .lg-back, .lg-space { margin-top: 32px; }
 .lg-back { color: var(--text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .lg-stack img { animation: none; } }
+/* 0.14.1 ทางเข้าอื่น: Facebook · Apple · อีเมล — ปุ่มรองสีเทาอ่อน (แบบ fastwork) ใต้ปุ่ม Google สีกรมท่า */
+.lg-choose, .lg-form { display: grid; gap: 10px; }
+.lg-choose[hidden], .lg-mail[hidden], .lg-form[hidden] { display: none; }
+.lg-btn.alt { background: #EEF0F4; color: var(--ink); box-shadow: none; font-weight: 600; }
+.lg-btn.alt:hover { background: #E3E6EC; }
+.lg-btn.alt .lg-ic { background: transparent; }
+.lg-btn.alt .lg-ic svg { width: 20px; height: 20px; }
+.lg-in { width: 100%; min-height: 52px; padding: 0 18px; border: 1.5px solid #D9DDE5; border-radius: 14px; background: #fff; color: var(--ink);
+  font: 500 16px var(--ui); text-align: center; }
+.lg-in:focus { outline: none; border-color: var(--ink); }
+.lg-in.code { font: 700 24px/1 var(--ui); letter-spacing: .4em; padding-left: calc(18px + .4em); }
+.lg-in.code::placeholder { font: 500 16px var(--ui); letter-spacing: 0; }
+.lg-link[hidden] { display: none; }
+.lg-note { margin: 0 0 2px; color: var(--text-2); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.lg-links { display: flex; justify-content: center; gap: 18px; margin-top: 4px; }
+.lg-link { border: 0; background: none; padding: 8px 4px; color: var(--text-2); font: 500 14px var(--ui); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.lg-link:disabled { opacity: .5; cursor: default; }
 
 /* ================= 0.14 หน้าเขียนแบบ Canva: ทุกอย่างเป็นชิ้นที่จับได้ · รูปทรง/เส้นเชื่อม · ซูม · แผงหน้า ================= */
 /* กรอบเลือก: เส้นทึบบาง มุมกลม 4 จุด ขอบเป็นแท่ง · ปุ่มหมุนใต้กรอบ (ขนาดคงที่บนจอเสมอด้วย --inv) */
@@ -1690,5 +1707,4 @@ html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html
 .sk-sp-add svg { width: 16px; height: 16px; }
 .sk-sp-add:hover { border-color: var(--blue); color: var(--blue); }
 .sk-opts[data-tool="shape"] { max-width: min(100%, 600px); }
-.lg-btns { display: flex; flex-direction: column; gap: 10px; }
 .lg-foot a { color: inherit; }

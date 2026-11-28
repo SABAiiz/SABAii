@@ -8,7 +8,7 @@ import { app, S, subj, today } from './shared.js';
 import { MODES, listenMode } from './listen.js';
 import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
 import { openOnboarding } from './onboard.js';
-import { openAccount, syncLabel, avatarEl } from './account.js';
+import { openAccount, syncLabel, avatarEl, withPhoto } from './account.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
@@ -42,7 +42,7 @@ export function meView(root) {
   put(root,
     // หัว: วงรุ้ง + ชื่อไล่สี (ชุดเดียวกับหน้าแรก) · ไฟต่อเนื่อง
     h('section.mehero',
-      h('button.mavatar', { onclick: editName, 'aria-label': name ? 'แก้ชื่อ' : 'ตั้งชื่อ' }, h('span', (name || 'ฉ').slice(0, 1)), h('i', { html: ic('edit') })),
+      h('button.mavatar', { onclick: editName, 'aria-label': name ? 'แก้ชื่อ' : 'ตั้งชื่อ' }, withPhoto(h('span', (name || 'ฉ').slice(0, 1))), h('i', { html: ic('edit') })),
       h('div.mh-t',
         h('button.mh-name' + (name ? '' : '.unset'), { onclick: editName }, name || 'ตั้งชื่อเล่น'),
         h('small', `${nSubj} วิชา · ทำเสร็จแล้ว ${sum.done} งาน`),

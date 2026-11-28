@@ -1,5 +1,5 @@
 // คุยกับหลังบ้าน (Supabase โปรเจกต์ "sabaii") ด้วย fetch ล้วน — ไม่มีไลบรารี ไม่มีขั้นตอน build
-// บัญชี: เข้าสู่ระบบด้วย Google (OAuth + PKCE) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
+// บัญชี: เข้าสู่ระบบด้วย Google / Facebook / Apple (OAuth + PKCE) หรืออีเมล (รหัส 6 หลักทางอีเมล) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
 export const SUPABASE_URL = 'https://mojdvfzalfemenpxsoub.supabase.co';
 export const SUPABASE_KEY = 'sb_publishable_fEGsNd2FTZw-7mLK90Nlhg_rmulCvqC'; // คีย์สาธารณะ (ใส่ในแอปได้) — สิทธิ์จริงคุมด้วย RLS
 const AUTH_KEY = 'sabaii-auth', PKCE_KEY = 'sabaii-pkce';
@@ -15,8 +15,12 @@ const THAI = {
   bad_code_verifier: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
   flow_state_not_found: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
   flow_state_expired: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
-  provider_disabled: 'ยังเปิดเข้าสู่ระบบด้วยวิธีนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
-  validation_failed: 'ยังเปิดเข้าสู่ระบบด้วยวิธีนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  provider_disabled: 'ยังเปิดวิธีเข้าสู่ระบบนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  validation_failed: 'ยังเปิดวิธีเข้าสู่ระบบนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  otp_expired: 'รหัสหมดอายุหรือไม่ถูกต้อง ลองขอรหัสใหม่',
+  email_address_invalid: 'อีเมลนี้ใช้ไม่ได้ ตรวจตัวสะกดอีกครั้ง',
+  email_provider_disabled: 'ยังเปิดเข้าสู่ระบบด้วยอีเมลไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  over_email_send_rate_limit: 'ขอรหัสบ่อยเกินไป รอสักครู่แล้วลองใหม่',
   signup_disabled: 'ตอนนี้ยังเปิดรับสมัครบัญชีใหม่ไม่ได้',
   over_request_rate_limit: 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่',
 };
@@ -39,7 +43,7 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
     listeners.forEach(fn => fn(user()));
   };
   const user = () => session?.user ? { ...session.user } : null;
-  /** ชื่อ/รูปจาก Google (user_metadata) — เก็บแค่ที่ใช้แสดง */
+  /** ชื่อ/รูปจากผู้ให้บริการ (user_metadata) — เก็บแค่ที่ใช้แสดง */
   const person = u => u ? { id: u.id, email: u.email || '', name: u.user_metadata?.full_name || u.user_metadata?.name || '', avatar: u.user_metadata?.avatar_url || u.user_metadata?.picture || '' } : null;
   const fromAuth = j => ({
     access_token: j.access_token, refresh_token: j.refresh_token,
@@ -93,9 +97,7 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
   return {
     user, onChange: fn => (listeners.add(fn), () => listeners.delete(fn)),
 
-    /** ขั้น 1: ไปหน้าเลือกบัญชี Google · PKCE — เก็บรหัสลับไว้ในเครื่อง ส่งไปแค่ค่าแฮช (ใครดักลิงก์กลับได้ก็ใช้แทนไม่ได้) */
-    async googleUrl(returnTo) { return this.oauthUrl('google', returnTo); },
-    /** เหมือนกันทุกผู้ให้บริการ (google / facebook) — ต่างกันแค่ชื่อ provider */
+    /** ขั้น 1: ไปหน้าเลือกบัญชีของ Google / Facebook / Apple · PKCE — เก็บรหัสลับไว้ในเครื่อง ส่งไปแค่ค่าแฮช (ใครดักลิงก์กลับได้ก็ใช้แทนไม่ได้) */
     async oauthUrl(provider, returnTo) {
       const verifier = b64url(randomBytes(48));
       try { storage.setItem(PKCE_KEY, verifier); } catch {}
@@ -105,7 +107,16 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       const q = new URLSearchParams({ provider, redirect_to: returnTo, code_challenge: challenge, code_challenge_method: sha ? 's256' : 'plain' });
       return `${url}/auth/v1/authorize?${q}`;
     },
-    /** ขั้น 2: Google ส่งกลับมาที่แอปพร้อม ?code=… → แลกเป็นการเข้าสู่ระบบ · คืน true ถ้าเป็นลิงก์กลับจากการเข้าสู่ระบบ
+    googleUrl(returnTo) { return this.oauthUrl('google', returnTo); },
+    /** อีเมล: ขอรหัส 6 หลัก (บัญชีใหม่สร้างให้เอง) → ผู้ใช้กรอกรหัสที่ได้ทางอีเมล — ไม่ต้องออกจากแอป ไม่ต้องตั้งรหัสผ่าน */
+    async sendEmailCode(email) {
+      await raw('/auth/v1/otp', { method: 'POST', body: { email: String(email).trim(), create_user: true } });
+    },
+    async verifyEmailCode(email, code) {
+      const r = await raw('/auth/v1/verify', { method: 'POST', body: { type: 'email', email: String(email).trim(), token: String(code).replace(/\D/g, '') } });
+      save(fromAuth(await r.json()));
+    },
+    /** ขั้น 2: ผู้ให้บริการส่งกลับมาที่แอปพร้อม ?code=… → แลกเป็นการเข้าสู่ระบบ · คืน true ถ้าเป็นลิงก์กลับจากการเข้าสู่ระบบ
         ยกเลิก/ล้ม → ?error=…&error_description=… (บางครั้งมาทาง #) */
     async finishRedirect(search, hash = '') {
       const q = new URLSearchParams(String(search || '').replace(/^\?/, ''));
