@@ -90,9 +90,11 @@ body:not(.note-mode) #note-ui > * { opacity: 0; pointer-events: none; }
 /* ================= แผ่นล่าง ================= */
 #sheet {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; margin: 0 auto; max-width: 560px;
-  height: var(--sheet-vis); background: var(--sheet-bg); border-radius: 24px 24px 0 0;
+  height: 100vh; background: var(--sheet-bg); border-radius: 24px 24px 0 0;
   box-shadow: 0 -6px 24px rgba(21, 35, 61, .10); overflow: hidden; touch-action: none;
-  transition: height .34s cubic-bezier(.2,.8,.2,1), border-radius .2s;
+  /* สูงเต็มจอ (JS ใส่ px ตามจอจริง) แล้วเลื่อนลงด้วย transform — ขยับบนการ์ดจอ ไม่ต้องจัดหน้าใหม่ */
+  transform: translate3d(0, calc(100vh - var(--sheet-vis)), 0); will-change: transform;
+  transition: transform .34s cubic-bezier(.2,.8,.2,1), border-radius .2s;
 }
 #sheet.dragging { transition: none; }
 /* ดันขึ้นสุด = ชิดขอบจอบน มุมเหลี่ยม เว้นที่ให้แถบสถานะของเครื่อง */
@@ -106,7 +108,7 @@ body.note-mode .grab .hint { opacity: 0; }
 .pane { position: absolute; left: 0; right: 0; top: 34px; bottom: 0; padding: 4px 20px 0; transition: opacity .2s; }
 .pane-home { overflow: hidden; padding-bottom: calc(110px + var(--safe-b)); }
 #sheet.full .pane-home { overflow-y: auto; touch-action: pan-y; }
-.pane-note { opacity: 0; pointer-events: none; display: flex; flex-direction: column; padding-bottom: calc(16px + var(--safe-b)); }
+.pane-note { bottom: auto; height: calc(var(--low) - 34px); opacity: 0; pointer-events: none; display: flex; flex-direction: column; padding-bottom: calc(16px + var(--safe-b)); } /* แผ่นสูงเต็มจอ → ให้การ์ดงานสูงเท่าส่วนที่โผล่ตอนดูโน้ต */
 body.note-mode .pane-home { opacity: 0; pointer-events: none; }
 body.note-mode .pane-note { opacity: 1; pointer-events: auto; }
 
@@ -404,7 +406,7 @@ div.flabel { margin-bottom: 0; }
 
 /* ================= หน้าตาหน้าโน้ต 6 แบบ (body.ns-1 … ns-6 · เลือกตอนเข้าแอปครั้งแรก/หน้าฉัน) =================
    ฐานด้านบน = แบบ 1 · ทุกแบบใช้ข้อมูลชุดเดียวกัน ต่างกันที่หน้าตา · ภาพตัวอย่างอยู่ใน assets/note-styles/ */
-#sheet { transition: height .34s cubic-bezier(.2,.8,.2,1), border-radius .2s, left .25s, right .25s, bottom .25s, background-color .25s; }
+#sheet { transition: transform .34s cubic-bezier(.2,.8,.2,1), border-radius .2s, left .25s, right .25s, bottom .25s, background-color .25s; }
 #stage .nitem:not(.empty) { transition: box-shadow .2s; }
 body:is(.ns-1, .ns-4) .peek { background: none; height: 28px; bottom: calc(var(--sheet-vis) + 6px); }
 
@@ -1076,8 +1078,8 @@ body.hf-on .pager { top: calc(160px + env(safe-area-inset-top, 0px)); }
 @media (prefers-reduced-motion: reduce) { .pane-home .tile { animation: none; } }
 @media (max-height: 700px) { .tile { min-height: 100px; } .tile .ti-ic { width: 40px; height: 40px; } .tile .ti-ic svg { width: 24px; height: 24px; } .pane-home h1.big { font-size: 28px; margin-bottom: 12px; } }
 /* ดึงแผ่นแบบ Bolt — ความลึก: โน้ตด้านหลังย่อ + มืดตอนแผ่นเต็มจอ แล้วขยายเต็มเมื่อดึงลง (--pull: 0 = แผ่นเต็มจอ · 1 = ดึงลงสุด) */
-#stage { transform: var(--stage-tf, none); transform-origin: 50% 32%; transition: transform .34s cubic-bezier(.2,.8,.2,1); }
-#stage-dim { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: #0B1B4D; opacity: calc((1 - var(--pull, 1)) * .32); transition: opacity .34s cubic-bezier(.2,.8,.2,1); }
+#stage { transform-origin: 50% 32%; transition: transform .34s cubic-bezier(.2,.8,.2,1); will-change: transform; } /* JS ใส่ transform/opacity ตรงที่ชิ้นเอง */
+#stage-dim { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: #0B1B4D; opacity: 0; transition: opacity .34s cubic-bezier(.2,.8,.2,1); will-change: opacity; }
 #sheet.dragging ~ #stage-dim, body:has(#sheet.dragging) #stage, body:has(#sheet.dragging) #stage-dim { transition: none; }
 #sheet .pane { transform: translate3d(0, calc(-1 * var(--over, 0px)), 0); transition: opacity .2s, transform .45s cubic-bezier(.2,.8,.2,1.4); }
 #sheet.dragging .pane { transition: opacity .2s; }
