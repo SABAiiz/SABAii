@@ -416,14 +416,15 @@ body.ns-1 #stage .nitem:not(.empty) { border: 6px solid #fff; border-radius: 24p
 
 /* ---------- 2 ภาพเต็มจอ ---------- */
 body.ns-2 .npage { background: #0B1430; }
-body.ns-2 .npage .wash { opacity: 1; inset: -60px; background: var(--ph, linear-gradient(160deg, var(--sc), #0B1430 70%)); background-size: cover; background-position: center; filter: blur(32px) brightness(.48) saturate(1.35); }
+/* รูปเบลอ + เคลือบกรมท่า — รูปโทนอุ่น (เพดานครีม/ผิว) จะไม่กลายเป็นสีน้ำตาลขี้ม้า และฉากเป็นโทนแอปเสมอ */
+body.ns-2 .npage .wash { opacity: 1; inset: -60px; background: linear-gradient(180deg, rgba(14,26,64,.72), rgba(14,26,64,.55) 45%, rgba(11,20,48,.9)), var(--ph, linear-gradient(160deg, var(--sc), #0B1430 70%)); background-size: cover; background-position: center; filter: blur(32px) brightness(.8) saturate(.9); }
 body.ns-2 #stage .nitem:not(.empty) { border-radius: 20px; box-shadow: 0 34px 60px -14px rgba(0,0,0,.7); }
 body.ns-2 #stage .nitem.empty { color: rgba(255,255,255,.8); border-color: rgba(255,255,255,.3); }
 body.ns-2 #stage .nitem.empty .muted { color: rgba(255,255,255,.65); }
 body.ns-2 #note-back, body.ns-2 #note-hand, body.ns-2 .subjchip { background: rgba(255,255,255,.14); color: #fff; box-shadow: none; border: 1px solid rgba(255,255,255,.2); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 body.ns-2 .pager i { background: rgba(255,255,255,.3); } body.ns-2 .pager i.on { background: #fff; } body.ns-2 .pager small { color: rgba(255,255,255,.7); }
 body.ns-2 .peek { background: none; height: 28px; color: rgba(255,255,255,.75); bottom: calc(var(--sheet-vis) + 6px); }
-body.ns-2.note-mode #sheet { background: rgba(16,24,56,.55); -webkit-backdrop-filter: blur(34px) saturate(1.6); backdrop-filter: blur(34px) saturate(1.6); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.16); }
+body.ns-2.note-mode #sheet { background: linear-gradient(180deg, rgba(14,22,52,.7), #0E1634 60%); -webkit-backdrop-filter: blur(34px) saturate(1.6); backdrop-filter: blur(34px) saturate(1.6); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.16); }
 body.ns-2.note-mode .grab { background: transparent; } body.ns-2.note-mode .grab i { background: rgba(255,255,255,.3); }
 body.ns-2 .nsubj, body.ns-2 .ndue { background: none; padding: 0; height: 22px; color: rgba(255,255,255,.75); }
 body.ns-2 .nsubj::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
@@ -435,8 +436,8 @@ body.ns-2 .pane-note .lbl { display: none; }
 body.ns-2 .pane-note .pills { display: flex; justify-content: space-between; padding: 0 16px; margin: 10px 0 12px; }
 body.ns-2 .pane-note .pill { flex: none; height: auto; background: none; border: 0; gap: 6px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); }
 body.ns-2 .pane-note .pill svg { width: 50px; height: 50px; padding: 14px; border-radius: 50%; color: #fff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); }
-body.ns-2 .pane-note .cta:not(.doing) { background: #fff; color: #0B1B4D; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-body.ns-2 .pane-note .cta .ctai { background: #0B1B4D; color: #fff; border-radius: 50%; }
+body.ns-2 .pane-note .cta:not(.doing) { background: linear-gradient(180deg, #2B82FF, #0A6CF1); color: #fff; border-radius: 28px; box-shadow: 0 12px 24px -10px rgba(10,108,241,.8), inset 0 1px 0 rgba(255,255,255,.25); }
+body.ns-2 .pane-note .cta .ctai { background: rgba(255,255,255,.2); color: #fff; border-radius: 50%; }
 body.ns-2 .pane-note .cta.doing { background: rgba(255,255,255,.16); color: #fff; border-radius: 28px; }
 body.ns-2 .timer { background: rgba(255,255,255,.16); color: #fff; }
 
