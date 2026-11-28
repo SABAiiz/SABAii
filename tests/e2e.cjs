@@ -15,7 +15,7 @@ const check = (name, ok, extra = '') => { results.push({ name, ok }); console.lo
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  const browser = await chromium.launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] }); // กล้องปลอม (ภาพทดสอบ ไม่มีมือ) สำหรับโหมดโบกมือ
+  const browser = require('./fake-login.cjs').autoSignIn(await chromium.launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] })); // กล้องปลอม (ภาพทดสอบ ไม่มีมือ) สำหรับโหมดโบกมือ
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: REAL ? 'allow' : 'block' });
   await ctx.clock.setFixedTime(new Date('2026-11-16T09:40:00Z')); // จ. 16 พ.ย. 69 16:40 เวลาไทย — ตรึงวัน ผลจะไม่เปลี่ยนตามวันที่รัน
   if (!REAL) await ctx.route('http://sabaii.test/**', r => {

@@ -1,6 +1,7 @@
-// บัญชีและซิงก์ (หน้า "ฉัน") — เข้าสู่ระบบด้วย Google → กลับมาที่แอป → ซิงก์ · ไม่ล็อกอินก็ใช้ได้ครบเหมือนเดิม (ข้อมูลอยู่ในเครื่อง)
+// บัญชีและซิงก์ (หน้า "ฉัน") — สถานะซิงก์ · ออกจากระบบ · ลบบัญชี · เข้าสู่ระบบอยู่ที่ login.js (ต้องเข้าก่อนใช้แอป)
 import { h, ic, put, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
 import { app } from './shared.js';
+import { showLogin } from './login.js';
 
 const hhmm = iso => new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
@@ -15,27 +16,7 @@ export function syncLabel(st = app.sync?.status()) {
   return st.last ? `ซิงก์แล้ว ${hhmm(st.last)}` : 'ซิงก์แล้ว';
 }
 
-export function openAccount() { app.cloud.user() ? accountModal() : signInModal(); }
-
-const G_LOGO = '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
-
-/** กลับมาที่หน้าเดิมของแอป (ไม่เอา ?/# ไปด้วย) — ต้องอยู่ในรายการ Redirect URLs ของ Supabase */
-export const returnUrl = () => location.origin + location.pathname;
-
-function signInModal() {
-  const err = h('p.ferr', { role: 'alert' });
-  const go = h('button.gbtn', { id: 'acc-google', type: 'button' }, h('span', { html: G_LOGO }), h('b', 'เข้าสู่ระบบด้วย Google'));
-  go.onclick = async () => {
-    err.textContent = ''; go.disabled = true; go.lastChild.textContent = 'กำลังไปที่ Google…';
-    if (!navigator.onLine) { err.textContent = 'ต้องต่อเน็ตก่อนจึงจะเข้าสู่ระบบได้'; go.disabled = false; go.lastChild.textContent = 'เข้าสู่ระบบด้วย Google'; return; }
-    try { location.assign(await app.cloud.googleUrl(returnUrl())); }
-    catch (e) { err.textContent = e.message; go.disabled = false; go.lastChild.textContent = 'เข้าสู่ระบบด้วย Google'; }
-  };
-  openModal({ title: 'เข้าสู่ระบบ', isDirty: () => false, body: h('div',
-    h('p', 'เข้าสู่ระบบแล้วงานและสมุดจะไม่หายเมื่อเปลี่ยนเครื่อง และเปิดได้ทุกเครื่อง'),
-    go, err,
-    h('p.muted.accnote', 'งานที่มีในเครื่องนี้จะขึ้นบัญชีไปด้วย · ไม่เข้าสู่ระบบก็ใช้ได้ครบเหมือนเดิม ข้อมูลอยู่ในเครื่อง')) });
-}
+export function openAccount() { app.cloud.user() ? accountModal() : showLogin(app.cloud); }
 
 /** หลังเข้าสู่ระบบ: เครื่องนี้เคยเป็นของบัญชีอื่น → ล้างเครื่องก่อน (ไม่ให้งานของคนอื่นปนเข้าบัญชีนี้) · ไม่งั้นซิงก์เลย */
 export async function afterSignIn(u) {

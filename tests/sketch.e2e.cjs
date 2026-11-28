@@ -10,7 +10,7 @@ const check = (name, ok, extra = '') => { results.push(ok); console.log(`${ok ? 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = require('./fake-login.cjs').autoSignIn(await chromium.launch()); // แอปต้องเข้าสู่ระบบก่อน
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'th-TH', timezoneId: 'Asia/Bangkok', serviceWorkers: 'block', hasTouch: false });
   await ctx.route('http://sabaii.test/**', r => {
     let f = path.join(ROOT, decodeURIComponent(new URL(r.request().url()).pathname));

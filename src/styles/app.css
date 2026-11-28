@@ -1576,3 +1576,21 @@ body.ns-3 .pane-note .tk-b .cta { white-space: nowrap; min-width: 0; }
 @keyframes accpulse { to { opacity: .3; } }
 .btn span svg { width: 18px; height: 18px; vertical-align: -3px; }
 .list-btn.dangertext .lk { color: var(--error); }
+
+/* 0.13 หน้าเข้าสู่ระบบ (ต้องเข้าก่อนใช้แอปทุกครั้ง) — การ์ดขาวกลางจอบนพื้นเทาอ่อน */
+html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html.gated #page { visibility: hidden; }
+#login { --disp: "Anuphan", "Noto Sans Thai Looped", sans-serif; position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; overflow-y: auto;
+  padding: max(24px, env(safe-area-inset-top)) 16px max(24px, var(--safe-b)); background: #F4F5F8; color: var(--ink); font-family: var(--disp, inherit); }
+.lg-top { display: flex; align-items: center; gap: 8px; font: 700 18px/1 var(--disp, inherit); }
+.lg-top img { border-radius: 8px; } .lg-top b { color: var(--blue); font-weight: 700; }
+.lg-card { width: 100%; max-width: 400px; margin: auto 0; padding: 28px 24px 22px; background: #fff; border-radius: 16px; box-shadow: 0 1px 2px rgba(11,27,77,.06), 0 8px 28px -12px rgba(11,27,77,.18); }
+.lg-card h1 { margin: 0; font: 700 24px/1.3 var(--disp, inherit); }
+.lg-sub { margin: 6px 0 20px; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+.lg-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 50px; padding: 0 18px; border: 0; border-radius: 999px;
+  background: #EEF0F4; color: var(--ink); font: 600 16px var(--disp, inherit); cursor: pointer; transition: background .15s; }
+.lg-btn:hover { background: #E4E7EE; } .lg-btn:active { transform: scale(.99); } .lg-btn:disabled { opacity: .6; cursor: default; }
+.lg-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.lg-ic, .lg-ic svg { width: 20px; height: 20px; display: block; }
+.lg-err { margin: 10px 0 0; color: var(--error); font-size: 14px; text-align: center; } .lg-err:empty { display: none; }
+.lg-foot { margin: 20px 0 0; color: var(--text-2); font-size: 12.5px; line-height: 1.6; text-align: center; }
+.lg-back { margin-top: 18px; color: var(--text-2); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }

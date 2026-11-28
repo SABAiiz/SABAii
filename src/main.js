@@ -5,6 +5,7 @@ import { createStore } from './data/store.js';
 import { createCloud } from './data/cloud.js';
 import { createSync } from './data/sync.js';
 import { afterSignIn } from './features/account.js';
+import { showLogin } from './features/login.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { tasksView, subjectView } from './features/tasks.js';
@@ -14,7 +15,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.12.0';
+globalThis.SABAII_VERSION = '0.13.0';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', book: 'สมุดจด' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -30,8 +31,12 @@ async function boot() {
   let signedIn = false, signInErr = '';
   if (/[?&](code|error)=/.test(location.search) || /[#&]error=/.test(location.hash)) {
     try { signedIn = await cloud.finishRedirect(location.search, location.hash); } catch (e) { signInErr = e.message; }
-    history.replaceState(history.state, '', location.pathname + '#/me');
+    history.replaceState(history.state, '', location.pathname + (signedIn ? '#/home' : ''));
   }
+  // ต้องเข้าสู่ระบบก่อนทุกครั้ง: ยังไม่เข้า → หน้าเข้าสู่ระบบอย่างเดียว ไม่เปิดแอป
+  if (!cloud.user()) { showLogin(cloud, { error: signInErr }); return; }
+  // หลุดจากระบบกลางทาง (token ใช้ไม่ได้แล้ว / ลบบัญชี) → หน้าเข้าสู่ระบบทับแอป ข้อมูลในเครื่องยังอยู่
+  cloud.onChange(u => { if (!u) showLogin(cloud, { again: true }); });
   try {
     const db = await openBestDB();
     sync = createSync({ db, cloud });
@@ -84,7 +89,7 @@ async function boot() {
   // ครั้งแรก: แบบสอบถามก่อนเข้าแอป · กดมาจากหน้าแนะนำ (?from=landing) ข้ามหน้าต้อนรับไปข้อ 1 เลย
   const fromLanding = new URLSearchParams(location.search).get('from') === 'landing';
   if (location.search) history.replaceState(history.state, '', location.pathname + location.hash);
-  if (needsOnboarding()) openOnboarding({ start: fromLanding ? 1 : 0 });
+  if (needsOnboarding()) openOnboarding({ start: fromLanding || signedIn ? 1 : 0 }); // เพิ่งผ่านหน้าเข้าสู่ระบบ = ทักทายไปแล้ว
 
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(() => {});
   addEventListener('offline', () => toast(cloud.user() ? 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ต่อเน็ตแล้วจะซิงก์เอง' : 'ออฟไลน์อยู่ — เพิ่มและแก้งานได้ตามปกติ ข้อมูลอยู่ในเครื่อง'));
@@ -93,7 +98,6 @@ async function boot() {
   addEventListener('online', syncIfIn);
   document.addEventListener('visibilitychange', syncIfIn);
   setInterval(syncIfIn, 60_000);
-  if (signInErr) toast(signInErr);
   if (signedIn) afterSignIn(cloud.user()); else syncIfIn();
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
