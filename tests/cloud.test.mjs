@@ -91,13 +91,13 @@ test('Facebook / Apple: ไปหน้า authorize ของผู้ให้
   }
 });
 
-test('อีเมล: ขอรหัส → กรอกรหัส 6 หลัก → เข้าสู่ระบบ · รหัสผิด/หมดอายุ → ข้อความไทย', async () => {
+test('อีเมล: ขอรหัส → กรอกรหัส 6–8 หลัก → เข้าสู่ระบบ · รหัสผิด/หมดอายุ → ข้อความไทย', async () => {
   const calls = [];
   const fetchFn = async (url, o) => {
     const p = url.replace(/^https:\/\/[^/]+/, ''), b = o.body && JSON.parse(o.body);
     calls.push([p, b]);
     if (p === '/auth/v1/otp') return res(200, {});
-    if (p === '/auth/v1/verify') return b.token === '123456'
+    if (p === '/auth/v1/verify') return (b.token === '123456' || b.token === '12345678')
       ? res(200, { access_token: 'AT', refresh_token: 'RT', expires_in: 3600, user: { id: 'u2', email: 'mind@school.ac.th', user_metadata: {} } })
       : res(403, { code: 403, error_code: 'otp_expired', msg: 'Token has expired or is invalid' });
     return res(404, {});
@@ -110,6 +110,8 @@ test('อีเมล: ขอรหัส → กรอกรหัส 6 หล�
   await c.verifyEmailCode('mind@school.ac.th', '123 456');
   assert.deepEqual(calls.at(-1), ['/auth/v1/verify', { type: 'email', email: 'mind@school.ac.th', token: '123456' }]);
   assert.deepEqual(c.user(), { id: 'u2', email: 'mind@school.ac.th', name: '', avatar: '' });
+  await c.verifyEmailCode('mind@school.ac.th', '1234 5678'); // Supabase ตั้ง 8 หลักก็ได้
+  assert.equal(calls.at(-1)[1].token, '12345678');
 });
 
 test('โปรไฟล์: อ่านของตัวเอง · แก้ได้เฉพาะช่องที่อนุญาต (role ไม่ถูกส่ง) · touch ล้มก็ไม่พัง · ลบบัญชีส่งเหตุผล', async () => {
