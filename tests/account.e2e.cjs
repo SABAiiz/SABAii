@@ -170,6 +170,7 @@ const liveTitles = page => page.evaluate(() => window.__sabaii.state.tasks.filte
   const C = await newDevice(browser);
   await C.page.goto(BASE); await C.page.waitForSelector('#login');
   check('หน้าเข้าสู่ระบบมีครบ 4 ทาง: Google · Facebook · Apple · อีเมล', (await Promise.all(['#acc-google', '#acc-facebook', '#acc-apple', '#acc-email'].map(s => C.page.locator(s).isVisible()))).every(Boolean));
+  check('ปุ่ม Apple จางและกดไม่ได้ (ยังไม่เชื่อม)', await C.page.locator('#acc-apple').isDisabled());
   await shot(C.page, 'acc-4-choices');
   await C.page.click('#acc-email');
   await C.page.fill('#acc-email-in', 'mind@'); await C.page.click('#acc-send');

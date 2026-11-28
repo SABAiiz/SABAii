@@ -1632,6 +1632,10 @@ html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html
 .lg-btn.alt:hover { background: #E3E6EC; }
 .lg-btn.alt .lg-ic { background: transparent; }
 .lg-btn.alt .lg-ic svg { width: 20px; height: 20px; }
+/* ปุ่มที่ยังไม่เปิดใช้ (Apple) — จาง กดไม่ได้ มีป้าย "เร็ว ๆ นี้" */
+.lg-btn.soon, .lg-btn.soon:disabled { opacity: .45; cursor: not-allowed; }
+.lg-btn.soon:hover { background: #EEF0F4; } .lg-btn.soon:active { transform: none; }
+.lg-soon { padding: 3px 8px; border-radius: 999px; background: #D9DDE5; color: var(--text-2); font: 600 11.5px/1 var(--ui); }
 .lg-in { width: 100%; min-height: 52px; padding: 0 18px; border: 1.5px solid #D9DDE5; border-radius: 14px; background: #fff; color: var(--ink);
   font: 500 16px var(--ui); text-align: center; }
 .lg-in:focus { outline: none; border-color: var(--ink); }

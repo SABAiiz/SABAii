@@ -30,10 +30,12 @@ export function showLogin(cloud, { error = '', again = false } = {}) {
   const PROVIDERS = [
     ['google', 'Google', G_LOGO, 'lg-btn'],
     ['facebook', 'Facebook', FB_LOGO, 'lg-btn.alt'],
-    ['apple', 'Apple', APPLE_LOGO, 'lg-btn.alt'],
+    ['apple', 'Apple', APPLE_LOGO, 'lg-btn.alt', true], // soon: ยังไม่ได้เชื่อม Apple — ปุ่มจาง กดไม่ได้ (เชื่อมแล้วลบ true ออก)
   ];
-  const oauthBtns = PROVIDERS.map(([id, name, logo, cls]) => {
+  const oauthBtns = PROVIDERS.map(([id, name, logo, cls, soon]) => {
     const label = h('span.lg-lbl', `ดำเนินการต่อด้วย ${name}`);
+    if (soon) return h('button.' + cls + '.soon', { id: 'acc-' + id, type: 'button', disabled: true, 'aria-disabled': 'true', title: 'เร็ว ๆ นี้' },
+      h('span.lg-ic', { html: logo }), label, h('span.lg-soon', 'เร็ว ๆ นี้'));
     const b = h('button.' + cls, { id: 'acc-' + id, type: 'button' }, h('span.lg-ic', { html: logo }), label);
     b.onclick = async () => {
       say('');
@@ -47,13 +49,13 @@ export function showLogin(cloud, { error = '', again = false } = {}) {
     return b;
   });
   const mailBtn = h('button.lg-btn.alt', { id: 'acc-email', type: 'button' }, h('span.lg-ic', { html: MAIL_LOGO }), h('span.lg-lbl', 'ดำเนินการต่อด้วยอีเมล'));
-  const all = [...oauthBtns, mailBtn];
+  const all = [...oauthBtns.filter(b => !b.classList.contains('soon')), mailBtn];
   const reset = () => all.forEach(x => { x.disabled = false; x._reset?.(); });
   // กดย้อนกลับจากหน้าผู้ให้บริการ (หน้าเก่าจากแคชของเบราว์เซอร์) → ปุ่มต้องกดได้อีก
   addEventListener('pageshow', reset);
 
   // ----- อีเมล: กรอกอีเมล → ส่งรหัส → กรอกรหัส 6 หลัก (อยู่ในหน้านี้ ไม่ต้องออกจากแอป) -----
-  const choose = h('div.lg-choose', all);
+  const choose = h('div.lg-choose', [...oauthBtns, mailBtn]);
   const emailIn = h('input.lg-in', { id: 'acc-email-in', type: 'email', inputmode: 'email', autocomplete: 'email', placeholder: 'อีเมลของคุณ', 'aria-label': 'อีเมล', required: true });
   const codeIn = h('input.lg-in.code', { id: 'acc-code-in', type: 'text', inputmode: 'numeric', autocomplete: 'one-time-code', maxlength: 6, placeholder: 'รหัส 6 หลัก', 'aria-label': 'รหัส 6 หลักจากอีเมล' });
   const sendBtn = h('button.lg-btn', { id: 'acc-send', type: 'submit' }, h('span.lg-lbl', 'ส่งรหัสไปที่อีเมล'));
