@@ -18,7 +18,6 @@ jobs:
     env:
       CI: "true"
       TZ: Asia/Bangkok
-      SABAII_OFFLINE_ONLY: ${{ github.event.head_commit.message == 'Validate offline startup with an isolated origin' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v6
         with:
