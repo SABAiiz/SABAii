@@ -111,3 +111,26 @@ test('อีเมล: ขอรหัส → กรอกรหัส 6 หล�
   assert.deepEqual(calls.at(-1), ['/auth/v1/verify', { type: 'email', email: 'mind@school.ac.th', token: '123456' }]);
   assert.deepEqual(c.user(), { id: 'u2', email: 'mind@school.ac.th', name: '', avatar: '' });
 });
+
+test('โปรไฟล์: อ่านของตัวเอง · แก้ได้เฉพาะช่องที่อนุญาต (role ไม่ถูกส่ง) · touch ล้มก็ไม่พัง · ลบบัญชีส่งเหตุผล', async () => {
+  const calls = [], storage = mem();
+  storage.setItem('sabaii-auth', JSON.stringify({ access_token: 'AT', refresh_token: 'RT', expires_at: Date.now() + 3600e3, user: { id: 'u1', email: 'a@b.co' } }));
+  const fetchFn = async (url, o) => {
+    const path = url.replace(/^https:\/\/[^/]+/, '');
+    calls.push([path, o.method, o.body && typeof o.body === 'string' ? JSON.parse(o.body) : o.body, o.headers]);
+    if (path.startsWith('/rest/v1/profiles')) return res(200, [{ id: 'u1', display_name: 'ปลา', role: 'user' }]);
+    if (path === '/rest/v1/rpc/touch_last_seen') return res(500, {});
+    if (path.startsWith('/storage/v1/object/list/')) return res(200, []);
+    return res(200, null);
+  };
+  const c = createCloud({ storage, fetchFn, url: 'https://x' });
+  assert.equal((await c.profile()).display_name, 'ปลา');
+  assert.equal(calls[0][0], '/rest/v1/profiles?select=*&id=eq.u1');
+  await c.updateProfile({ display_name: 'ปลา', role: 'admin', timezone: 'Asia/Bangkok' });
+  assert.deepEqual(calls[1].slice(0, 3), ['/rest/v1/profiles?id=eq.u1', 'PATCH', { display_name: 'ปลา', timezone: 'Asia/Bangkok' }]);
+  assert.equal(calls[1][3].Prefer, 'return=representation');
+  await c.touch();
+  await c.deleteAccount('ไม่ได้ใช้แล้ว');
+  assert.deepEqual(calls.at(-1).slice(0, 3), ['/rest/v1/rpc/delete_my_account', 'POST', { p_reason: 'ไม่ได้ใช้แล้ว' }]);
+  assert.equal(c.user(), null);
+});
