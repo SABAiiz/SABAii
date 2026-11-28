@@ -2,6 +2,7 @@
 import { h, ic, put, toast, openModal, closeModal, confirmBox } from '../ui/kit.js';
 import { app } from './shared.js';
 import { showLogin } from './login.js';
+import { disable as pushOff } from './notify.js';
 
 const hhmm = iso => new Date(iso).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
@@ -69,6 +70,7 @@ export async function signOut() {
     body: pending ? `ยังมี ${pending} รายการที่ยังไม่ได้ขึ้นบัญชี (ไม่มีเน็ต?) ถ้าออกตอนนี้รายการเหล่านี้จะหาย` : 'งานทั้งหมดอยู่ในบัญชีแล้ว · เครื่องนี้จะถูกล้าง เข้าสู่ระบบอีกครั้งงานจะกลับมา',
     ok: 'ออกจากระบบ', danger: !!pending });
   if (!ok) return;
+  await pushOff(); // เครื่องนี้เลิกรับแจ้งเตือนของบัญชีนี้
   app.leaving = true; // ออกเอง ไม่ใช่หลุด → ไม่ต้องโชว์ "เข้าสู่ระบบอีกครั้ง" ระหว่างล้างเครื่อง
   await app.cloud.signOut();
   await wipeDevice();
@@ -78,6 +80,7 @@ async function deleteAccount() {
   const ok = await confirmBox({ title: 'ลบบัญชีถาวร?', body: 'บัญชี งาน วิชา โน้ต และรูปทั้งหมดบนคลาวด์จะถูกลบ กู้คืนไม่ได้ · งานในเครื่องนี้จะถูกล้างด้วย', ok: 'ลบบัญชีถาวร', danger: true });
   if (!ok) return;
   app.leaving = true;
+  await pushOff();
   try { await app.cloud.deleteAccount(); }
   catch (e) { app.leaving = false; toast(e.offline ? 'ต้องต่อเน็ตก่อนจึงจะลบบัญชีได้' : `ลบบัญชีไม่สำเร็จ: ${e.message}`); return; }
   await wipeDevice();

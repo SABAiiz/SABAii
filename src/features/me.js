@@ -9,6 +9,7 @@ import { MODES, listenMode } from './listen.js';
 import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
 import { openOnboarding } from './onboard.js';
 import { openAccount, syncLabel, avatarEl, withPhoto, signOut } from './account.js';
+import { notifyModal, notifyLabel } from './notify.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 export function applyTheme() { document.documentElement.dataset.theme = 'light'; }
@@ -73,6 +74,7 @@ export function meView(root) {
         h('span.mi', { style: { '--mb': TINT.pink[0], '--mc': TINT.pink[1] }, html: ic('mic') }), h('span.lk', 'ปุ่มพูด เริ่มที่'),
         h('span.mseg', ['self', 'teacher'].map(m => h('button', { 'aria-pressed': String(m === mode), 'aria-label': MODES[m], onclick: setMode(m) }, m === 'self' ? 'พูดเอง' : 'ฟังครู')))),
       row('book', 'green', 'วิชาของฉัน', `${nSubj} วิชา`, subjectsModal),
+      row('bell', 'yellow', 'การแจ้งเตือน', notifyLabel(s), notifyModal, { sub: 'ตั้งเวลาเตือนของแต่ละวิชา' }),
       row('spark', 'yellow', 'งานตัวอย่าง', hasSamples ? 'ลบออก' : 'ลองใส่', toggleSamples),
       row('reset', 'purple', 'ตอบแบบสอบถามเริ่มต้นใหม่', null, () => openOnboarding({ redo: true }))),
     h('h2.msec', 'ข้อมูลของฉัน'),
@@ -91,8 +93,7 @@ export function meView(root) {
     h('h2.msec.msoon', 'เร็ว ๆ นี้'),
     h('div.soon-grid',
       soon('link', 'Google Classroom', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว')),
-      soon('users', 'ห้องเรียน', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้')),
-      soon('bell', 'การแจ้งเตือน', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') }))),
+      soon('users', 'ห้องเรียน', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้'))),
     app.cloud?.user() ? h('div.mlist.mout', h('button.list-btn.dangertext', { id: 'me-out', onclick: signOut },
       h('span.mi', { style: { '--mb': '#FDECEC', '--mc': 'var(--error)' }, html: ic('logout') }), h('span.lk', 'ออกจากระบบ', h('small', 'งานยังอยู่ในบัญชี · เข้าใหม่งานกลับมาครบ')))) : '',
     h('button.mfoot', { onclick: aboutModal, 'aria-label': 'เกี่ยวกับ SABAii.com' }, h('span', h('b', 'SABAii.com'), ` · รุ่น ${globalThis.SABAII_VERSION || ''}`), h('small', { html: ic('lock') + (app.cloud?.user() ? 'งานอยู่ในเครื่องนี้ + บัญชีของคุณ' : 'งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น') })),
@@ -149,7 +150,7 @@ function shareStudy() {
 function aboutModal() {
   openModal({ title: 'เกี่ยวกับ SABAii.com', body: h('div',
     h('p', 'แอปจัดการงานเรียน: เพิ่มงานง่าย รู้ว่าต้องทำอะไร และไม่พลาดกำหนดส่ง'),
-    h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง · เข้าสู่ระบบด้วย Google และซิงก์ได้แล้ว · ยังไม่มีการอ่านรูปอัตโนมัติ และการแจ้งเตือนตอนปิดแอป`)) });
+    h('p.muted', `รุ่น ${globalThis.SABAII_VERSION || ''} · รุ่นทดลอง · เข้าสู่ระบบด้วย Google และซิงก์ได้แล้ว · มีแจ้งเตือนรายวิชาแล้ว · ยังไม่มีการอ่านรูปอัตโนมัติ`)) });
 }
 function stylePicker() {
   const cur = noteStyle();
