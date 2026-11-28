@@ -139,8 +139,7 @@
       }
       cam.s = go(cam.s, 1 - p * .16, .14, .0005); cam.ty = go(cam.ty, p * 70, .14, .1); cam.o = go(cam.o, clamp(1 - p * 1.6), .18, .003);
       heroText.style.transform = `translate3d(0,${cam.ty.toFixed(1)}px,0) scale(${cam.s.toFixed(4)})`;
-      heroText.style.opacity = cam.o.toFixed(3);
-      heroText.style.filter = p > .01 ? `blur(${(p * 14).toFixed(2)}px)` : 'none';
+      heroText.style.opacity = cam.o.toFixed(3);   // ไม่เบลอตามการเลื่อน — วาดเบลอใหม่ทุกเฟรมทำให้กระตุก
     }
 
     // 2 · มือถือโผล่ขึ้นมาจากฉาก แล้วเอียงตามการเลื่อน · ขั้นตอนเปลี่ยนตามระยะ
@@ -211,7 +210,13 @@
   }
 
   addEventListener('scroll', () => { solid(); chrome(); reduce ? reducedTick() : kick(); }, { passive: true });
-  addEventListener('resize', () => { measure(); chrome(); reduce ? reducedTick() : kick(); });
+  // มือถือ: แถบที่อยู่เว็บหด/โผล่ตอนเลื่อนก็ยิง resize (สูงเปลี่ยนนิดเดียว) → ไม่วัดใหม่ ไม่งั้นค่าทุกตัวกระโดด
+  let lastW = innerWidth, lastH = innerHeight;
+  addEventListener('resize', () => {
+    if (innerWidth === lastW && Math.abs(innerHeight - lastH) < 160) return;
+    lastW = innerWidth; lastH = innerHeight;
+    measure(); chrome(); reduce ? reducedTick() : kick();
+  });
   if (!reduce) {
     if (fine) addEventListener('pointermove', e => { if (handOn) return; tmx = e.clientX / vw - .5; tmy = e.clientY / vh - .5; kick(); }, { passive: true });
     // เอียงเครื่อง (Android · iOS ต้องขออนุญาตก่อน เลยไม่ใช้) — มุมแรกที่ถือ = จุดกลาง

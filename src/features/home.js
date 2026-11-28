@@ -44,21 +44,31 @@ export function renderHomeAll() { renderHome(); renderStage(); }
 const isNoteMode = () => document.body.classList.contains('note-mode');
 /* ความลึกตอนดึงแผ่น (0.9.2): โน้ตด้านหลังย่อ + มืดตอนแผ่นเต็มจอ → ค่อย ๆ ขยาย/สว่างตามนิ้วจนเต็มเมื่อดึงลงสุด
    ที่จับเปลี่ยนเป็น "ปล่อยเพื่อดูโน้ต" เมื่อเลยจุดเข้าโหมดโน้ต · เข้าระดับแล้วสั่นเบา ๆ (Android) · ดันขึ้นเกินจอ = ยืดแล้วเด้งกลับ */
-let hintEl = null, lastSnap = 2;
+// ลื่นตอนลาก (0.15.2): แผ่นสูงเต็มจอตลอด แล้วเลื่อนด้วย transform (ไม่เปลี่ยน height = ไม่จัดหน้าใหม่ทุกเฟรม)
+//   ค่าที่เปลี่ยนทุกเฟรมเขียนลงชิ้นที่ใช้เท่านั้น ไม่เขียน CSS variable ที่ <html> (จะคำนวณสไตล์ใหม่ทั้งหน้า)
+let hintEl = null, lastSnap = 2, stageDim = null, noteUi = null, sheetH = 0;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const setOnce = (el, k, v) => { if (el.style.getPropertyValue(k) !== v) el.style.setProperty(k, v); };
 function pullDepth(v) {
   const [lo, , hi] = snapPx(), p = Math.max(0, Math.min(1, (hi - v) / Math.max(1, hi - lo)));
-  const r = document.documentElement.style;
-  r.setProperty('--pull', p.toFixed(3));
-  r.setProperty('--stage-tf', p > .995 || matchMedia('(prefers-reduced-motion: reduce)').matches ? 'none' : `scale(${(.9 + .1 * p).toFixed(4)})`);
+  stageDim ||= $('#stage-dim');
+  if (stageDim) setOnce(stageDim, 'opacity', ((1 - p) * .32).toFixed(3));
+  setOnce(stage, 'transform', p > .995 || reduceMotion.matches ? 'none' : `scale(${(.9 + .1 * p).toFixed(4)})`);
   hintEl ||= $('.grab .hint');
-  if (hintEl) hintEl.textContent = sheet.classList.contains('dragging') && v < snapPx()[1] - 12 ? 'ปล่อยเพื่อดูโน้ต' : 'ดึงลงเพื่อดูโน้ตหน้างาน';
+  const hint = sheet.classList.contains('dragging') && v < snapPx()[1] - 12 ? 'ปล่อยเพื่อดูโน้ต' : 'ดึงลงเพื่อดูโน้ตหน้างาน';
+  if (hintEl && hintEl.textContent !== hint) hintEl.textContent = hint;
 }
 function setVis(v) {
   vis = v;
-  document.documentElement.style.setProperty('--sheet-vis', v + 'px');
+  if (sheetH !== innerHeight) { sheetH = innerHeight; sheet.style.height = sheetH + 'px'; }
+  setOnce(sheet, 'transform', `translate3d(0,${(sheetH - v).toFixed(1)}px,0)`);
+  noteUi ||= $('#note-ui');
+  if (isNoteMode() || v < snapPx()[1]) setOnce(noteUi, '--sheet-vis', Math.round(v) + 'px'); // ปุ่มลอยตามขอบแผ่น (เห็นเฉพาะตอนดูโน้ต)
   pullDepth(v);
-  sheet.classList.toggle('full', v >= snapPx()[2] - 2);
-  sheet.dataset.snap = ['low', 'mid', 'top'][snapIdx];
+  const full = v >= snapPx()[2] - 2;
+  if (full !== sheet.classList.contains('full')) sheet.classList.toggle('full', full);
+  const snap = ['low', 'mid', 'top'][snapIdx];
+  if (sheet.dataset.snap !== snap) sheet.dataset.snap = snap;
   const nm = v < (snapPx()[0] + snapPx()[1]) / 2;
   if (nm !== isNoteMode()) {
     document.body.classList.toggle('note-mode', nm);
@@ -87,11 +97,14 @@ function settle(hist) {
   setSnap(best, false, true);
 }
 /** ดันแผ่นขึ้นเกินขอบจอ: ของในแผ่นยืดตามนิ้วแบบหนืด (ไม่เกิน 44px) แล้วเด้งกลับตอนปล่อย */
-function over(px) { sheet.style.setProperty('--over', Math.min(44, Math.max(0, px * .3)).toFixed(1) + 'px'); }
+function over(px) { setOnce(sheet, '--over', Math.min(44, Math.max(0, px * .3)).toFixed(1) + 'px'); }
 const clampVis = v => { over(v - innerHeight); return Math.max(LOW * .7, Math.min(innerHeight, v)); };
 function initSheetDrag() {
   // ลากได้ทั้งแผ่น (รวมบนปุ่ม) — แผ่นตามนิ้วทันที ไม่ต้องกด · แตะเฉย ๆ ไม่ขยับ
   let drag = null, suppress = false;
+  // นิ้ว/เมาส์ส่ง move ได้หลายครั้งต่อเฟรม → ขยับแผ่นแค่เฟรมละครั้ง
+  let raf = 0, want = 0;
+  const follow = v => { want = v; raf ||= requestAnimationFrame(() => { raf = 0; setVis(clampVis(want)); }); };
   sheet.addEventListener('pointerdown', e => {
     if (e.button) return;
     const inBody = !!e.target.closest('.pane-home');
@@ -106,11 +119,12 @@ function initSheetDrag() {
       if (sheet.classList.contains('full') && drag.inBody && (dy < 0 || paneHome.scrollTop > 0)) { drag = null; return; } // ให้เลื่อนรายการแทน
       drag.moved = true; sheet.classList.add('dragging'); // นับจากจุดที่นิ้วแตะ แผ่นจะติดนิ้วพอดี
     }
-    setVis(clampVis(drag.vis - (e.clientY - drag.y)));
     drag.hist.push([e.timeStamp, e.clientY]); if (drag.hist.length > 5) drag.hist.shift();
+    follow(drag.vis - (e.clientY - drag.y));
   });
   const end = () => {
     if (!drag) return;
+    cancelAnimationFrame(raf); raf = 0;
     const d = drag; drag = null;
     if (!d.moved) return;
     suppress = true; setTimeout(() => { suppress = false; }, 0);
@@ -137,10 +151,10 @@ function initSheetDrag() {
       tp.active = true; tp.vis = vis; sheet.classList.add('dragging');
     }
     e.preventDefault();
-    setVis(clampVis(tp.vis - (y - tp.y0)));
     tp.hist.push([e.timeStamp, y]); if (tp.hist.length > 5) tp.hist.shift();
+    follow(tp.vis - (y - tp.y0));
   }, { passive: false });
-  const tend = () => { const d = tp; tp = null; if (d?.active && d.hist.length) settle(d.hist); else sheet.classList.remove('dragging'); };
+  const tend = () => { cancelAnimationFrame(raf); raf = 0; const d = tp; tp = null; if (d?.active && d.hist.length) settle(d.hist); else sheet.classList.remove('dragging'); };
   paneHome.addEventListener('touchend', tend); paneHome.addEventListener('touchcancel', tend);
 }
 
