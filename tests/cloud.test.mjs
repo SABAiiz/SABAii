@@ -38,7 +38,7 @@ test('Google: ไปหน้า authorize พร้อม PKCE → กลับ
 test('Google: กดยกเลิก / ลิงก์ที่ไม่ได้เริ่มจากเครื่องนี้ / ยังไม่เปิด Google ในเซิร์ฟเวอร์ → ข้อความไทย', async () => {
   const c = createCloud({ storage: mem(), url: 'https://x', fetchFn: async () => res(404, {}) });
   await assert.rejects(c.finishRedirect('?error=access_denied&error_description=The+user+denied'), /ยกเลิก/);
-  await assert.rejects(c.finishRedirect('', '#error=server_error&error_code=provider_disabled&error_description=x'), /ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้/);
+  await assert.rejects(c.finishRedirect('', '#error=server_error&error_code=provider_disabled&error_description=x'), /ยังเปิดเข้าสู่ระบบด้วยวิธีนี้ไม่ได้/);
   await assert.rejects(c.finishRedirect('?code=STOLEN'), /ไม่ได้เริ่มจากเครื่องนี้/);
   assert.equal(c.user(), null);
 });

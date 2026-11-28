@@ -12,11 +12,11 @@ export class CloudError extends Error {
 
 const THAI = {
   access_denied: 'ยกเลิกการเข้าสู่ระบบแล้ว',
-  bad_code_verifier: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง',
-  flow_state_not_found: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง',
-  flow_state_expired: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง',
-  provider_disabled: 'ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
-  validation_failed: 'ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  bad_code_verifier: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
+  flow_state_not_found: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
+  flow_state_expired: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
+  provider_disabled: 'ยังเปิดเข้าสู่ระบบด้วยวิธีนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  validation_failed: 'ยังเปิดเข้าสู่ระบบด้วยวิธีนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
   signup_disabled: 'ตอนนี้ยังเปิดรับสมัครบัญชีใหม่ไม่ได้',
   over_request_rate_limit: 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่',
 };
@@ -94,13 +94,15 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
     user, onChange: fn => (listeners.add(fn), () => listeners.delete(fn)),
 
     /** ขั้น 1: ไปหน้าเลือกบัญชี Google · PKCE — เก็บรหัสลับไว้ในเครื่อง ส่งไปแค่ค่าแฮช (ใครดักลิงก์กลับได้ก็ใช้แทนไม่ได้) */
-    async googleUrl(returnTo) {
+    async googleUrl(returnTo) { return this.oauthUrl('google', returnTo); },
+    /** เหมือนกันทุกผู้ให้บริการ (google / facebook) — ต่างกันแค่ชื่อ provider */
+    async oauthUrl(provider, returnTo) {
       const verifier = b64url(randomBytes(48));
       try { storage.setItem(PKCE_KEY, verifier); } catch {}
       // crypto.subtle มีเฉพาะหน้า https/localhost — เปิดผ่าน http (ลองในวง LAN) ใช้แบบ plain แทน
       const sha = globalThis.crypto?.subtle;
       const challenge = sha ? b64url(new Uint8Array(await sha.digest('SHA-256', new TextEncoder().encode(verifier)))) : verifier;
-      const q = new URLSearchParams({ provider: 'google', redirect_to: returnTo, code_challenge: challenge, code_challenge_method: sha ? 's256' : 'plain' });
+      const q = new URLSearchParams({ provider, redirect_to: returnTo, code_challenge: challenge, code_challenge_method: sha ? 's256' : 'plain' });
       return `${url}/auth/v1/authorize?${q}`;
     },
     /** ขั้น 2: Google ส่งกลับมาที่แอปพร้อม ?code=… → แลกเป็นการเข้าสู่ระบบ · คืน true ถ้าเป็นลิงก์กลับจากการเข้าสู่ระบบ
@@ -117,7 +119,7 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       if (!code) return false;
       let verifier = null;
       try { verifier = storage.getItem(PKCE_KEY); storage.removeItem(PKCE_KEY); } catch {}
-      if (!verifier) throw new CloudError('ลิงก์เข้าสู่ระบบนี้ไม่ได้เริ่มจากเครื่องนี้ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง');
+      if (!verifier) throw new CloudError('ลิงก์เข้าสู่ระบบนี้ไม่ได้เริ่มจากเครื่องนี้ ลองกดเข้าสู่ระบบอีกครั้ง');
       const r = await raw('/auth/v1/token?grant_type=pkce', { method: 'POST', body: { auth_code: code, code_verifier: verifier } });
       save(fromAuth(await r.json()));
       return true;
