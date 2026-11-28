@@ -3,6 +3,7 @@ import { h, ic, toast, $ } from './ui/kit.js';
 import { openBestDB } from './data/db.js';
 import { createStore } from './data/store.js';
 import { createCloud } from './data/cloud.js';
+import { createProfileSync } from './data/profile.js';
 import { createSync } from './data/sync.js';
 import { afterSignIn } from './features/account.js';
 import { showLogin } from './features/login.js';
@@ -84,7 +85,9 @@ async function boot() {
   app.refresh = () => { applyNoteStyle(); renderHomeAll(); renderPage(); };
   applyNoteStyle();
   initHome();
-  store.subscribe(() => { gcUrls(); app.refresh(); });
+  // โปรไฟล์บนเซิร์ฟเวอร์: เปิดแอป = ยังใช้อยู่ · ชื่อเล่น / วันทำแบบสอบถาม / เขตเวลา ตามเครื่อง
+  const profile = createProfileSync({ cloud, getPrefs: () => store.state.prefs });
+  store.subscribe(() => { gcUrls(); app.refresh(); profile.changed(); }); // changed(): รอ 3 วิ แล้วส่งเฉพาะที่ต่างจากที่เคยส่ง
   addEventListener('hashchange', renderPage);
   sync.onStatus(() => { if (route().name === 'me') renderPage(); });
   app.refresh();
@@ -101,6 +104,7 @@ async function boot() {
   document.addEventListener('visibilitychange', syncIfIn);
   setInterval(syncIfIn, 60_000);
   if (signedIn) afterSignIn(cloud.user()); else syncIfIn();
+  profile.start();
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }
