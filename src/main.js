@@ -7,6 +7,7 @@ import { createProfileSync } from './data/profile.js';
 import { createSync } from './data/sync.js';
 import { afterSignIn } from './features/account.js';
 import { showLogin } from './features/login.js';
+import { refreshPush } from './features/notify.js';
 import { app, gcUrls } from './features/shared.js';
 import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/home.js';
 import { tasksView, subjectView } from './features/tasks.js';
@@ -16,7 +17,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.14.1';
+globalThis.SABAII_VERSION = '0.16.0';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', book: 'สมุดจด' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -105,6 +106,7 @@ async function boot() {
   setInterval(syncIfIn, 60_000);
   if (signedIn) afterSignIn(cloud.user()); else syncIfIn();
   profile.start();
+  refreshPush(); // เปิดแจ้งเตือนไว้ = บอกเซิร์ฟเวอร์ซ้ำว่าเครื่องนี้ยังรับอยู่ (endpoint อาจเปลี่ยน)
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }
