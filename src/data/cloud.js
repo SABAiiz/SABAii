@@ -1,5 +1,5 @@
 // คุยกับหลังบ้าน (Supabase โปรเจกต์ "sabaii") ด้วย fetch ล้วน — ไม่มีไลบรารี ไม่มีขั้นตอน build
-// บัญชี: เข้าสู่ระบบด้วย Google (OAuth + PKCE) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
+// บัญชี: โปรไฟล์ในตาราง profiles (สร้างเองตอนสมัคร) · เข้าสู่ระบบด้วย Google / Facebook / Apple (OAuth + PKCE) หรืออีเมล (รหัสทางอีเมล 6–8 หลัก) · ข้อมูล: ตาราง items + ฟังก์ชัน sync_push · รูป + เนื้อหาหน้าสมุด: Storage "attachments"
 export const SUPABASE_URL = 'https://mojdvfzalfemenpxsoub.supabase.co';
 export const SUPABASE_KEY = 'sb_publishable_fEGsNd2FTZw-7mLK90Nlhg_rmulCvqC'; // คีย์สาธารณะ (ใส่ในแอปได้) — สิทธิ์จริงคุมด้วย RLS
 const AUTH_KEY = 'sabaii-auth', PKCE_KEY = 'sabaii-pkce';
@@ -12,11 +12,15 @@ export class CloudError extends Error {
 
 const THAI = {
   access_denied: 'ยกเลิกการเข้าสู่ระบบแล้ว',
-  bad_code_verifier: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง',
-  flow_state_not_found: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง',
-  flow_state_expired: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง',
-  provider_disabled: 'ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
-  validation_failed: 'ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  bad_code_verifier: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
+  flow_state_not_found: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
+  flow_state_expired: 'ลิงก์เข้าสู่ระบบหมดอายุ ลองกดเข้าสู่ระบบอีกครั้ง',
+  provider_disabled: 'ยังเปิดวิธีเข้าสู่ระบบนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  validation_failed: 'ยังเปิดวิธีเข้าสู่ระบบนี้ไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  otp_expired: 'รหัสหมดอายุหรือไม่ถูกต้อง ลองขอรหัสใหม่',
+  email_address_invalid: 'อีเมลนี้ใช้ไม่ได้ ตรวจตัวสะกดอีกครั้ง',
+  email_provider_disabled: 'ยังเปิดเข้าสู่ระบบด้วยอีเมลไม่ได้ (ผู้ดูแลต้องตั้งค่าในเซิร์ฟเวอร์ก่อน)',
+  over_email_send_rate_limit: 'ขอรหัสบ่อยเกินไป รอสักครู่แล้วลองใหม่',
   signup_disabled: 'ตอนนี้ยังเปิดรับสมัครบัญชีใหม่ไม่ได้',
   over_request_rate_limit: 'ลองบ่อยเกินไป รอสักครู่แล้วลองใหม่',
 };
@@ -39,7 +43,7 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
     listeners.forEach(fn => fn(user()));
   };
   const user = () => session?.user ? { ...session.user } : null;
-  /** ชื่อ/รูปจาก Google (user_metadata) — เก็บแค่ที่ใช้แสดง */
+  /** ชื่อ/รูปจากผู้ให้บริการ (user_metadata) — เก็บแค่ที่ใช้แสดง */
   const person = u => u ? { id: u.id, email: u.email || '', name: u.user_metadata?.full_name || u.user_metadata?.name || '', avatar: u.user_metadata?.avatar_url || u.user_metadata?.picture || '' } : null;
   const fromAuth = j => ({
     access_token: j.access_token, refresh_token: j.refresh_token,
@@ -93,17 +97,26 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
   return {
     user, onChange: fn => (listeners.add(fn), () => listeners.delete(fn)),
 
-    /** ขั้น 1: ไปหน้าเลือกบัญชี Google · PKCE — เก็บรหัสลับไว้ในเครื่อง ส่งไปแค่ค่าแฮช (ใครดักลิงก์กลับได้ก็ใช้แทนไม่ได้) */
-    async googleUrl(returnTo) {
+    /** ขั้น 1: ไปหน้าเลือกบัญชีของ Google / Facebook / Apple · PKCE — เก็บรหัสลับไว้ในเครื่อง ส่งไปแค่ค่าแฮช (ใครดักลิงก์กลับได้ก็ใช้แทนไม่ได้) */
+    async oauthUrl(provider, returnTo) {
       const verifier = b64url(randomBytes(48));
       try { storage.setItem(PKCE_KEY, verifier); } catch {}
       // crypto.subtle มีเฉพาะหน้า https/localhost — เปิดผ่าน http (ลองในวง LAN) ใช้แบบ plain แทน
       const sha = globalThis.crypto?.subtle;
       const challenge = sha ? b64url(new Uint8Array(await sha.digest('SHA-256', new TextEncoder().encode(verifier)))) : verifier;
-      const q = new URLSearchParams({ provider: 'google', redirect_to: returnTo, code_challenge: challenge, code_challenge_method: sha ? 's256' : 'plain' });
+      const q = new URLSearchParams({ provider, redirect_to: returnTo, code_challenge: challenge, code_challenge_method: sha ? 's256' : 'plain' });
       return `${url}/auth/v1/authorize?${q}`;
     },
-    /** ขั้น 2: Google ส่งกลับมาที่แอปพร้อม ?code=… → แลกเป็นการเข้าสู่ระบบ · คืน true ถ้าเป็นลิงก์กลับจากการเข้าสู่ระบบ
+    googleUrl(returnTo) { return this.oauthUrl('google', returnTo); },
+    /** อีเมล: ขอรหัส (6–8 หลักตามที่ตั้งใน Supabase · บัญชีใหม่สร้างให้เอง) → ผู้ใช้กรอกรหัสที่ได้ทางอีเมล — ไม่ต้องออกจากแอป ไม่ต้องตั้งรหัสผ่าน */
+    async sendEmailCode(email) {
+      await raw('/auth/v1/otp', { method: 'POST', body: { email: String(email).trim(), create_user: true } });
+    },
+    async verifyEmailCode(email, code) {
+      const r = await raw('/auth/v1/verify', { method: 'POST', body: { type: 'email', email: String(email).trim(), token: String(code).replace(/\D/g, '').slice(0, 8) } });
+      save(fromAuth(await r.json()));
+    },
+    /** ขั้น 2: ผู้ให้บริการส่งกลับมาที่แอปพร้อม ?code=… → แลกเป็นการเข้าสู่ระบบ · คืน true ถ้าเป็นลิงก์กลับจากการเข้าสู่ระบบ
         ยกเลิก/ล้ม → ?error=…&error_description=… (บางครั้งมาทาง #) */
     async finishRedirect(search, hash = '') {
       const q = new URLSearchParams(String(search || '').replace(/^\?/, ''));
@@ -117,7 +130,7 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       if (!code) return false;
       let verifier = null;
       try { verifier = storage.getItem(PKCE_KEY); storage.removeItem(PKCE_KEY); } catch {}
-      if (!verifier) throw new CloudError('ลิงก์เข้าสู่ระบบนี้ไม่ได้เริ่มจากเครื่องนี้ ลองกด "เข้าสู่ระบบด้วย Google" อีกครั้ง');
+      if (!verifier) throw new CloudError('ลิงก์เข้าสู่ระบบนี้ไม่ได้เริ่มจากเครื่องนี้ ลองกดเข้าสู่ระบบอีกครั้ง');
       const r = await raw('/auth/v1/token?grant_type=pkce', { method: 'POST', body: { auth_code: code, code_verifier: verifier } });
       save(fromAuth(await r.json()));
       return true;
@@ -152,8 +165,28 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
       if (!ids.length) return;
       await api(`/storage/v1/object/${BUCKET}`, { method: 'DELETE', body: { prefixes: ids.map(id => `${user().id}/${id}`) } });
     },
-    /** ลบบัญชีถาวร: รูปทั้งหมด → แถวทั้งหมด + บัญชี (ฝั่งเซิร์ฟเวอร์) → ออกจากระบบ */
-    async deleteAccount() {
+    /** โปรไฟล์บนเซิร์ฟเวอร์ (ตาราง profiles — สร้างเองตอนสมัคร) · null = ยังไม่มี (บัญชีเพิ่งสร้างกำลังเขียน) */
+    async profile() {
+      const r = await api(`/rest/v1/profiles?select=*&id=eq.${encodeURIComponent(user()?.id || '')}`);
+      return (await r.json())[0] || null;
+    },
+    /** แก้ได้แค่: display_name avatar_url locale timezone onboarded_at terms_version terms_accepted_at (role แก้ไม่ได้) */
+    async updateProfile(patch) {
+      const ok = ['display_name', 'avatar_url', 'locale', 'timezone', 'onboarded_at', 'terms_version', 'terms_accepted_at'];
+      const body = Object.fromEntries(Object.entries(patch || {}).filter(([k]) => ok.includes(k)));
+      if (!Object.keys(body).length) return this.profile();
+      const r = await api(`/rest/v1/profiles?id=eq.${encodeURIComponent(user()?.id || '')}`, { method: 'PATCH', body, headers: { Prefer: 'return=representation' } });
+      return (await r.json())[0] || null;
+    },
+    /** เปิดแอป = ยังใช้อยู่ (เซิร์ฟเวอร์เขียนจริงอย่างมาก 1 ครั้ง / 10 นาที) · ล้มก็ไม่เป็นไร */
+    async touch() { try { await api('/rest/v1/rpc/touch_last_seen', { method: 'POST', body: {} }); } catch {} },
+    /** ประวัติบัญชีล่าสุด (สมัคร · เข้าสู่ระบบ · ผูกวิธีเข้าใหม่) */
+    async accountEvents(limit = 20) {
+      const r = await api(`/rest/v1/account_events?select=type,provider,created_at&order=created_at.desc&limit=${Number(limit) || 20}`);
+      return r.json();
+    },
+    /** ลบบัญชีถาวร: รูปทั้งหมด → แถวทั้งหมด + บัญชี (ฝั่งเซิร์ฟเวอร์) → ออกจากระบบ · reason = เหตุผล (ไม่ใส่ก็ได้ เก็บแบบไม่ระบุตัวตน) */
+    async deleteAccount(reason = '') {
       const uid = user()?.id;
       if (!uid) throw new CloudError('ยังไม่ได้เข้าสู่ระบบ', { status: 401 });
       for (;;) {
@@ -163,7 +196,7 @@ export function createCloud({ url = SUPABASE_URL, key = SUPABASE_KEY, storage = 
         await api(`/storage/v1/object/${BUCKET}`, { method: 'DELETE', body: { prefixes: files.map(f => `${uid}/${f.name}`) } });
         if (files.length < 1000) break;
       }
-      await api('/rest/v1/rpc/delete_my_account', { method: 'POST', body: {} });
+      await api('/rest/v1/rpc/delete_my_account', { method: 'POST', body: reason ? { p_reason: String(reason).slice(0, 500) } : {} });
       save(null);
     },
   };

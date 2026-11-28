@@ -1,12 +1,12 @@
 // แคชไฟล์ของแอปไว้ให้เปิดได้ตอนออฟไลน์ · ข้อมูลผู้ใช้อยู่ใน IndexedDB ไม่ได้อยู่ที่นี่
 // เปลี่ยนไฟล์ในแอปเมื่อไหร่ ต้องขึ้นเลข CACHE ทุกครั้ง
-const CACHE = 'sabaii-v0.14.0-instant-1-instant-1';
+const CACHE = 'sabaii-v0.14.2-instant-1';
 const IMAGE_PATHS = ["./assets/previews/board.785a55d02e.webp","./assets/previews/chalk.1846127782.webp","./assets/previews/notes.ca6a900c26.webp","./assets/previews/sticky.c2acd3635f.webp"];
 const SHELL = [
   './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './favicon.png',
   './src/styles/app.css', './src/main.js', './src/ui/kit.js',
   './src/ui/load-art.js',
-  './src/data/db.js', './src/data/store.js', './src/data/cloud.js', './src/data/sync.js',
+  './src/data/db.js', './src/data/store.js', './src/data/cloud.js', './src/data/profile.js', './src/data/sync.js',
   './src/domain/dates.js', './src/domain/tasks.js', './src/domain/parse.js', './src/domain/thai-parse.js', './src/domain/speech.js', './src/domain/notebook.js', './src/domain/pages.js', './src/ui/subject-icon.js',
   './src/features/shared.js', './src/features/home.js', './src/features/add.js', './src/features/tasks.js', './src/features/notebook.js', './src/features/sketch.js', './src/features/me.js',
   './src/features/voice.js', './src/features/listen.js', './src/features/images.js',

@@ -16,4 +16,6 @@ cp -R src assets dist/app/
 rm -rf dist/app/src/landing
 cp -R care dist/care   # แบบสอบถาม "เสียงคนดูแล" (SPU AI Hackathon) → /care/
 cp -R study dist/study   # แบบสอบถาม "เสียงนักเรียน" (SABAii) → /study/
+cp -R privacy dist/privacy   # นโยบายความเป็นส่วนตัว → /privacy/ (ใส่ใน Meta/Google)
+cp -R data-deletion dist/data-deletion   # วิธีลบบัญชี → /data-deletion/ (ใส่ใน Meta)
 echo "built dist/ ($(find dist -type f | wc -l | tr -d ' ') files)"

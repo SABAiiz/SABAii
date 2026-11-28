@@ -8,7 +8,7 @@ import { app, S, subj, today } from './shared.js';
 import { MODES, listenMode } from './listen.js';
 import { NOTE_STYLES, noteStyle, styleName, stylePreview } from './notestyle.js';
 import { openOnboarding } from './onboard.js';
-import { openAccount, syncLabel, avatarEl } from './account.js';
+import { openAccount, syncLabel, avatarEl, withPhoto, signOut } from './account.js';
 
 /** แอปใช้ธีมสว่างอย่างเดียว — ค่าธีมเก่าที่เคยเลือกไว้ไม่มีผลแล้ว */
 
@@ -41,7 +41,7 @@ export function meView(root) {
   put(root,
     // หัว: วงรุ้ง + ชื่อไล่สี (ชุดเดียวกับหน้าแรก) · ไฟต่อเนื่อง
     h('section.mehero',
-      h('button.mavatar', { onclick: editName, 'aria-label': name ? 'แก้ชื่อ' : 'ตั้งชื่อ' }, h('span', (name || 'ฉ').slice(0, 1)), h('i', { html: ic('edit') })),
+      h('button.mavatar', { onclick: editName, 'aria-label': name ? 'แก้ชื่อ' : 'ตั้งชื่อ' }, withPhoto(h('span', (name || 'ฉ').slice(0, 1))), h('i', { html: ic('edit') })),
       h('div.mh-t',
         h('button.mh-name' + (name ? '' : '.unset'), { onclick: editName }, name || 'ตั้งชื่อเล่น'),
         h('small', `${nSubj} วิชา · ทำเสร็จแล้ว ${sum.done} งาน`),
@@ -92,14 +92,16 @@ export function meView(root) {
       soon('link', 'Google Classroom', () => notYet('Google Classroom', 'งานที่ครูโพสต์ใน Classroom จะเข้ามาในงานของคุณเอง และติ๊กเสร็จให้เมื่อส่งใน Classroom แล้ว')),
       soon('users', 'ห้องเรียน', () => notYet('ห้องเรียน', 'เพื่อนคนเดียวจดงาน ทั้งห้องได้งานครบ · ครูเลื่อนส่ง แก้ที่เดียวทุกคนได้')),
       soon('bell', 'การแจ้งเตือน', () => openModal({ title: 'การแจ้งเตือน', body: h('p', 'รุ่นนี้ยังแจ้งเตือนตอนปิดแอปไม่ได้ ดูงานด่วนได้ที่หน้าแรก งานใกล้ส่งเป็นตัวสีแดง') }))),
+    app.cloud?.user() ? h('div.mlist.mout', h('button.list-btn.dangertext', { id: 'me-out', onclick: signOut },
+      h('span.mi', { style: { '--mb': '#FDECEC', '--mc': 'var(--error)' }, html: ic('logout') }), h('span.lk', 'ออกจากระบบ', h('small', 'งานยังอยู่ในบัญชี · เข้าใหม่งานกลับมาครบ')))) : '',
     h('button.mfoot', { onclick: aboutModal, 'aria-label': 'เกี่ยวกับ SABAii.com' }, h('span', h('b', 'SABAii.com'), ` · รุ่น ${globalThis.SABAII_VERSION || ''}`), h('small', { html: ic('lock') + (app.cloud?.user() ? 'งานอยู่ในเครื่องนี้ + บัญชีของคุณ' : 'งานทั้งหมดอยู่ในเครื่องนี้เท่านั้น') })),
   );
 }
 
-/** แถวบัญชี: ยังไม่เข้า = ปุ่มชวนเข้าสู่ระบบด้วย Google · เข้าแล้ว = รูป + อีเมล + สถานะซิงก์ */
+/** แถวบัญชี: ยังไม่เข้า = ปุ่มชวนเข้าสู่ระบบ (Google / Facebook) · เข้าแล้ว = รูป + อีเมล + สถานะซิงก์ */
 function accountRow(row) {
   const u = app.cloud?.user();
-  if (!u) return row('cloud', 'blue', 'เข้าสู่ระบบด้วย Google', null, openAccount, { sub: 'งานและสมุดไม่หายเมื่อเปลี่ยนเครื่อง' });
+  if (!u) return row('cloud', 'blue', 'เข้าสู่ระบบ', null, openAccount, { sub: 'งานและสมุดไม่หายเมื่อเปลี่ยนเครื่อง' });
   const st = h('span.lv', { id: 'me-sync' }, syncLabel());
   return h('button.list-btn', { onclick: openAccount },
     avatarEl(u, 'span.mi.accpic'), h('span.lk', u.name || 'บัญชีและซิงก์', h('small', u.email)), st, h('span.chev', { html: ic('right') }));

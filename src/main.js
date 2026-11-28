@@ -3,6 +3,7 @@ import { h, ic, toast, $ } from './ui/kit.js';
 import { openBestDB } from './data/db.js';
 import { createStore } from './data/store.js';
 import { createCloud } from './data/cloud.js';
+import { createProfileSync } from './data/profile.js';
 import { createSync } from './data/sync.js';
 import { showLogin } from './features/login.js';
 import { app, gcUrls } from './features/shared.js';
@@ -10,7 +11,7 @@ import { initHome, renderHomeAll, homeState, setSnap, goPage } from './features/
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.14.0';
+globalThis.SABAII_VERSION = '0.14.1';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', book: 'สมุดจด' };
 const PAGES = {
   tasks: [() => import('./features/tasks.js'), 'tasksView'],
@@ -35,6 +36,8 @@ async function boot() {
     try { signedIn = await cloud.finishRedirect(location.search, location.hash); } catch (e) { signInErr = e.message; }
     history.replaceState(history.state, '', location.pathname + (signedIn ? '#/home' : ''));
   }
+  // เข้าด้วยอีเมล (กรอกรหัสในหน้าเข้าสู่ระบบ แล้วเปิดแอปใหม่) = เหมือนเพิ่งกลับจาก Google
+  try { if (sessionStorage.getItem('sabaii-just-in')) { sessionStorage.removeItem('sabaii-just-in'); signedIn = !!cloud.user(); } } catch {}
   // ต้องเข้าสู่ระบบก่อนทุกครั้ง: ยังไม่เข้า → หน้าเข้าสู่ระบบอย่างเดียว ไม่เปิดแอป
   if (!cloud.user()) {
     showLogin(cloud, { error: signInErr });
@@ -42,7 +45,7 @@ async function boot() {
     return;
   }
   // หลุดจากระบบกลางทาง (token ใช้ไม่ได้แล้ว / ลบบัญชี) → หน้าเข้าสู่ระบบทับแอป ข้อมูลในเครื่องยังอยู่
-  cloud.onChange(u => { if (!u) showLogin(cloud, { again: true }); });
+  cloud.onChange(u => { if (!u && !app.leaving) showLogin(cloud, { again: true }); });
   try {
     const db = await openBestDB();
     sync = createSync({ db, cloud });
@@ -103,7 +106,9 @@ async function boot() {
   app.refresh = () => { applyNoteStyle(); renderHomeAll(); renderPage(); };
   applyNoteStyle();
   initHome();
-  store.subscribe(() => { gcUrls(); app.refresh(); });
+  // โปรไฟล์บนเซิร์ฟเวอร์: เปิดแอป = ยังใช้อยู่ · ชื่อเล่น / วันทำแบบสอบถาม / เขตเวลา ตามเครื่อง
+  const profile = createProfileSync({ cloud, getPrefs: () => store.state.prefs });
+  store.subscribe(() => { gcUrls(); app.refresh(); profile.changed(); }); // changed(): รอ 3 วิ แล้วส่งเฉพาะที่ต่างจากที่เคยส่ง
   addEventListener('hashchange', renderPage);
   sync.onStatus(() => { if (route().name === 'me') renderPage(); });
   app.refresh();
@@ -124,6 +129,7 @@ async function boot() {
     if (cloud.user()) return afterSignIn(cloud.user());
   }).catch(() => toast('เตรียมบัญชีไม่สำเร็จ กรุณาเปิดแอปใหม่'));
   else requestAnimationFrame(() => setTimeout(syncIfIn, 0));
+  profile.start();
   globalThis.__sabaii = store; // ใช้ตอนทดสอบเท่านั้น
   globalThis.__ui = { homeState, setSnap, goPage, openNotes: id => app.openNotes(id), handSwipe: d => app.handsfree?.swipe(d) };
 }

@@ -38,7 +38,7 @@ test('Google: ไปหน้า authorize พร้อม PKCE → กลับ
 test('Google: กดยกเลิก / ลิงก์ที่ไม่ได้เริ่มจากเครื่องนี้ / ยังไม่เปิด Google ในเซิร์ฟเวอร์ → ข้อความไทย', async () => {
   const c = createCloud({ storage: mem(), url: 'https://x', fetchFn: async () => res(404, {}) });
   await assert.rejects(c.finishRedirect('?error=access_denied&error_description=The+user+denied'), /ยกเลิก/);
-  await assert.rejects(c.finishRedirect('', '#error=server_error&error_code=provider_disabled&error_description=x'), /ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้/);
+  await assert.rejects(c.finishRedirect('', '#error=server_error&error_code=provider_disabled&error_description=x'), /ยังเปิดวิธีเข้าสู่ระบบนี้ไม่ได้/);
   await assert.rejects(c.finishRedirect('?code=STOLEN'), /ไม่ได้เริ่มจากเครื่องนี้/);
   assert.equal(c.user(), null);
 });
@@ -77,4 +77,62 @@ test('ข้อผิดพลาดจากเซิร์ฟเวอร์�
   const storage = mem(); storage.setItem('sabaii-pkce', 'v'.repeat(50));
   const c = createCloud({ storage, url: 'https://x', fetchFn: async () => res(429, { error_code: 'over_request_rate_limit', msg: 'rate' }) });
   await assert.rejects(c.finishRedirect('?code=C'), /ลองบ่อยเกินไป/);
+});
+
+test('Facebook / Apple: ไปหน้า authorize ของผู้ให้บริการนั้น พร้อม PKCE แบบเดียวกับ Google', async () => {
+  for (const provider of ['facebook', 'apple']) {
+    const storage = mem();
+    const c = createCloud({ storage, url: 'https://x', fetchFn: async () => res(404, {}) });
+    const u = new URL(await c.oauthUrl(provider, 'https://sabaii.vercel.app/app/'));
+    assert.equal(u.origin + u.pathname, 'https://x/auth/v1/authorize');
+    assert.equal(u.searchParams.get('provider'), provider);
+    assert.equal(u.searchParams.get('code_challenge_method'), 's256');
+    assert.ok(storage.getItem('sabaii-pkce'));
+  }
+});
+
+test('อีเมล: ขอรหัส → กรอกรหัส 6–8 หลัก → เข้าสู่ระบบ · รหัสผิด/หมดอายุ → ข้อความไทย', async () => {
+  const calls = [];
+  const fetchFn = async (url, o) => {
+    const p = url.replace(/^https:\/\/[^/]+/, ''), b = o.body && JSON.parse(o.body);
+    calls.push([p, b]);
+    if (p === '/auth/v1/otp') return res(200, {});
+    if (p === '/auth/v1/verify') return (b.token === '123456' || b.token === '12345678')
+      ? res(200, { access_token: 'AT', refresh_token: 'RT', expires_in: 3600, user: { id: 'u2', email: 'mind@school.ac.th', user_metadata: {} } })
+      : res(403, { code: 403, error_code: 'otp_expired', msg: 'Token has expired or is invalid' });
+    return res(404, {});
+  };
+  const c = createCloud({ storage: mem(), url: 'https://x', fetchFn });
+  await c.sendEmailCode('  mind@school.ac.th ');
+  assert.deepEqual(calls[0], ['/auth/v1/otp', { email: 'mind@school.ac.th', create_user: true }]);
+  await assert.rejects(c.verifyEmailCode('mind@school.ac.th', '000000'), /รหัสหมดอายุหรือไม่ถูกต้อง/);
+  assert.equal(c.user(), null);
+  await c.verifyEmailCode('mind@school.ac.th', '123 456');
+  assert.deepEqual(calls.at(-1), ['/auth/v1/verify', { type: 'email', email: 'mind@school.ac.th', token: '123456' }]);
+  assert.deepEqual(c.user(), { id: 'u2', email: 'mind@school.ac.th', name: '', avatar: '' });
+  await c.verifyEmailCode('mind@school.ac.th', '1234 5678'); // Supabase ตั้ง 8 หลักก็ได้
+  assert.equal(calls.at(-1)[1].token, '12345678');
+});
+
+test('โปรไฟล์: อ่านของตัวเอง · แก้ได้เฉพาะช่องที่อนุญาต (role ไม่ถูกส่ง) · touch ล้มก็ไม่พัง · ลบบัญชีส่งเหตุผล', async () => {
+  const calls = [], storage = mem();
+  storage.setItem('sabaii-auth', JSON.stringify({ access_token: 'AT', refresh_token: 'RT', expires_at: Date.now() + 3600e3, user: { id: 'u1', email: 'a@b.co' } }));
+  const fetchFn = async (url, o) => {
+    const path = url.replace(/^https:\/\/[^/]+/, '');
+    calls.push([path, o.method, o.body && typeof o.body === 'string' ? JSON.parse(o.body) : o.body, o.headers]);
+    if (path.startsWith('/rest/v1/profiles')) return res(200, [{ id: 'u1', display_name: 'ปลา', role: 'user' }]);
+    if (path === '/rest/v1/rpc/touch_last_seen') return res(500, {});
+    if (path.startsWith('/storage/v1/object/list/')) return res(200, []);
+    return res(200, null);
+  };
+  const c = createCloud({ storage, fetchFn, url: 'https://x' });
+  assert.equal((await c.profile()).display_name, 'ปลา');
+  assert.equal(calls[0][0], '/rest/v1/profiles?select=*&id=eq.u1');
+  await c.updateProfile({ display_name: 'ปลา', role: 'admin', timezone: 'Asia/Bangkok' });
+  assert.deepEqual(calls[1].slice(0, 3), ['/rest/v1/profiles?id=eq.u1', 'PATCH', { display_name: 'ปลา', timezone: 'Asia/Bangkok' }]);
+  assert.equal(calls[1][3].Prefer, 'return=representation');
+  await c.touch();
+  await c.deleteAccount('ไม่ได้ใช้แล้ว');
+  assert.deepEqual(calls.at(-1).slice(0, 3), ['/rest/v1/rpc/delete_my_account', 'POST', { p_reason: 'ไม่ได้ใช้แล้ว' }]);
+  assert.equal(c.user(), null);
 });

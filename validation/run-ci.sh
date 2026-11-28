@@ -7,7 +7,7 @@ artifacts_dir="${VALIDATION_ARTIFACTS:-"$repo_root/validation-artifacts"}"
 mkdir -p "$artifacts_dir"
 artifacts_dir="$(cd "$artifacts_dir" && pwd)"
 work_dir="$(mktemp -d "${RUNNER_TEMP:-/tmp}/sabaii-validation.XXXXXX")"
-base_commit=a7f0fb62f40edca06ae8ea1e1ef21bf67f65e7a4
+base_commit=bed0d53487cabd0c944c02afbecb3b162d557d7e
 candidate_commit="$(git -C "$repo_root" rev-parse HEAD)"
 status="$artifacts_dir/checks.tsv"
 failures=0
