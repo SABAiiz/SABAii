@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>SABAii หน้าเข้าสู่ระบบ 8 แบบ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=Mali:wght@500;600;700&display=swap">
+<style>
+  /* ภาพเสนอหน้าเข้าสู่ระบบ 8 แบบ (28 พ.ย. 69) — เรียบ หรู แนว fastwork แต่ไม่ก๊อป · ใช้รูปและการ์ดงานจากหน้าแนะนำ/แบบสอบถาม */
+  :root { --ink: #0B1B4D; --blue: #0A6CF1; --t2: #5E6B85; --line: #E6EAF2; --font: "Anuphan", "Noto Sans Thai Looped", sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 56px 56px 64px; background: #DDE3EC; font-family: var(--font); color: var(--ink); }
+  .sheet-h { margin: 0 0 6px; font-size: 30px; font-weight: 700; }
+  .sheet-p { margin: 0 0 40px; color: var(--t2); font-size: 17px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 360px); gap: 56px 44px; }
+  .opt > p { margin: 18px 4px 0; font-size: 15px; line-height: 1.5; color: var(--t2); }
+  .opt > p b { display: block; color: var(--ink); font-size: 19px; margin-bottom: 2px; }
+  .ph { position: relative; width: 360px; height: 780px; border-radius: 44px; overflow: hidden; background: #fff; box-shadow: 0 0 0 8px #0E1424, 0 30px 60px -20px rgba(11,27,77,.45); display: flex; flex-direction: column; }
+  .bar { height: 44px; flex: none; display: flex; justify-content: space-between; align-items: center; padding: 0 28px; font-size: 14px; font-weight: 600; }
+  .bar i { font-style: normal; letter-spacing: 1px; font-size: 11px; }
+  .dark .bar { color: #fff; }
+
+  /* ชิ้นที่ใช้ร่วม */
+  .g { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; height: 54px; border-radius: 999px; background: #F1F3F7; font-weight: 600; font-size: 16px; color: var(--ink); }
+  .g svg { width: 20px; height: 20px; }
+  .g.navy { background: var(--ink); color: #fff; }
+  .g.navy .gw { background: #fff; border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; margin-left: -8px; }
+  .g.white { background: #fff; }
+  .g.line { background: #fff; box-shadow: inset 0 0 0 1.5px #D5DBE6; }
+  .legal { margin: 14px 0 0; text-align: center; font-size: 12px; line-height: 1.6; color: #8A94A8; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 17px; }
+  .logo img { width: 26px; height: 26px; border-radius: 7px; }
+  .h1 { margin: 0; font-weight: 700; font-size: 32px; line-height: 1.22; letter-spacing: -.01em; }
+  .sub { margin: 10px 0 0; color: var(--t2); font-size: 15.5px; line-height: 1.55; }
+  .pc { position: absolute; margin: 0; width: var(--w, 128px); background: #fff; border-radius: 16px; padding: 5px 5px 0; rotate: var(--r, 0deg); box-shadow: 0 0 0 1px rgba(11,27,77,.06), 0 22px 36px -20px rgba(11,27,77,.5); }
+  .pc img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 11px; }
+  .pc figcaption { display: flex; align-items: center; gap: 7px; padding: 7px 3px 8px; }
+  .pc .b { width: 24px; height: 24px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 7.5px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 15%, #fff); box-shadow: 0 0 0 2px #fff, 0 0 0 3px color-mix(in srgb, var(--c) 30%, #fff); }
+  .pc .tt { min-width: 0; } .pc .tt b { display: block; font-size: 11.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pc .tt small { display: block; font-size: 10px; color: var(--t2); } .pc .tt small.red { color: #D9443A; }
+  .body { flex: 1; display: flex; flex-direction: column; padding: 0 28px 34px; }
+  .grow { flex: 1; }
+
+  /* A พัดสามใบ */
+  .a .stage { position: relative; height: 330px; margin-top: 40px; }
+  .a .pc:nth-child(1) { left: 24px; top: 46px; --r: -9deg; }
+  .a .pc:nth-child(2) { left: calc(50% - 68px); top: 10px; --w: 136px; z-index: 2; }
+  .a .pc:nth-child(3) { right: 24px; top: 50px; --r: 8deg; }
+  .a .h1 { text-align: center; } .a .sub { text-align: center; }
+
+  /* B การ์ดเดียว */
+  .b2 .stage { position: relative; height: 380px; }
+  .b2 .pc { --w: 232px; left: calc(50% - 116px); top: 42px; --r: -3deg; padding: 8px 8px 0; border-radius: 22px; }
+  .b2 .pc img { border-radius: 16px; } .b2 .pc figcaption { padding: 12px 6px 14px; gap: 10px; }
+  .b2 .pc .b { width: 34px; height: 34px; font-size: 10px; } .b2 .pc .tt b { font-size: 16px; } .b2 .pc .tt small { font-size: 13px; }
+  .b2 .tick { position: absolute; right: 44px; top: 26px; width: 46px; height: 46px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; z-index: 2; box-shadow: 0 10px 20px -8px rgba(11,27,77,.6); }
+
+  /* C ครึ่งรูป */
+  .c .hero { position: absolute; inset: 0 0 auto; height: 470px; background: url(../assets/landing/photos/class.jpg) center/cover; }
+  .c .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,27,77,.35) 0%, rgba(11,27,77,0) 30%, rgba(255,255,255,0) 62%, #fff 100%); }
+  .c .bar, .c .logo { position: relative; z-index: 1; color: #fff; }
+  .c .logo { margin: 8px 28px 0; }
+  .c .body { position: relative; z-index: 1; padding-top: 0; }
+
+  /* D กล่องกลางจอ + กองรูปเล็ก */
+  .d { background: #F4F5F8; }
+  .d .body { align-items: stretch; justify-content: center; padding: 0 18px 34px; }
+  .d .logo { justify-content: center; margin: 18px 0 0; }
+  .d .card { background: #fff; border-radius: 22px; padding: 30px 22px 22px; box-shadow: 0 1px 2px rgba(11,27,77,.05), 0 18px 40px -24px rgba(11,27,77,.3); }
+  .d .stack { display: flex; justify-content: center; margin: -62px 0 18px; }
+  .d .stack img { width: 64px; height: 64px; object-fit: cover; border-radius: 18px; border: 4px solid #fff; box-shadow: 0 10px 18px -10px rgba(11,27,77,.55); }
+  .d .stack img:nth-child(1) { rotate: -9deg; margin-right: -14px; } .d .stack img:nth-child(2) { z-index: 1; translate: 0 -8px; } .d .stack img:nth-child(3) { rotate: 9deg; margin-left: -14px; }
+  .d .h1 { font-size: 26px; text-align: center; } .d .sub { text-align: center; font-size: 14.5px; margin-bottom: 22px; }
+
+  /* E ตัวอักษรล้วน */
+  .e .body { padding-top: 40px; }
+  .e .mark { font-size: 15px; font-weight: 600; color: var(--t2); display: flex; align-items: center; gap: 8px; }
+  .e .mark img { width: 22px; height: 22px; border-radius: 6px; }
+  .e .big { margin: 120px 0 0; font-size: 50px; line-height: 1.12; font-weight: 700; letter-spacing: -.02em; }
+  .e .big span { color: #B9C3D6; }
+  .e .rule { height: 1px; background: var(--line); margin: 30px 0 18px; }
+  .e .sub { margin: 0; }
+
+  /* F แถบรูปเลื่อน */
+  .f .body { padding-top: 28px; }
+  .f .strip { display: flex; gap: 10px; margin: 0 -28px; padding-left: 14px; }
+  .f .strip img { width: 108px; height: 132px; object-fit: cover; border-radius: 18px; flex: none; }
+  .f .strip.two { padding-left: 0; translate: -46px 0; margin-top: 10px; }
+  .f .strips { margin: 34px 0 34px; mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+
+  /* G กรมท่า */
+  .dark { background: radial-gradient(120% 70% at 50% 18%, #1B2F6E 0%, #0B1B4D 60%); color: #fff; }
+  .g7 .stage { position: relative; height: 340px; margin-top: 40px; }
+  .g7 .pc { box-shadow: 0 30px 40px -18px rgba(0,0,0,.6); }
+  .g7 .pc:nth-child(1) { left: 34px; top: 54px; --r: -10deg; }
+  .g7 .pc:nth-child(2) { left: calc(50% - 68px); top: 14px; --w: 136px; z-index: 2; --r: 2deg; }
+  .g7 .pc:nth-child(3) { right: 34px; top: 58px; --r: 9deg; }
+  .g7 .pc .tt b { color: var(--ink); }
+  .g7 .sub { color: #B7C3E0; }
+  .g7 .legal { color: #8E9BBD; }
+
+  /* H ตารางรูป */
+  .h8 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 6px 14px 0; }
+  .h8 .tiles > * { aspect-ratio: 3/4; border-radius: 18px; object-fit: cover; width: 100%; }
+  .h8 .tiles .lg { background: var(--ink); display: grid; place-items: center; }
+  .h8 .tiles .lg img { width: 56px; height: 56px; aspect-ratio: auto; border-radius: 14px; }
+  .h8 .body { padding-top: 30px; }
+</style>
+</head>
+<body>
+<h1 class="sheet-h">หน้าเข้าสู่ระบบ: เลือกแบบที่ชอบ</h1>
+<p class="sheet-p">ทุกแบบมีปุ่มเดียวคือ Google · ภาพจริงจากหน้าแนะนำของ SABAii · เลือกได้ทั้งแบบ หรือบอกว่าอยากเอาส่วนไหนจากแบบไหนมารวมกัน</p>
+
+<template id="G"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg></template>
+
+<div class="grid">
+
+  <section class="opt"><div class="ph a">
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="stage">
+      <figure class="pc"><img src="../assets/landing/photos/board.jpg"><figcaption><span class="b" style="--c:#7C4DFF">ฟิส</span><span class="tt"><b>แบบฝึกหัด 4.3</b><small>ส่งศุกร์</small></span></figcaption></figure>
+      <figure class="pc"><img src="../assets/landing/photos/notes.jpg"><figcaption><span class="b" style="--c:#F08A24">วิทย์</span><span class="tt"><b>Mind mapping</b><small class="red">ส่งวันนี้</small></span></figcaption></figure>
+      <figure class="pc"><img src="../assets/landing/photos/study.jpg"><figcaption><span class="b" style="--c:#16B76A">ชีวะ</span><span class="tt"><b>สรุปบทที่ 2</b><small>ส่งพรุ่งนี้</small></span></figcaption></figure>
+    </div>
+    <div class="body"><h2 class="h1">เข้าสู่ SABAii</h2><p class="sub">งานทุกวิชาอยู่ในที่เดียว<br>เปิดได้ทุกเครื่อง</p><div class="grow"></div>
+      <div class="g" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน งานของคุณเห็นได้เฉพาะคุณ</p></div>
+  </div><p><b>A  พัดสามใบ</b>ใกล้กับหน้าต้อนรับเดิมที่สุด แต่เหลือ 3 ใบ เรียงสมมาตร ข้อความตรงกลาง</p></section>
+
+  <section class="opt"><div class="ph b2">
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="stage">
+      <span class="tick"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+      <figure class="pc"><img src="../assets/landing/photos/chalk.jpg"><figcaption><span class="b" style="--c:#0A6CF1">คณิต</span><span class="tt"><b>แบบฝึกหัดบทที่ 4</b><small>ส่งพรุ่งนี้ 08:30</small></span></figcaption></figure>
+    </div>
+    <div class="body"><h2 class="h1">การบ้านทุกชิ้น<br>ไม่หลุดอีก</h2><p class="sub">เข้าสู่ระบบครั้งเดียว ใช้ได้ทุกเครื่อง</p><div class="grow"></div>
+      <div class="g navy" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน</p></div>
+  </div><p><b>B  การ์ดงานใบเดียว</b>การ์ดใหญ่ใบเดียวพร้อมติ๊กถูก หัวข้อชิดซ้าย ปุ่มกรมท่า ดูมั่นใจ</p></section>
+
+  <section class="opt"><div class="ph c">
+    <div class="hero"></div>
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="logo"><img src="../icon.svg"> SABAii</div>
+    <div class="grow"></div>
+    <div class="body"><h2 class="h1">ห้องเรียนพูด<br>SABAii จดให้</h2><p class="sub">จดงานจากเสียงครู รูปกระดาน หรือพิมพ์สั้น ๆ</p>
+      <div style="height:28px"></div><div class="g line" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน งานของคุณเห็นได้เฉพาะคุณ</p></div>
+  </div><p><b>C  ครึ่งรูป ครึ่งขาว</b>รูปห้องเรียนเต็มครึ่งบนจางลงเป็นสีขาว ให้ความรู้สึกเหมือนแอปใหญ่</p></section>
+
+  <section class="opt"><div class="ph d">
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="logo"><img src="../icon.svg"> SABAii</div>
+    <div class="body"><div class="card">
+      <div class="stack"><img src="../assets/landing/photos/board.jpg"><img src="../assets/landing/photos/notes.jpg"><img src="../assets/landing/photos/sticky.jpg"></div>
+      <h2 class="h1">ยินดีต้อนรับสู่ SABAii</h2><p class="sub">เข้าสู่ระบบเพื่อเก็บงานไว้ในบัญชี</p>
+      <div class="g" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน งานของคุณเห็นได้เฉพาะคุณ</p></div></div>
+  </div><p><b>D  กล่องกลางจอ</b>แนวเดียวกับ fastwork (พื้นเทา กล่องขาว ปุ่มเทาอ่อน) แต่มีรูปงานจริง 3 ใบโผล่เหนือกล่อง</p></section>
+
+  <section class="opt"><div class="ph e">
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="body"><div class="mark"><img src="../icon.svg"> SABAii</div>
+      <p class="big">การบ้าน<br>ไม่หลุด<br><span>อีกต่อไป</span></p>
+      <div class="rule"></div><p class="sub">จดงานจากเสียงครู รูปกระดาน หรือพิมพ์สั้น ๆ แล้วบอกว่าวันนี้ต้องทำอะไรก่อน</p><div class="grow"></div>
+      <div class="g navy" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน</p></div>
+  </div><p><b>E  ตัวอักษรล้วน</b>ไม่มีรูปเลย ตัวหนังสือใหญ่ชิดซ้าย เรียบหรูที่สุด โหลดเร็วที่สุด</p></section>
+
+  <section class="opt"><div class="ph f">
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="body"><div class="logo"><img src="../icon.svg"> SABAii</div>
+      <div class="strips">
+        <div class="strip"><img src="../assets/landing/photos/class.jpg"><img src="../assets/landing/photos/board.jpg"><img src="../assets/landing/photos/notes.jpg"><img src="../assets/landing/photos/desk.jpg"></div>
+        <div class="strip two"><img src="../assets/landing/photos/math.jpg"><img src="../assets/landing/photos/sticky.jpg"><img src="../assets/landing/photos/study.jpg"><img src="../assets/landing/photos/hands.jpg"></div>
+      </div>
+      <h2 class="h1">ทุกวิชา<br>ในที่เดียว</h2><p class="sub">เข้าสู่ระบบแล้วงานไม่หายเมื่อเปลี่ยนเครื่อง</p><div class="grow"></div>
+      <div class="g" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน งานของคุณเห็นได้เฉพาะคุณ</p></div>
+  </div><p><b>F  แถบรูปเลื่อน</b>รูปสองแถวเลื่อนช้า ๆ สวนกัน ขอบจางหาย ข้อความชิดซ้ายด้านล่าง</p></section>
+
+  <section class="opt"><div class="ph dark g7">
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="stage">
+      <figure class="pc"><img src="../assets/landing/photos/board.jpg"><figcaption><span class="b" style="--c:#7C4DFF">ฟิส</span><span class="tt"><b>แบบฝึกหัด 4.3</b><small>ส่งศุกร์</small></span></figcaption></figure>
+      <figure class="pc"><img src="../assets/landing/photos/notes.jpg"><figcaption><span class="b" style="--c:#F08A24">วิทย์</span><span class="tt"><b>Mind mapping</b><small class="red">ส่งวันนี้</small></span></figcaption></figure>
+      <figure class="pc"><img src="../assets/landing/photos/sticky.jpg"><figcaption><span class="b" style="--c:#E0457B">อังกฤษ</span><span class="tt"><b>ท่องศัพท์ Unit 5</b><small>20 คำ</small></span></figcaption></figure>
+    </div>
+    <div class="body"><h2 class="h1" style="text-align:center">เข้าสู่ SABAii</h2><p class="sub" style="text-align:center">งานทุกวิชาอยู่ในที่เดียว เปิดได้ทุกเครื่อง</p><div class="grow"></div>
+      <div class="g white" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน งานของคุณเห็นได้เฉพาะคุณ</p></div>
+  </div><p><b>G  กรมท่าเต็มจอ</b>พื้นสีกรมท่าของแบรนด์ การ์ดลอยเด่น ปุ่มขาว ดูพรีเมียมแบบกลางคืน</p></section>
+
+  <section class="opt"><div class="ph h8">
+    <div class="bar"><span>9:41</span><i>●●● ▮</i></div>
+    <div class="tiles">
+      <img src="../assets/landing/photos/class.jpg"><img src="../assets/landing/photos/notes.jpg"><img src="../assets/landing/photos/math.jpg">
+      <img src="../assets/landing/photos/sticky.jpg"><div class="lg"><img src="../icon.svg"></div><img src="../assets/landing/photos/board.jpg">
+    </div>
+    <div class="body"><h2 class="h1">เข้าสู่ SABAii</h2><p class="sub">งานทุกวิชาอยู่ในที่เดียว เปิดได้ทุกเครื่อง</p><div class="grow"></div>
+      <div class="g" data-g>ดำเนินการต่อด้วย Google</div><p class="legal">ไม่ต้องตั้งรหัสผ่าน งานของคุณเห็นได้เฉพาะคุณ</p></div>
+  </div><p><b>H  ตารางรูป</b>รูป 6 ช่องเป็นตาราง โลโก้อยู่ช่องกลาง ข้อความชิดซ้าย เป็นระเบียบ</p></section>
+
+</div>
+<script>
+  const G = document.getElementById('G').innerHTML;
+  for (const el of document.querySelectorAll('[data-g]')) el.insertAdjacentHTML('afterbegin', el.classList.contains('navy') ? `<span class="gw">${G}</span>` : G);
+</script>
+</body>
+</html>
