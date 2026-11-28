@@ -38,7 +38,7 @@ test('Google: ไปหน้า authorize พร้อม PKCE → กลับ
 test('Google: กดยกเลิก / ลิงก์ที่ไม่ได้เริ่มจากเครื่องนี้ / ยังไม่เปิด Google ในเซิร์ฟเวอร์ → ข้อความไทย', async () => {
   const c = createCloud({ storage: mem(), url: 'https://x', fetchFn: async () => res(404, {}) });
   await assert.rejects(c.finishRedirect('?error=access_denied&error_description=The+user+denied'), /ยกเลิก/);
-  await assert.rejects(c.finishRedirect('', '#error=server_error&error_code=provider_disabled&error_description=x'), /ยังเปิดเข้าสู่ระบบด้วย Google ไม่ได้/);
+  await assert.rejects(c.finishRedirect('', '#error=server_error&error_code=provider_disabled&error_description=x'), /ยังเปิดวิธีเข้าสู่ระบบนี้ไม่ได้/);
   await assert.rejects(c.finishRedirect('?code=STOLEN'), /ไม่ได้เริ่มจากเครื่องนี้/);
   assert.equal(c.user(), null);
 });
@@ -77,4 +77,37 @@ test('ข้อผิดพลาดจากเซิร์ฟเวอร์�
   const storage = mem(); storage.setItem('sabaii-pkce', 'v'.repeat(50));
   const c = createCloud({ storage, url: 'https://x', fetchFn: async () => res(429, { error_code: 'over_request_rate_limit', msg: 'rate' }) });
   await assert.rejects(c.finishRedirect('?code=C'), /ลองบ่อยเกินไป/);
+});
+
+test('Facebook / Apple: ไปหน้า authorize ของผู้ให้บริการนั้น พร้อม PKCE แบบเดียวกับ Google', async () => {
+  for (const provider of ['facebook', 'apple']) {
+    const storage = mem();
+    const c = createCloud({ storage, url: 'https://x', fetchFn: async () => res(404, {}) });
+    const u = new URL(await c.oauthUrl(provider, 'https://sabaii.vercel.app/app/'));
+    assert.equal(u.origin + u.pathname, 'https://x/auth/v1/authorize');
+    assert.equal(u.searchParams.get('provider'), provider);
+    assert.equal(u.searchParams.get('code_challenge_method'), 's256');
+    assert.ok(storage.getItem('sabaii-pkce'));
+  }
+});
+
+test('อีเมล: ขอรหัส → กรอกรหัส 6 หลัก → เข้าสู่ระบบ · รหัสผิด/หมดอายุ → ข้อความไทย', async () => {
+  const calls = [];
+  const fetchFn = async (url, o) => {
+    const p = url.replace(/^https:\/\/[^/]+/, ''), b = o.body && JSON.parse(o.body);
+    calls.push([p, b]);
+    if (p === '/auth/v1/otp') return res(200, {});
+    if (p === '/auth/v1/verify') return b.token === '123456'
+      ? res(200, { access_token: 'AT', refresh_token: 'RT', expires_in: 3600, user: { id: 'u2', email: 'mind@school.ac.th', user_metadata: {} } })
+      : res(403, { code: 403, error_code: 'otp_expired', msg: 'Token has expired or is invalid' });
+    return res(404, {});
+  };
+  const c = createCloud({ storage: mem(), url: 'https://x', fetchFn });
+  await c.sendEmailCode('  mind@school.ac.th ');
+  assert.deepEqual(calls[0], ['/auth/v1/otp', { email: 'mind@school.ac.th', create_user: true }]);
+  await assert.rejects(c.verifyEmailCode('mind@school.ac.th', '000000'), /รหัสหมดอายุหรือไม่ถูกต้อง/);
+  assert.equal(c.user(), null);
+  await c.verifyEmailCode('mind@school.ac.th', '123 456');
+  assert.deepEqual(calls.at(-1), ['/auth/v1/verify', { type: 'email', email: 'mind@school.ac.th', token: '123456' }]);
+  assert.deepEqual(c.user(), { id: 'u2', email: 'mind@school.ac.th', name: '', avatar: '' });
 });

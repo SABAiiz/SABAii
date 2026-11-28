@@ -15,7 +15,7 @@ import { meView, applyTheme } from './features/me.js';
 import { applyNoteStyle } from './features/notestyle.js';
 import { needsOnboarding, openOnboarding } from './features/onboard.js';
 
-globalThis.SABAII_VERSION = '0.14.0';
+globalThis.SABAII_VERSION = '0.14.1';
 const TITLES = { home: 'หน้าหลัก', tasks: 'งาน', notebook: 'สมุด', me: 'ฉัน', subject: 'วิชา', book: 'สมุดจด' };
 
 /** รับทั้ง #home และ #/home (ลิงก์แบบ artifact ส่งต่อได้เฉพาะ #ชื่อ ธรรมดา) */
@@ -33,6 +33,8 @@ async function boot() {
     try { signedIn = await cloud.finishRedirect(location.search, location.hash); } catch (e) { signInErr = e.message; }
     history.replaceState(history.state, '', location.pathname + (signedIn ? '#/home' : ''));
   }
+  // เข้าด้วยอีเมล (กรอกรหัสในหน้าเข้าสู่ระบบ แล้วเปิดแอปใหม่) = เหมือนเพิ่งกลับจาก Google
+  try { if (sessionStorage.getItem('sabaii-just-in')) { sessionStorage.removeItem('sabaii-just-in'); signedIn = !!cloud.user(); } } catch {}
   // ต้องเข้าสู่ระบบก่อนทุกครั้ง: ยังไม่เข้า → หน้าเข้าสู่ระบบอย่างเดียว ไม่เปิดแอป
   if (!cloud.user()) { showLogin(cloud, { error: signInErr }); return; }
   // หลุดจากระบบกลางทาง (token ใช้ไม่ได้แล้ว / ลบบัญชี) → หน้าเข้าสู่ระบบทับแอป ข้อมูลในเครื่องยังอยู่
