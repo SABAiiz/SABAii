@@ -1707,3 +1707,4 @@ html.gated #nav, html.gated #sheet, html.gated #stage, html.gated #note-ui, html
 .sk-sp-add svg { width: 16px; height: 16px; }
 .sk-sp-add:hover { border-color: var(--blue); color: var(--blue); }
 .sk-opts[data-tool="shape"] { max-width: min(100%, 600px); }
+.lg-foot a { color: inherit; }

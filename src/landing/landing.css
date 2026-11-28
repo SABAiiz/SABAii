@@ -484,3 +484,4 @@ h2 { font: 600 clamp(32px, 5vw, 56px)/1.2 var(--f-display); letter-spacing: -.02
   .relief { margin-top: 0; }
   .uline path, .arrow path { stroke-dashoffset: 0; transition: none; }
 }
+.foot > a { color: inherit; text-decoration: underline; }
